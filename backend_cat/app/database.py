@@ -196,6 +196,24 @@ class CategoryOptionModel(Base):
     sort_order: Mapped[int] = mapped_column(default=0, server_default="0")
 
 
+class AmbakBankCatalogModel(Base):
+    """The set of lender names Ambak's own interest-rate page currently
+    lists — kept separate from `banks` (our actual product data) so the
+    admin's "add a new bank" screen can suggest picking a name from here
+    instead of free-typing one that might not exactly match what
+    app/scrape_ambak_rates.py later needs to find a rate for. Populated by
+    app/sync_ambak_bank_catalog.py, run manually for now (the daily
+    scheduled scrape stays paused pending approval — see
+    scrape_ambak_rates.py's module docstring) and re-run whenever the admin
+    wants a fresher list.
+    """
+
+    __tablename__ = "ambak_bank_catalog"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True)
+
+
 async def create_all_tables() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

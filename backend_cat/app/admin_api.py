@@ -26,9 +26,11 @@ from app.admin_schemas import (
     AdminCategoryOptionOut,
     AdminProductDetail,
     AdminProductOut,
+    AmbakBankOption,
 )
 from app.auth import require_admin
 from app.database import (
+    AmbakBankCatalogModel,
     AttributeModel,
     BankBiasFactModel,
     BankModel,
@@ -38,6 +40,7 @@ from app.database import (
     get_db,
 )
 from app.explore import ADMIN_ONLY_CATEGORIES, CATEGORY_LABELS, FILTERABLE_CATEGORIES
+from app.scrape_ambak_rates import _normalize
 
 admin_router = APIRouter(prefix="/api/v1/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
@@ -221,6 +224,24 @@ async def list_banks(session: Annotated[AsyncSession, Depends(get_db)]) -> list[
             ],
         )
         for bank in banks
+    ]
+
+
+@admin_router.get("/ambak-banks", response_model=list[AmbakBankOption])
+async def list_ambak_banks(session: Annotated[AsyncSession, Depends(get_db)]) -> list[AmbakBankOption]:
+    """Ambak lender names not already one of our banks — powers the "add a
+    new bank" picker, so an admin picks a name that matches what
+    scrape_ambak_rates.py will later look for, instead of free-typing one
+    that silently never gets a live rate. Compared with the same
+    suffix/case-insensitive normalization the scraper itself uses, so
+    "HDFC Bank" on Ambak's list correctly excludes our "HDFC Bank Ltd".
+    """
+    catalog = (await session.execute(select(AmbakBankCatalogModel))).scalars().all()
+    existing_names = {_normalize(b.name) for b in (await session.execute(select(BankModel))).scalars().all()}
+    return [
+        AmbakBankOption(name=row.name)
+        for row in sorted(catalog, key=lambda r: r.name)
+        if _normalize(row.name) not in existing_names
     ]
 
 

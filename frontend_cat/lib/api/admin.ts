@@ -54,6 +54,10 @@ export interface AdminCategoryOptionOut extends AdminCategoryOptionIn {
   category_key: string;
 }
 
+export interface AmbakBankOption {
+  name: string;
+}
+
 async function adminRequest<TResponse>(
   path: string,
   token: string,
@@ -123,6 +127,8 @@ export const adminApi = {
       method: "POST",
       body: option,
     }),
+
+  listAmbakBanks: (token: string) => adminRequest<AmbakBankOption[]>("/api/v1/admin/ambak-banks", token),
 
   deleteCategoryOption: (token: string, categoryKey: string, value: string) =>
     adminRequest<void>(

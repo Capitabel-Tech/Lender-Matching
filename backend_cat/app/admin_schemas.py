@@ -66,3 +66,7 @@ class AdminCategoryOptionIn(BaseModel):
 
 class AdminCategoryOptionOut(AdminCategoryOptionIn):
     category_key: str
+
+
+class AmbakBankOption(BaseModel):
+    name: str
