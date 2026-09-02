@@ -2,21 +2,52 @@ import { Fraunces } from "next/font/google";
 import Link from "next/link";
 
 import { LiveRatesTicker } from "@/features/explore/LiveRatesTicker";
-import { HeroSimulator } from "@/features/landing/HeroSimulator";
+import { ProductPreview } from "@/features/landing/ProductPreview";
 import { fetchLiveRates } from "@/lib/api/explore";
 
 const fraunces = Fraunces({ subsets: ["latin"], weight: ["600"] });
 
-// The simulator's initial rate list and top-lender preview read current
-// data at request time — without this, Next.js would pre-render this
-// Server Component once at build time and the numbers would silently go
-// stale between deploys.
+// The preview card's rate numbers read current data at request time —
+// without this, Next.js would pre-render this Server Component once at
+// build time and the numbers would silently go stale between deploys.
 export const dynamic = "force-dynamic";
 
 const NAV_LINKS = [
   { label: "Home Loans", href: "/explore" },
   { label: "Personal", href: "#" },
   { label: "About", href: "#" },
+] as const;
+
+function ProfileIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+    </svg>
+  );
+}
+
+function MatchIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
+    </svg>
+  );
+}
+
+function CompareIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="18" rx="1" />
+      <rect x="14" y="3" width="7" height="12" rx="1" />
+    </svg>
+  );
+}
+
+const HOW_IT_WORKS = [
+  { n: "1", Icon: ProfileIcon, title: "Tell us about yourself", body: "Age, income, property type, and how much you need." },
+  { n: "2", Icon: MatchIcon, title: "We check every lender", body: "Matched instantly against each bank's real eligibility rules." },
+  { n: "3", Icon: CompareIcon, title: "Compare and choose", body: "See the exact EMI, tenure, and rate for every eligible bank." },
 ] as const;
 
 function CreditInquiryIcon() {
@@ -96,15 +127,58 @@ export default async function Landing() {
 
       {/* Hero */}
       <section className="px-6 pb-16 pt-6 sm:px-10">
-        <div className="mx-auto max-w-6xl">
-          <HeroSimulator initialRates={rates} />
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+          <div className="flex flex-col gap-6">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-teal-100 px-3 py-1 text-xs font-bold text-teal-800 dark:bg-teal-950/40 dark:text-teal-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-600" />
+              Live rates, checked daily
+            </span>
+            <h1 className={`${fraunces.className} text-4xl leading-[1.2] text-zinc-900 dark:text-zinc-50 sm:text-[2.75rem]`}>
+              Stop applying blind. Match with lenders whose eligibility rules you actually meet.
+            </h1>
+            <p className="max-w-md text-base text-zinc-500 dark:text-zinc-400">
+              We compare FOIR, live rate cards, and your eligibility across {rates.length || "every"} lenders
+              instantly — no credit inquiry, no guesswork.
+            </p>
+            <div>
+              <Link
+                href="/explore"
+                className="inline-flex items-center gap-2 rounded-xl bg-teal-800 px-7 py-3.5 text-base font-semibold text-white hover:bg-teal-900"
+              >
+                Explore Lenders →
+              </Link>
+            </div>
+          </div>
+
+          <ProductPreview rates={rates} />
         </div>
       </section>
 
       <LiveRatesTicker />
 
-      {/* What happens: traditional route vs. with us */}
+      {/* How it works — a connected 3-step diagram */}
       <section className="px-6 py-24 sm:px-10">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-14">
+          <h2 className={`${fraunces.className} text-center text-3xl text-zinc-900 dark:text-zinc-50`}>How it works</h2>
+          <div className="relative">
+            <div className="absolute top-6 hidden h-0.5 w-full bg-teal-100 dark:bg-teal-900 sm:block" />
+            <div className="relative grid gap-10 sm:grid-cols-3">
+              {HOW_IT_WORKS.map(({ n, Icon, title, body }) => (
+                <div key={n} className="flex flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+                  <span className="z-10 flex h-12 w-12 items-center justify-center rounded-full bg-teal-800 text-white ring-8 ring-[#faf9f5] dark:ring-zinc-950">
+                    <Icon />
+                  </span>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">{title}</h3>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">{body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What happens: traditional route vs. with us */}
+      <section className="bg-white px-6 py-24 dark:bg-zinc-900/40 sm:px-10">
         <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400">
@@ -118,7 +192,7 @@ export default async function Landing() {
             {WHAT_HAPPENS.map(({ Icon, label, sub }) => (
               <div
                 key={label}
-                className="flex flex-col gap-2 rounded-2xl border border-zinc-900/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-zinc-900"
+                className="flex flex-col gap-2 rounded-2xl border border-zinc-900/5 bg-[#faf9f5] p-5 shadow-sm dark:border-white/5 dark:bg-zinc-900"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400">
                   <Icon />
