@@ -19,8 +19,23 @@ from app.domain import (
     get_bank_interest_rate_upper_pct,
     get_fact,
 )
-from app.explore import FILTERABLE_CATEGORIES, facet_counts, filter_products
-from app.explore_schemas import ExploreFiltersIn, ExploreProductOut, ExploreResponseOut, FacetOptionOut, LiveRateOut
+from app.explore import (
+    FILTERABLE_CATEGORIES,
+    facet_counts,
+    filter_products,
+    load_category_values,
+    load_loan_types,
+    load_property_type_groups,
+)
+from app.explore_schemas import (
+    CategoryOptionOut,
+    ExploreFiltersIn,
+    ExploreProductOut,
+    ExploreResponseOut,
+    FacetOptionOut,
+    LiveRateOut,
+    PropertyTypeGroupOut,
+)
 from app.repository import LenderRepository, SqlLenderRepository
 
 explore_router = APIRouter(prefix="/api/v1/explore")
@@ -114,16 +129,42 @@ async def live_rates(repository: Annotated[LenderRepository, Depends(get_lender_
     )
 
 
+@explore_router.get("/categories", tags=["explore"])
+async def list_categories(
+    session: Annotated[AsyncSession, Depends(get_db)],
+) -> dict[str, list[CategoryOptionOut] | list[PropertyTypeGroupOut]]:
+    """The current allowed values per filter category, plus property_type's
+    grouping — public (no admin login needed) since it's just UI option
+    data, the same way /live-rates is public. Powers the borrower-facing
+    sidebar's checkboxes/headings and the admin's property-type/usage/stage/
+    location pickers, so both stay in sync with whatever's actually in
+    category_options without either one hardcoding its own copy.
+    """
+    category_values = await load_category_values(session)
+    groups = await load_property_type_groups(session)
+    loan_types = await load_loan_types(session)
+    return {
+        **{
+            category: [CategoryOptionOut(value=value, label=label) for value, label in options]
+            for category, options in category_values.items()
+        },
+        "loan_type": [CategoryOptionOut(value=value, label=label) for value, label in loan_types],
+        "property_type_groups": [PropertyTypeGroupOut(**g) for g in groups],
+    }
+
+
 @explore_router.post("/banks", response_model=ExploreResponseOut, tags=["explore"])
 async def explore_banks(
     filters: ExploreFiltersIn,
     repository: Annotated[LenderRepository, Depends(get_lender_repository)],
+    session: Annotated[AsyncSession, Depends(get_db)],
 ) -> ExploreResponseOut:
     products = await repository.list_products()
     filter_map = {category: getattr(filters, category) for category in FILTERABLE_CATEGORIES}
+    category_values = await load_category_values(session)
 
     matched = filter_products(products, filter_map)
-    facets = facet_counts(products, filter_map)
+    facets = facet_counts(products, filter_map, category_values)
 
     return ExploreResponseOut(
         results=[_to_out(p, filters) for p in matched],

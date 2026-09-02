@@ -1,10 +1,9 @@
 "use client";
 
-import type { ExploreFilters, ExploreResponse, FilterCategory } from "@/lib/api/explore";
+import type { ExploreFilters, ExploreResponse, FilterCategory, PropertyTypeGroup } from "@/lib/api/explore";
 
 import { AffordabilityForm } from "./AffordabilityForm";
 import { FilterGroup } from "./FilterGroup";
-import { PROPERTY_TYPE_GROUPS } from "./propertyTypeGroups";
 
 const CATEGORY_TITLES: Record<FilterCategory, string> = {
   employment_type: "Employment / Income Type",
@@ -26,6 +25,7 @@ const CATEGORIES_AFTER_AFFORDABILITY: FilterCategory[] = [
 interface FilterSidebarProps {
   filters: ExploreFilters;
   facets: ExploreResponse["facets"] | null;
+  propertyTypeGroups: PropertyTypeGroup[];
   activeCount: number;
   // Whether to show the "Clear filters" button — true whenever *anything*
   // is set, not just category checkboxes (activeCount alone would hide the
@@ -47,6 +47,7 @@ interface FilterSidebarProps {
 export function FilterSidebar({
   filters,
   facets,
+  propertyTypeGroups,
   activeCount,
   showClear,
   onToggle,
@@ -107,7 +108,7 @@ export function FilterSidebar({
             options={facets?.[category] ?? []}
             selected={filters[category]}
             onToggle={(value) => onToggle(category, value)}
-            subgroups={category === "property_type" ? PROPERTY_TYPE_GROUPS : undefined}
+            subgroups={category === "property_type" ? propertyTypeGroups : undefined}
           />
         ))}
       </div>

@@ -171,6 +171,31 @@ class BankBiasFactModel(Base):
     value: Mapped[str] = mapped_column(String(255))
 
 
+class CategoryOptionModel(Base):
+    """The allowed values for a filterable category (employment_type,
+    property_type, property_usage, property_stage, property_location) — see
+    app/explore.py's FILTERABLE_CATEGORIES for the fixed set of categories
+    themselves. Splitting this out of hardcoded Python constants means an
+    admin can add a brand new value (e.g. a new employment type, or a new
+    property type under an existing classification) from the admin UI
+    without a code change or redeploy — the borrower-facing filter sidebar
+    and every admin form pick it up automatically since both read this table
+    at request time. `group_heading` is only used by property_type, whose 14
+    values are shown under sub-headings (Residential/Commercial/...) in the
+    sidebar; null for every other category.
+    """
+
+    __tablename__ = "category_options"
+    __table_args__ = (UniqueConstraint("category_key", "value", name="uq_category_option"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    category_key: Mapped[str] = mapped_column(String(40), index=True)
+    value: Mapped[str] = mapped_column(String(80))
+    label: Mapped[str] = mapped_column(String(120))
+    group_heading: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    sort_order: Mapped[int] = mapped_column(default=0, server_default="0")
+
+
 async def create_all_tables() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

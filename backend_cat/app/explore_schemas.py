@@ -68,3 +68,13 @@ class ExploreResponseOut(BaseModel):
 class LiveRateOut(BaseModel):
     bank_name: str
     rate_pct: float
+
+
+class CategoryOptionOut(BaseModel):
+    value: str
+    label: str
+
+
+class PropertyTypeGroupOut(BaseModel):
+    heading: str
+    values: list[str]

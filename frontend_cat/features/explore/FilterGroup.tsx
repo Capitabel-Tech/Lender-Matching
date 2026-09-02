@@ -93,6 +93,32 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups }: F
               </div>
             );
           })}
+          {/* Safety net: a value the backend returns but that isn't in any
+              known sub-group yet (e.g. an admin just added it and the
+              grouping data hasn't caught up) still shows up here instead of
+              silently vanishing from the sidebar. */}
+          {(() => {
+            const grouped = new Set(subgroups.flatMap((g) => g.values));
+            const ungrouped = options.filter((o) => !grouped.has(o.value));
+            if (ungrouped.length === 0) return null;
+            return (
+              <div>
+                <p className="mb-1 px-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Other
+                </p>
+                <div className="flex flex-col">
+                  {ungrouped.map((option) => (
+                    <OptionRow
+                      key={option.value}
+                      option={option}
+                      checked={selected.includes(option.value)}
+                      onToggle={onToggle}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       ) : (
         <div className="flex flex-col">

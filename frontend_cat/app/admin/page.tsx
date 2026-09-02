@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 
 import { BanksSection } from "@/features/admin/BanksSection";
 import { BiasSection } from "@/features/admin/BiasSection";
+import { CategoriesSection } from "@/features/admin/CategoriesSection";
 import { useAuth } from "@/lib/useAuth";
 
 export default function AdminDashboardPage() {
   const { user, loading, logout, getToken } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<"banks" | "bias">("banks");
+  const [tab, setTab] = useState<"banks" | "bias" | "categories">("banks");
 
   useEffect(() => {
     if (!loading && !user) router.push("/admin/login");
@@ -63,9 +64,23 @@ export default function AdminDashboardPage() {
           >
             Relationships
           </button>
+          <button
+            onClick={() => setTab("categories")}
+            className={`px-4 py-2 text-sm font-medium ${
+              tab === "categories" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+            }`}
+          >
+            Categories
+          </button>
         </div>
 
-        {tab === "banks" ? <BanksSection getToken={getToken} /> : <BiasSection getToken={getToken} />}
+        {tab === "banks" ? (
+          <BanksSection getToken={getToken} />
+        ) : tab === "bias" ? (
+          <BiasSection getToken={getToken} />
+        ) : (
+          <CategoriesSection getToken={getToken} />
+        )}
       </div>
     </div>
   );

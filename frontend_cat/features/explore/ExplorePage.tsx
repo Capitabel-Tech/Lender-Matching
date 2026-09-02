@@ -7,9 +7,11 @@ import {
   EMPTY_FILTERS,
   FILTER_CATEGORIES,
   exploreBanks,
+  fetchCategories,
   type ExploreFilters,
   type ExploreResponse,
   type FilterCategory,
+  type PropertyTypeGroup,
 } from "@/lib/api/explore";
 
 import { EmptyState } from "./EmptyState";
@@ -27,6 +29,11 @@ export function ExplorePage() {
   const [data, setData] = useState<ExploreResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // property_type's sub-headings (Residential/Commercial/...) — fetched
+  // once rather than hardcoded, so a category value an admin adds shows up
+  // in the sidebar without a frontend redeploy. Empty until it loads, which
+  // just means the grouping isn't applied yet for that first render.
+  const [propertyTypeGroups, setPropertyTypeGroups] = useState<PropertyTypeGroup[]>([]);
 
   // Not sent to the backend — it doesn't affect which banks match, only
   // whether each bank's card shows a shortfall note (see ResultsList),
@@ -82,6 +89,21 @@ export function ExplorePage() {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragging]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchCategories()
+      .then((categories) => {
+        if (!cancelled) setPropertyTypeGroups(categories.property_type_groups);
+      })
+      .catch(() => {
+        // Non-fatal — the sidebar just falls back to an ungrouped flat list
+        // for property_type until this succeeds (see FilterGroup).
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -162,6 +184,7 @@ export function ExplorePage() {
         <FilterSidebar
           filters={filters}
           facets={data?.facets ?? null}
+          propertyTypeGroups={propertyTypeGroups}
           activeCount={activeCount}
           showClear={hasAnyInput}
           onToggle={toggleFilter}

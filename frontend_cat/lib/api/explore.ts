@@ -80,3 +80,30 @@ export interface LiveRate {
 export function fetchLiveRates(): Promise<LiveRate[]> {
   return apiGet<LiveRate[]>("/api/v1/explore/live-rates");
 }
+
+export interface CategoryOption {
+  value: string;
+  label: string;
+}
+
+export interface PropertyTypeGroup {
+  heading: string;
+  values: string[];
+}
+
+export interface CategoriesResponse extends Record<FilterCategory, CategoryOption[]> {
+  property_type_groups: PropertyTypeGroup[];
+  // Admin-only category (Home Loan, Education Loan, ...) — not a borrower
+  // filter, see backend_cat/app/explore.py's ADMIN_ONLY_CATEGORIES.
+  loan_type: CategoryOption[];
+}
+
+// The current, real set of allowed values per filter category, plus
+// property_type's grouping — public (no admin login needed), same status as
+// live-rates above. See backend_cat/app/explore_api.py's list_categories.
+// Both the borrower sidebar and the admin's product-editing form fetch this
+// instead of hardcoding their own copy of the option lists, so a value an
+// admin adds shows up in both places immediately, no redeploy needed.
+export function fetchCategories(): Promise<CategoriesResponse> {
+  return apiGet<CategoriesResponse>("/api/v1/explore/categories");
+}

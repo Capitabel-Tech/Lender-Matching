@@ -1,24 +1,28 @@
-// Mirrors backend/app/admin_schemas.py and backend/app/admin_api.py.
+// Mirrors backend_cat/app/admin_schemas.py and backend_cat/app/admin_api.py.
 
 import { ApiError } from "./client";
-import type { DocumentType, EmploymentType, PropertyType } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
+// Employment type is a plain string, not a fixed union — the real, current
+// set of allowed values lives in the category_options table and is fetched
+// at runtime via lib/api/explore.ts's fetchCategories (see lib/useCategories),
+// specifically so an admin can add a new employment type from the "Manage
+// categories" screen without a frontend code change.
 export interface AdminProductDetail {
-  employment_type: EmploymentType;
-  min_cibil: number;
-  max_cibil: number;
-  min_loan_amount: number;
-  max_loan_amount: number;
-  income_threshold: number;
-  documents_accepted: DocumentType[];
-  property_types_accepted: PropertyType[];
+  employment_type: string;
+  // Which loan product this is (Home Loan, Education Loan, ...) — admin
+  // organization only for now, see lib/api/explore.ts's CategoriesResponse.loan_type.
+  loan_type: string;
+  property_type: string[];
+  property_usage: string[];
+  property_stage: string[];
+  property_location: string[];
+  foir_pct: number | null;
+  max_tenure_years: number | null;
   interest_rate_pct: number;
-  interest_rate_range: string;
-  processing_fee: string;
-  lender_type: string;
-  co_borrower_required: boolean;
+  interest_rate_upper_pct: number | null;
+  interest_rate_is_estimated: boolean;
 }
 
 export interface AdminProductOut extends AdminProductDetail {
@@ -28,7 +32,7 @@ export interface AdminProductOut extends AdminProductDetail {
 export interface AdminBankSummary {
   bank_name: string;
   source: string;
-  employment_types: EmploymentType[];
+  employment_types: string[];
 }
 
 export interface AdminBiasIn {
@@ -38,6 +42,16 @@ export interface AdminBiasIn {
 
 export interface AdminBiasOut extends AdminBiasIn {
   bank_name: string;
+}
+
+export interface AdminCategoryOptionIn {
+  value: string;
+  label: string;
+  group_heading: string | null;
+}
+
+export interface AdminCategoryOptionOut extends AdminCategoryOptionIn {
+  category_key: string;
 }
 
 async function adminRequest<TResponse>(
@@ -65,6 +79,8 @@ async function adminRequest<TResponse>(
 export const adminApi = {
   listBanks: (token: string) => adminRequest<AdminBankSummary[]>("/api/v1/admin/banks", token),
 
+  listAllProducts: (token: string) => adminRequest<AdminProductOut[]>("/api/v1/admin/products", token),
+
   getBankProducts: (token: string, bankName: string) =>
     adminRequest<AdminProductOut[]>(`/api/v1/admin/banks/${encodeURIComponent(bankName)}/products`, token),
 
@@ -74,17 +90,19 @@ export const adminApi = {
       body: detail,
     }),
 
-  updateBankProduct: (token: string, bankName: string, employmentType: string, detail: AdminProductDetail) =>
+  updateBankProduct: (token: string, bankName: string, loanType: string, employmentType: string, detail: AdminProductDetail) =>
     adminRequest<AdminProductOut>(
-      `/api/v1/admin/banks/${encodeURIComponent(bankName)}/products/${employmentType}`,
+      `/api/v1/admin/banks/${encodeURIComponent(bankName)}/products/${encodeURIComponent(loanType)}/${employmentType}`,
       token,
       { method: "PUT", body: detail },
     ),
 
-  deleteBankProduct: (token: string, bankName: string, employmentType: string) =>
-    adminRequest<void>(`/api/v1/admin/banks/${encodeURIComponent(bankName)}/products/${employmentType}`, token, {
-      method: "DELETE",
-    }),
+  deleteBankProduct: (token: string, bankName: string, loanType: string, employmentType: string) =>
+    adminRequest<void>(
+      `/api/v1/admin/banks/${encodeURIComponent(bankName)}/products/${encodeURIComponent(loanType)}/${employmentType}`,
+      token,
+      { method: "DELETE" },
+    ),
 
   deleteBank: (token: string, bankName: string) =>
     adminRequest<void>(`/api/v1/admin/banks/${encodeURIComponent(bankName)}`, token, { method: "DELETE" }),
@@ -99,4 +117,17 @@ export const adminApi = {
 
   deleteBias: (token: string, bankName: string) =>
     adminRequest<void>(`/api/v1/admin/bias/${encodeURIComponent(bankName)}`, token, { method: "DELETE" }),
+
+  addCategoryOption: (token: string, categoryKey: string, option: AdminCategoryOptionIn) =>
+    adminRequest<AdminCategoryOptionOut>(`/api/v1/admin/categories/${encodeURIComponent(categoryKey)}`, token, {
+      method: "POST",
+      body: option,
+    }),
+
+  deleteCategoryOption: (token: string, categoryKey: string, value: string) =>
+    adminRequest<void>(
+      `/api/v1/admin/categories/${encodeURIComponent(categoryKey)}/${encodeURIComponent(value)}`,
+      token,
+      { method: "DELETE" },
+    ),
 };
