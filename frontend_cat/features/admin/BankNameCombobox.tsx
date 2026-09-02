@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 
 import { adminApi } from "@/lib/api/admin";
 
-const MAX_SUGGESTIONS = 8;
+// Only caps the initial, nothing-typed-yet list — once the admin is
+// actually searching, every match should show (the list scrolls, so there's
+// no real reason to hide results past a fixed count while typing).
+const MAX_BROWSE_SUGGESTIONS = 8;
 
 export function BankNameCombobox({
   value,
@@ -38,8 +41,8 @@ export function BankNameCombobox({
 
   const query = value.trim().toLowerCase();
   const suggestions = query
-    ? (banks ?? []).filter((name) => name.toLowerCase().includes(query)).slice(0, MAX_SUGGESTIONS)
-    : (banks ?? []).slice(0, MAX_SUGGESTIONS);
+    ? (banks ?? []).filter((name) => name.toLowerCase().includes(query))
+    : (banks ?? []).slice(0, MAX_BROWSE_SUGGESTIONS);
 
   return (
     <div className="relative">
@@ -48,11 +51,11 @@ export function BankNameCombobox({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        placeholder="e.g. SBI, or search Ambak's lender list…"
+        placeholder="e.g. SBI, or search the lender list…"
         className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
       />
       <p className="mt-1 text-xs text-zinc-400">
-        Pick from Ambak&rsquo;s lender list where you can (keeps daily rate updates matching), or just type any name.
+        Pick from the suggested list where you can, or just type any name.
       </p>
       {open && suggestions.length > 0 && (
         <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
