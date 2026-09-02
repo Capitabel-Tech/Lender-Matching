@@ -1,13 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { adminApi } from "@/lib/api/admin";
-
-// Only caps the initial, nothing-typed-yet list — once the admin is
-// actually searching, every match should show (the list scrolls, so there's
-// no real reason to hide results past a fixed count while typing).
-const MAX_BROWSE_SUGGESTIONS = 8;
 
 export function BankNameCombobox({
   value,
@@ -20,6 +15,7 @@ export function BankNameCombobox({
 }) {
   const [banks, setBanks] = useState<string[] | null>(null);
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,13 +36,14 @@ export function BankNameCombobox({
   }, [getToken]);
 
   const query = value.trim().toLowerCase();
-  const suggestions = query
-    ? (banks ?? []).filter((name) => name.toLowerCase().includes(query))
-    : (banks ?? []).slice(0, MAX_BROWSE_SUGGESTIONS);
+  // Every match shows, always — no arbitrary cap. The list scrolls
+  // (max-h-56 overflow-y-auto below) instead of hiding results.
+  const suggestions = query ? (banks ?? []).filter((name) => name.toLowerCase().includes(query)) : (banks ?? []);
 
   return (
     <div className="relative">
       <input
+        ref={inputRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setOpen(true)}
@@ -55,9 +52,9 @@ export function BankNameCombobox({
         className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
       />
       <p className="mt-1 text-xs text-zinc-400">
-        Pick from the suggested list where you can, or just type any name.
+        Pick from the suggested list where you can, or choose &ldquo;Other&rdquo; to type any name.
       </p>
-      {open && suggestions.length > 0 && (
+      {open && (
         <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
           {suggestions.map((name) => (
             <li key={name}>
@@ -76,6 +73,22 @@ export function BankNameCombobox({
               </button>
             </li>
           ))}
+          {suggestions.length === 0 && (
+            <li className="px-3 py-1.5 text-sm text-zinc-400">No matches — try &ldquo;Other&rdquo; below.</li>
+          )}
+          <li className="border-t border-zinc-200 dark:border-zinc-700">
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setOpen(false);
+                inputRef.current?.focus();
+              }}
+              className="block w-full px-3 py-1.5 text-left text-sm font-medium text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+            >
+              Other — type the bank&rsquo;s name
+            </button>
+          </li>
         </ul>
       )}
     </div>
