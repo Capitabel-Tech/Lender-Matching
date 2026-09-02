@@ -26,7 +26,7 @@ Loaded from the Birbal reference lender dataset — see app/load_birbal_dataset.
 
 from collections.abc import AsyncIterator
 
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -138,8 +138,11 @@ class EligibilityRuleModel(Base):
     attribute_id: Mapped[int] = mapped_column(ForeignKey("attributes.id"))
     # one of: ">=", "<=", "==", "required", "in", "fact", "any_of", "between" (see domain.py's RuleOperator)
     operator: Mapped[str] = mapped_column(String(10))
-    # always stored as text; parsed according to the attribute's data_type
-    value: Mapped[str] = mapped_column(String(255))
+    # always stored as text; parsed according to the attribute's data_type.
+    # Unbounded — an "in" rule joins every selected value with commas (e.g.
+    # property_type has 14 possible values), which comfortably exceeds a
+    # fixed varchar(255) once most or all of them are picked.
+    value: Mapped[str] = mapped_column(Text)
 
     product: Mapped["HomeLoanProductModel"] = relationship(back_populates="rules")
     attribute: Mapped["AttributeModel"] = relationship(back_populates="rules")
