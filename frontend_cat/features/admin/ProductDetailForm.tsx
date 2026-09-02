@@ -268,7 +268,7 @@ export function ProductDetailForm({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="flex gap-3">
+      <div className="flex justify-end gap-3">
         <button
           type="submit"
           disabled={saving}
