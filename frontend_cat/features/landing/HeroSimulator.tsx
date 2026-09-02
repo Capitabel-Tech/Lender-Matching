@@ -1,12 +1,20 @@
 "use client";
 
+import { Fraunces } from "next/font/google";
 import { useEffect, useMemo, useState } from "react";
 
 import { EMPTY_FILTERS, exploreBanks, type LiveRate } from "@/lib/api/explore";
 
+const fraunces = Fraunces({ subsets: ["latin"], weight: ["600"] });
+
 const TENURE_OPTIONS = [5, 10, 15, 20, 25, 30] as const;
 const MIN_LOAN = 500_000;
 const MAX_LOAN = 20_000_000;
+
+// A handful of distinct colors to tell the icon squares apart, since we
+// have no real bank logos to show — cycled by position, not tied to any
+// specific bank.
+const ICON_COLORS = ["bg-rose-600", "bg-teal-600", "bg-indigo-600", "bg-amber-600"];
 
 // Standard reducing-balance EMI formula — the same shape as
 // backend_cat/app/domain.py's calculate_max_emi, run in reverse (given a
@@ -31,11 +39,12 @@ interface BankRow {
   maxEmi: number | null; // FOIR-based ceiling — only known once income is entered
 }
 
-function BankAvatar({ name }: { name: string }) {
-  // A stand-in for a real bank logo (which we don't have) — a colored
-  // initial, same idea as the tool's own bank cards.
+function BankIcon({ name, index }: { name: string; index: number }) {
+  // A stand-in for a real bank logo (which we don't have).
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-900 text-sm font-bold text-teal-200">
+    <span
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white ${ICON_COLORS[index % ICON_COLORS.length]}`}
+    >
       {name.charAt(0)}
     </span>
   );
@@ -100,21 +109,21 @@ export function HeroSimulator({ initialRates }: { initialRates: LiveRate[] }) {
   return (
     <div className="grid items-center gap-10 lg:grid-cols-2">
       <div className="flex flex-col gap-6">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-teal-700/30 bg-teal-50 px-3 py-1 text-xs font-bold text-teal-800 dark:border-teal-400/30 dark:bg-teal-950/40 dark:text-teal-300">
+        <span className="inline-flex w-fit items-center gap-2 rounded-full bg-teal-100 px-3 py-1 text-xs font-bold text-teal-800 dark:bg-teal-950/40 dark:text-teal-300">
           <span className="h-1.5 w-1.5 rounded-full bg-teal-600" />
           Live rates, checked daily
         </span>
-        <h1 className="text-4xl font-extrabold leading-[1.15] tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
-          Stop applying blind. Match with lenders you actually qualify for.
+        <h1 className={`${fraunces.className} text-4xl leading-[1.2] text-zinc-900 dark:text-zinc-50 sm:text-[2.75rem]`}>
+          Stop applying blind. Match with lenders whose eligibility rules you actually meet.
         </h1>
         <p className="max-w-md text-base text-zinc-500 dark:text-zinc-400">
-          We check FOIR, live interest rates, and your eligibility across every lender instantly — no credit inquiry,
-          no guesswork.
+          We compare FOIR, live rate cards, and your eligibility across {initialRates.length || "every"} lenders
+          instantly.
         </p>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="hero-income" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            Enter your monthly income
+        <div className="flex max-w-sm flex-col gap-1.5">
+          <label htmlFor="hero-income" className="text-sm text-zinc-600 dark:text-zinc-300">
+            Enter Your Monthly Income
           </label>
           <input
             id="hero-income"
@@ -122,25 +131,24 @@ export function HeroSimulator({ initialRates }: { initialRates: LiveRate[] }) {
             value={incomeInput}
             onChange={(e) => setIncomeInput(e.target.value)}
             placeholder="e.g. ₹80,000"
-            className="w-full max-w-xs rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base outline-none focus:border-teal-600 dark:border-zinc-700 dark:bg-zinc-900"
+            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base outline-none focus:border-teal-600 dark:border-zinc-700 dark:bg-zinc-900"
           />
+          <a
+            href={exploreHref}
+            className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-800 px-6 py-3.5 text-base font-semibold text-white hover:bg-teal-900"
+          >
+            Check My Match (Free & No Credit Impact) →
+          </a>
         </div>
-
-        <a
-          href={exploreHref}
-          className="inline-flex w-fit items-center gap-2 rounded-full bg-zinc-900 px-6 py-3.5 text-base font-bold text-white hover:bg-zinc-800 dark:bg-teal-600 dark:hover:bg-teal-500"
-        >
-          Check My Matches (Free & No Credit Impact) →
-        </a>
       </div>
 
-      <div className="flex flex-col gap-5 rounded-3xl border border-zinc-900/5 bg-white p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)] dark:border-white/5 dark:bg-zinc-900 sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Interactive simulator</p>
+      <div className="flex flex-col gap-5 rounded-3xl border border-zinc-900/5 bg-white p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)] dark:border-white/5 dark:bg-zinc-900 sm:p-7">
+        <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Interactive Simulator Panel</p>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-zinc-600 dark:text-zinc-300">Loan amount</span>
-            <span className="font-bold text-zinc-900 dark:text-zinc-50">{rupees(loanAmount)}</span>
+            <span className="text-zinc-600 dark:text-zinc-300">Loan Amount</span>
+            <span className="font-bold text-zinc-900 dark:text-zinc-50">₹ {loanAmount.toLocaleString("en-IN")}</span>
           </div>
           <input
             type="range"
@@ -149,12 +157,12 @@ export function HeroSimulator({ initialRates }: { initialRates: LiveRate[] }) {
             step={100_000}
             value={loanAmount}
             onChange={(e) => setLoanAmount(Number(e.target.value))}
-            className="w-full accent-teal-600"
+            className="w-full accent-teal-700"
           />
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">Tenure</span>
+          <span className="text-sm text-zinc-600 dark:text-zinc-300">Tenure</span>
           <select
             value={tenureYears}
             onChange={(e) => setTenureYears(Number(e.target.value))}
@@ -168,36 +176,51 @@ export function HeroSimulator({ initialRates }: { initialRates: LiveRate[] }) {
           </select>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-          <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">
-            Top matched lenders {checking && "· checking…"}
-          </p>
+        <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              Top Matched Lenders {checking && <span className="font-normal text-zinc-400">· checking…</span>}
+            </p>
+            <a href={exploreHref} className="text-xs font-semibold text-teal-700 hover:underline dark:text-teal-400">
+              View Match
+            </a>
+          </div>
           {topBanks.length === 0 && <p className="text-sm text-zinc-400">Loading live rates…</p>}
-          {topBanks.map((bank) => {
-            const emi = computeEmi(loanAmount, bank.ratePct, tenureYears);
-            const fits = bank.maxEmi !== null ? emi <= bank.maxEmi : null;
-            return (
-              <div
-                key={bank.bankName}
-                className="flex items-center gap-3 rounded-xl border border-zinc-100 px-3 py-2.5 dark:border-zinc-800"
-              >
-                <BankAvatar name={bank.bankName} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">{bank.bankName}</p>
-                  <p className="text-xs text-zinc-400">
-                    {rupees(emi)}/mo
-                    {fits !== null && (
-                      <span className={fits ? "text-teal-600 dark:text-teal-400" : "text-amber-600 dark:text-amber-400"}>
-                        {" "}
-                        · {fits ? "fits your income" : "over your FOIR limit"}
-                      </span>
-                    )}
-                  </p>
+          <div className="grid grid-cols-2 gap-2.5">
+            {topBanks.map((bank, i) => {
+              const emi = computeEmi(loanAmount, bank.ratePct, tenureYears);
+              const fits = bank.maxEmi !== null ? emi <= bank.maxEmi : null;
+              return (
+                <div
+                  key={bank.bankName}
+                  className={`flex flex-col gap-1.5 rounded-xl border p-3 ${
+                    fits === false
+                      ? "border-amber-200 bg-amber-50/60 dark:border-amber-900 dark:bg-amber-950/20"
+                      : "border-zinc-100 dark:border-zinc-800"
+                  } ${i === topBanks.length - 1 && topBanks.length % 2 === 1 ? "col-span-2" : ""}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <BankIcon name={bank.bankName} index={i} />
+                    <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">{bank.bankName}</p>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {rupees(emi)}/mo
+                      {fits !== null && (
+                        <span className={fits ? "text-teal-600 dark:text-teal-400" : "text-amber-600 dark:text-amber-400"}>
+                          {" "}
+                          · {fits ? "fits" : "over FOIR"}
+                        </span>
+                      )}
+                    </p>
+                    <span className="text-base font-bold text-teal-700 dark:text-teal-400">
+                      {bank.ratePct.toFixed(2)}%
+                    </span>
+                  </div>
                 </div>
-                <span className="text-lg font-bold text-teal-600 dark:text-teal-400">{bank.ratePct.toFixed(2)}%</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
