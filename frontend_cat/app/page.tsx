@@ -89,7 +89,7 @@ export default async function Landing() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2">
           <div className="flex flex-col gap-7">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#00D6C9]">
-              AI-Powered Lender Matching Engine
+              Rule-Based Lender Matching Engine
             </p>
             <h1 className="text-[48px] font-bold leading-[1.05] tracking-tight sm:text-[64px] lg:text-[76px]">
               One profile.
