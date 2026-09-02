@@ -343,29 +343,19 @@ export function ResultsList({
   total,
   loading,
   requestedLoanAmount,
-  onClear,
 }: {
   results: ExploreProduct[];
   total: number;
   loading: boolean;
   requestedLoanAmount: number | null;
-  onClear: () => void;
 }) {
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="flex items-baseline justify-between gap-2 border-b-2 border-zinc-900 pb-3 dark:border-zinc-100">
-        <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-black text-zinc-900 dark:text-zinc-50">{loading ? "…" : total}</span>
-          <span className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            {loading ? "Loading" : `Result${total === 1 ? "" : "s"}`}
-          </span>
-        </div>
-        <button
-          onClick={onClear}
-          className="rounded-full border border-teal-600 px-3 py-1 text-sm font-bold text-teal-700 hover:bg-teal-50 dark:border-teal-500 dark:text-teal-400 dark:hover:bg-teal-950/40"
-        >
-          Clear filters
-        </button>
+      <div className="flex items-baseline gap-2 border-b-2 border-zinc-900 pb-3 dark:border-zinc-100">
+        <span className="text-2xl font-black text-zinc-900 dark:text-zinc-50">{loading ? "…" : total}</span>
+        <span className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          {loading ? "Loading" : `Result${total === 1 ? "" : "s"}`}
+        </span>
       </div>
 
       {!loading && results.length === 0 && (

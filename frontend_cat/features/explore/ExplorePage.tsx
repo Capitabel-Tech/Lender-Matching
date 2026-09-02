@@ -224,7 +224,6 @@ export function ExplorePage() {
               total={data?.total ?? 0}
               loading={loading}
               requestedLoanAmount={requestedLoanAmount}
-              onClear={clearFilters}
             />
           )}
         </div>
