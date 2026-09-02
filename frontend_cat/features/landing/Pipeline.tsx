@@ -1,4 +1,8 @@
-const STAGES = ["Borrower Profile", "Rule Engine", "Lender Policies", "Match Score", "Best Options"];
+// "Eligibility Filter", not "Match Score" — the live tool doesn't compute
+// or show a numeric score, it filters to lenders whose rules the borrower
+// actually meets (see features/explore/ResultsList.tsx: results are
+// grouped by employment type, not ranked by fit).
+const STAGES = ["Borrower Profile", "Rule Engine", "Lender Policies", "Eligibility Filter", "Best Options"];
 
 // A horizontal data pipeline — each segment carries a small glowing dot
 // that loops along it, staggered so the flow reads left-to-right.
