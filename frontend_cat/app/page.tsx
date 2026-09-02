@@ -129,9 +129,9 @@ export default async function Landing() {
       <section className="border-t border-white/[0.06] bg-[#08141D] px-6 py-20 sm:px-10">
         <Reveal className="mx-auto flex max-w-5xl flex-col gap-12">
           <h2 className="text-center text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
-            One borrower. Hundreds of rules.
+            One borrower. Intelligent lender matching.
             <br />
-            One intelligent match.
+            One clear result.
           </h2>
           <Pipeline />
         </Reveal>
