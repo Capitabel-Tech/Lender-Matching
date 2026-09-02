@@ -54,17 +54,17 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
           const data = await adminApi.getBankProducts(token, view.bankName);
           if (cancelled) return;
           setBankProducts(data);
-          // Only one loan type exists for this bank (true for every bank
-          // today, since Home Loan is the only one anyone's added) —
-          // there's nothing meaningful to choose, so skip straight to its
-          // employment types instead of making the admin click through an
-          // extra screen that only ever has one option on it.
-          if (view.name === "bank") {
-            const loanTypes = [...new Set(data.map((p) => p.loan_type))];
-            if (loanTypes.length === 1) {
-              setView({ name: "loan-type", bankName: view.bankName, loanType: loanTypes[0] });
-              return;
-            }
+          // Only one loan type exists anywhere (see the Categories tab) —
+          // there's nothing meaningful to choose between, so skip straight
+          // to it instead of making the admin click through an extra screen
+          // that only ever has one option on it. Keyed off the global
+          // category list, not this bank's own products, so a bank with
+          // zero products yet still gets the real picker once a second loan
+          // type (e.g. Education Loan) exists for anyone to add.
+          if (view.name === "bank" && categories && categories.loan_type.length <= 1) {
+            const loanType = categories.loan_type[0]?.value ?? "home_loan";
+            setView({ name: "loan-type", bankName: view.bankName, loanType });
+            return;
           }
         }
         if (!cancelled) setError(null);
@@ -144,11 +144,6 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
 
   const loanLabelFor = (value: string) => categories?.loan_type.find((t) => t.value === value)?.label ?? value;
   const employmentLabelFor = (value: string) => categories?.employment_type.find((t) => t.value === value)?.label ?? value;
-
-  // Only meaningful once bankProducts reflects the bank currently in view.
-  const missingLoanTypes = (categories?.loan_type ?? []).filter(
-    (t) => !bankProducts?.some((p) => p.loan_type === t.value),
-  );
 
   if (!categories) {
     return <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>;
@@ -258,9 +253,6 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   }
 
   if (view.name === "bank") {
-    // Group this bank's products by loan type — every product always has
-    // one (defaults to "home_loan" server-side, see admin_schemas.py).
-    const loanTypesPresent = [...new Set(bankProducts?.map((p) => p.loan_type) ?? [])];
     return (
       <div className="flex flex-col gap-4">
         <button onClick={() => setView({ name: "list" })} className="w-fit text-sm text-zinc-500 hover:underline">
@@ -278,7 +270,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
         </div>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">Select the loan type to view or update its details.</p>
         <div className="flex flex-col gap-3">
-          {loanTypesPresent.map((loanType) => {
+          {categories.loan_type.map(({ value: loanType }) => {
             const count = bankProducts?.filter((p) => p.loan_type === loanType).length ?? 0;
             return (
               <div
@@ -288,7 +280,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
                 <div>
                   <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{loanLabelFor(loanType)}</p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {count} employment type{count === 1 ? "" : "s"}
+                    {count === 0 ? "No employment types yet" : `${count} employment type${count === 1 ? "" : "s"}`}
                   </p>
                 </div>
                 <button
@@ -300,20 +292,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
               </div>
             );
           })}
-          {loanTypesPresent.length === 0 && (
-            <p className="rounded-xl border border-dashed border-zinc-300 p-4 text-center text-sm text-zinc-400 dark:border-zinc-700">
-              No loan products yet for {view.bankName}.
-            </p>
-          )}
         </div>
-        {missingLoanTypes.length > 0 && (
-          <button
-            onClick={() => setView({ name: "add-loan-type", bankName: view.bankName, isNewBank: false })}
-            className="w-fit rounded-lg border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-          >
-            + Add a new loan type
-          </button>
-        )}
       </div>
     );
   }
@@ -323,16 +302,15 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
     const missingEmploymentTypes = categories.employment_type.filter(
       (t) => !productsInLoanType.some((p) => p.employment_type === t.value),
     );
-    // Going "back" to a single-loan-type bank's selection screen would just
+    // Going "back" to a single-loan-type selection screen would just
     // auto-skip forward again (see the effect above) — go all the way back
     // to the bank list instead so the button actually does something.
-    const loanTypeCount = new Set(bankProducts?.map((p) => p.loan_type)).size;
-    const goBack = () =>
-      setView(loanTypeCount <= 1 ? { name: "list" } : { name: "bank", bankName: view.bankName });
+    const onlyOneLoanType = categories.loan_type.length <= 1;
+    const goBack = () => setView(onlyOneLoanType ? { name: "list" } : { name: "bank", bankName: view.bankName });
     return (
       <div className="flex flex-col gap-4">
         <button onClick={goBack} className="w-fit text-sm text-zinc-500 hover:underline">
-          ← Back to {loanTypeCount <= 1 ? "banks" : view.bankName}
+          ← Back to {onlyOneLoanType ? "banks" : view.bankName}
         </button>
         {errorBanner}
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
@@ -394,7 +372,6 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
     // created anything — so there's no real "bank" screen to go back to
     // yet. Route back to the bank list instead of a lookup that will 404.
     const goBack = () => setView(view.isNewBank ? { name: "list" } : { name: "bank", bankName: view.bankName });
-    const loanTypeOptions = view.isNewBank ? categories.loan_type : missingLoanTypes;
     return (
       <div className="flex flex-col gap-4">
         <button onClick={goBack} className="w-fit text-sm text-zinc-500 hover:underline">
@@ -405,7 +382,6 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
         <ProductDetailForm
           categories={categories}
           submitLabel="Add product"
-          loanTypeOptions={loanTypeOptions}
           onCancel={goBack}
           onSubmit={(detail) => handleCreate(view.bankName, detail.loan_type, detail)}
         />
