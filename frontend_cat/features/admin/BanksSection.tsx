@@ -51,7 +51,20 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
           if (!cancelled) setBanks(data);
         } else if (view.name === "bank" || view.name === "loan-type") {
           const data = await adminApi.getBankProducts(token, view.bankName);
-          if (!cancelled) setBankProducts(data);
+          if (cancelled) return;
+          setBankProducts(data);
+          // Only one loan type exists for this bank (true for every bank
+          // today, since Home Loan is the only one anyone's added) —
+          // there's nothing meaningful to choose, so skip straight to its
+          // employment types instead of making the admin click through an
+          // extra screen that only ever has one option on it.
+          if (view.name === "bank") {
+            const loanTypes = [...new Set(data.map((p) => p.loan_type))];
+            if (loanTypes.length === 1) {
+              setView({ name: "loan-type", bankName: view.bankName, loanType: loanTypes[0] });
+              return;
+            }
+          }
         }
         if (!cancelled) setError(null);
       } catch (err) {
@@ -314,13 +327,16 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
     const missingEmploymentTypes = categories.employment_type.filter(
       (t) => !productsInLoanType.some((p) => p.employment_type === t.value),
     );
+    // Going "back" to a single-loan-type bank's selection screen would just
+    // auto-skip forward again (see the effect above) — go all the way back
+    // to the bank list instead so the button actually does something.
+    const loanTypeCount = new Set(bankProducts?.map((p) => p.loan_type)).size;
+    const goBack = () =>
+      setView(loanTypeCount <= 1 ? { name: "list" } : { name: "bank", bankName: view.bankName });
     return (
       <div className="flex flex-col gap-4">
-        <button
-          onClick={() => setView({ name: "bank", bankName: view.bankName })}
-          className="w-fit text-sm text-zinc-500 hover:underline"
-        >
-          ← Back to {view.bankName}
+        <button onClick={goBack} className="w-fit text-sm text-zinc-500 hover:underline">
+          ← Back to {loanTypeCount <= 1 ? "banks" : view.bankName}
         </button>
         {errorBanner}
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
