@@ -8,7 +8,18 @@ export const metadata: Metadata = {
   description: "Browse the loaded bank data by employment type and property filters.",
 };
 
-export default function Explore() {
+export default async function Explore({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  // Carries over the income someone already typed into the landing page's
+  // simulator (see features/landing/HeroSimulator.tsx's "Explore Lenders"
+  // link), so it doesn't have to be re-entered here.
+  const incomeParam = (await searchParams).income;
+  const income = typeof incomeParam === "string" ? Number(incomeParam) : NaN;
+  const initialMonthlyIncome = Number.isFinite(income) && income > 0 ? income : undefined;
+
   return (
     // Fixed to the viewport height on purpose — ExplorePage splits into two
     // independently scrolling panes below the header, so scrolling the
@@ -41,7 +52,7 @@ export default function Explore() {
       </header>
 
       <div className="min-h-0 flex-1">
-        <ExplorePage />
+        <ExplorePage initialMonthlyIncome={initialMonthlyIncome} />
       </div>
     </div>
   );

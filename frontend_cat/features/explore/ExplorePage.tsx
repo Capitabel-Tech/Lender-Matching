@@ -24,8 +24,12 @@ const MIN_SIDEBAR_PCT = 25;
 const MAX_SIDEBAR_PCT = 80;
 const SIDEBAR_WIDTH_STORAGE_KEY = "explore-sidebar-width-pct";
 
-export function ExplorePage() {
-  const [filters, setFilters] = useState<ExploreFilters>(EMPTY_FILTERS);
+export function ExplorePage({ initialMonthlyIncome }: { initialMonthlyIncome?: number } = {}) {
+  // Carries over the income someone already typed into the landing page's
+  // simulator, so they don't have to re-enter it here.
+  const [filters, setFilters] = useState<ExploreFilters>(() =>
+    initialMonthlyIncome ? { ...EMPTY_FILTERS, monthly_income: initialMonthlyIncome } : EMPTY_FILTERS,
+  );
   const [data, setData] = useState<ExploreResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
