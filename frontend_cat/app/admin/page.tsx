@@ -28,7 +28,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <Link
-              href="/"
+              href="/explore"
               className="text-sm font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
             >
               ← Back to the lender finder

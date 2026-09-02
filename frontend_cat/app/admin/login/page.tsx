@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 px-4 py-16 dark:bg-zinc-950">
       <Link
-        href="/"
+        href="/explore"
         className="mb-4 w-full max-w-sm text-sm font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
       >
         ← Back to the lender finder
