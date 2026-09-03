@@ -1,3 +1,36 @@
+import { JetBrains_Mono } from "next/font/google";
+
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"] });
+
+function TaxonomyIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="4" r="2" />
+      <path d="M12 6v4M12 10H6m0 0v3m0-3h0M12 10h6m0 0v3" />
+      <circle cx="6" cy="17" r="2" />
+      <circle cx="18" cy="17" r="2" />
+    </svg>
+  );
+}
+
+function IntersectionIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="12" r="7" />
+      <circle cx="15" cy="12" r="7" />
+    </svg>
+  );
+}
+
+function FacetIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 5h16l-6 8v5l-4 2v-7L4 5Z" />
+      <path d="M20 3v4M22 5h-4" />
+    </svg>
+  );
+}
+
 function CalculatorIcon() {
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -7,55 +40,157 @@ function CalculatorIcon() {
   );
 }
 
-function FilterIcon() {
+// Small hierarchical tree — category_options branching into real groups,
+// loaded live rather than hardcoded. See explore.py's load_category_values
+// and load_property_type_groups.
+function TaxonomyDiagram() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 5h16l-6 8v5l-4 2v-7L4 5Z" />
+    <svg viewBox="0 0 260 100" className="h-24 w-full">
+      <rect x="4" y="6" width="112" height="22" rx="5" className="fill-[#00D6C9]/10 stroke-[#00D6C9]/40" strokeWidth="1" />
+      <text x="60" y="21" textAnchor="middle" className={`${mono.className} fill-[#18E0FF] text-[9px] font-bold`}>
+        category_options
+      </text>
+      <path d="M60 28 V42 M60 42 H30 M60 42 H90 M60 42 H150" stroke="rgba(0,214,201,0.3)" strokeWidth="1" fill="none" />
+      {[
+        { x: 30, label: "employment_type" },
+        { x: 90, label: "property_type" },
+        { x: 150, label: "…" },
+      ].map((n) => (
+        <g key={n.label}>
+          <rect x={n.x - 26} y="42" width="52" height="18" rx="4" className="fill-white/[0.04] stroke-white/15" strokeWidth="1" />
+          <text x={n.x} y="54" textAnchor="middle" className={`${mono.className} fill-[#91A0AE] text-[7px]`}>
+            {n.label}
+          </text>
+        </g>
+      ))}
+      <path d="M90 60 V70 M90 70 H60 M90 70 H120 M90 70 H160 M90 70 H200" stroke="rgba(0,214,201,0.2)" strokeWidth="1" fill="none" />
+      {["Residential", "Commercial", "Industrial", "Res. cum Comm."].map((label, i) => (
+        <g key={label}>
+          <rect x={40 + i * 40} y="72" width="36" height="16" rx="8" className="fill-[#08141D] stroke-[#00D6C9]/30" strokeWidth="1" />
+          <text x={58 + i * 40} y="83" textAnchor="middle" className="fill-[#F5F7FA] text-[6px] font-semibold">
+            {label.split(" ")[0]}
+          </text>
+        </g>
+      ))}
     </svg>
   );
 }
 
-function PodiumIcon() {
+// Venn diagram — OR within a category (union inside one circle), AND across
+// categories (only the overlap survives). See explore.py's matches(): each
+// category's accepted-set is intersected with the borrower's picks.
+function IntersectionDiagram() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 21V13h4v8M10 21V9h4v12M16 21v-6h4v6" />
+    <svg viewBox="0 0 260 100" className="h-24 w-full">
+      <circle cx="100" cy="50" r="38" className="fill-[#18E0FF]/10 stroke-[#18E0FF]/40" strokeWidth="1.5" />
+      <circle cx="150" cy="50" r="38" className="fill-[#00D6C9]/10 stroke-[#00D6C9]/40" strokeWidth="1.5" />
+      <text x="72" y="30" className="fill-[#91A0AE] text-[7px] font-semibold">
+        Your filters
+      </text>
+      <text x="168" y="30" className="fill-[#91A0AE] text-[7px] font-semibold" textAnchor="end">
+        Bank accepts
+      </text>
+      <text x="125" y="54" textAnchor="middle" className={`${mono.className} fill-[#F5F7FA] text-[11px] font-bold`}>
+        ∩
+      </text>
+      <text x="125" y="80" textAnchor="middle" className="fill-[#7CFF8A] text-[7px] font-bold">
+        eligible
+      </text>
+    </svg>
+  );
+}
+
+// Facet counts recomputing live — real numbers, see the values checked
+// against explore_api.py's facet_counts for "Salaried" selected.
+function FacetDiagram() {
+  const rows = [
+    { label: "Res. — Apartment", before: 78, after: 24 },
+    { label: "Res. — Vacant Land", before: 78, after: 24 },
+    { label: "Comm. — Indep. Bldg", before: 22, after: 8 },
+  ];
+  return (
+    <svg viewBox="0 0 260 100" className="h-24 w-full">
+      {rows.map((r, i) => {
+        const y = 10 + i * 30;
+        const fullW = 130;
+        const afterW = (r.after / r.before) * fullW;
+        return (
+          <g key={r.label}>
+            <text x="0" y={y - 2} className="fill-[#91A0AE] text-[7px]">
+              {r.label}
+            </text>
+            <rect x="0" y={y} width={fullW} height="8" rx="4" className="fill-white/[0.06]" />
+            <rect x="0" y={y} width={afterW} height="8" rx="4" className="fill-[#00D6C9]" />
+            <text x={fullW + 6} y={y + 7} className={`${mono.className} fill-[#18E0FF] text-[7px] font-bold`}>
+              {r.after}/{r.before}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// Income -> FOIR% -> Max EMI -> Max Loan Amount, the same pipeline
+// AffordabilityPanel runs per bank on the Explore page.
+function AffordabilityDiagram() {
+  const steps = ["Income", "FOIR %", "Max EMI", "Max Loan"];
+  return (
+    <svg viewBox="0 0 260 60" className="h-16 w-full">
+      {steps.map((label, i) => (
+        <g key={label}>
+          <rect x={4 + i * 65} y="18" width="54" height="24" rx="6" className="fill-white/[0.04] stroke-[#00D6C9]/30" strokeWidth="1" />
+          <text x={31 + i * 65} y="33" textAnchor="middle" className={`${mono.className} fill-[#F5F7FA] text-[7px] font-bold`}>
+            {label}
+          </text>
+          {i < steps.length - 1 && (
+            <path d={`M${60 + i * 65} 30 H${68 + i * 65}`} stroke="#18E0FF" strokeWidth="1.5" markerEnd="url(#arrow)" />
+          )}
+        </g>
+      ))}
+      <defs>
+        <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0 0 L6 3 L0 6 Z" fill="#18E0FF" />
+        </marker>
+      </defs>
     </svg>
   );
 }
 
 const CARDS = [
   {
-    Icon: CalculatorIcon,
+    Icon: TaxonomyIcon,
     step: "1",
-    title: "Data Intake & Precise Affordability",
-    body: "Income, obligations, and requested loan amount feed straight into the FOIR formula — no generic income multiplier.",
-    demo: [
-      { label: "Monthly income", value: "₹80,000" },
-      { label: "FOIR limit", value: "58%" },
-    ],
+    title: "Data-Driven Taxonomy Loading",
+    body: "No hardcoded rules. On every load, the engine queries the live category_options table and builds the entire filter structure — including grouped hierarchies like Property Type — in real time, so a new banking criterion never needs a code change.",
+    Diagram: TaxonomyDiagram,
   },
   {
-    Icon: FilterIcon,
+    Icon: IntersectionIcon,
     step: "2",
-    title: "Eligibility & FOIR Filtering",
-    body: "Every lender's real rules — employment type, property type, FOIR ceiling — checked against your profile before anything is ranked.",
-    demo: [
-      { label: "Bank Of India", ok: true },
-      { label: "Kotak Mahindra Bank", ok: false },
-    ],
+    title: "Multi-Dimensional Eligibility Intersection",
+    body: "Filtering is a real set intersection, not a keyword search: OR within one category (Salaried or Pensioner), AND strictly across categories — a lender is eliminated the instant its accepted set fails to overlap with your picks.",
+    Diagram: IntersectionDiagram,
   },
   {
-    Icon: PodiumIcon,
+    Icon: FacetIcon,
     step: "3",
-    title: "Ranking & Bias Priority",
-    body: "Eligible lenders are ordered by rate — and where a real relationship exists, that context is surfaced too, not hidden.",
-    demo: [{ label: "Canara Bank", tag: "Pinned Relationship" }],
+    title: "Predictive Facet Engine — Zero Dead-Ends",
+    body: "Every click re-simulates every other unselected filter, recomputing how many banks would still match each option — so the sidebar only ever offers choices that lead somewhere, never a 0-result dead end.",
+    Diagram: FacetDiagram,
+  },
+  {
+    Icon: CalculatorIcon,
+    step: "4",
+    title: "Dynamic FOIR & Affordability Computation",
+    body: "Real financial modeling per bank: your FOIR checked against its limit, Max Tenure capped by years to retirement, then a present-value annuity formula turns your EMI budget into an exact Max Loan Amount at that bank's live rate.",
+    Diagram: AffordabilityDiagram,
   },
 ] as const;
 
 export function FeatureCards() {
   return (
-    <div className="grid gap-6 sm:grid-cols-3">
+    <div className="grid gap-6 sm:grid-cols-2">
       {CARDS.map((card) => (
         <div
           key={card.title}
@@ -65,36 +200,15 @@ export function FeatureCards() {
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00D6C9]/10 text-[#18E0FF]">
               <card.Icon />
             </span>
-            <span className="font-mono text-xs text-[#91A0AE]">STEP {card.step}</span>
+            <span className={`${mono.className} text-xs font-bold tracking-wider text-[#91A0AE]`}>
+              STEP {card.step}
+            </span>
           </div>
-          <h3 className="text-base font-bold text-[#F5F7FA]">{card.title}</h3>
-          <p className="text-sm text-[#91A0AE]">{card.body}</p>
+          <h3 className="text-lg font-bold leading-tight text-[#F5F7FA] sm:text-xl">{card.title}</h3>
+          <p className="text-sm leading-relaxed text-[#91A0AE]">{card.body}</p>
 
-          <div className="mt-auto flex flex-col gap-2 border-t border-white/[0.06] pt-4">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#91A0AE]">Sample</p>
-            {"value" in (card.demo[0] ?? {}) &&
-              (card.demo as readonly { label: string; value: string }[]).map((d) => (
-                <div key={d.label} className="flex items-center justify-between text-xs">
-                  <span className="text-[#91A0AE]">{d.label}</span>
-                  <span className="font-semibold text-[#F5F7FA]">{d.value}</span>
-                </div>
-              ))}
-            {"ok" in (card.demo[0] ?? {}) &&
-              (card.demo as readonly { label: string; ok: boolean }[]).map((d) => (
-                <div key={d.label} className="flex items-center justify-between text-xs">
-                  <span className="text-[#91A0AE]">{d.label}</span>
-                  <span className={d.ok ? "text-[#7CFF8A]" : "text-[#91A0AE]"}>{d.ok ? "✓ Eligible" : "✕ Rejected"}</span>
-                </div>
-              ))}
-            {"tag" in (card.demo[0] ?? {}) &&
-              (card.demo as readonly { label: string; tag: string }[]).map((d) => (
-                <div key={d.label} className="flex items-center justify-between text-xs">
-                  <span className="text-[#F5F7FA]">{d.label}</span>
-                  <span className="rounded-full bg-[#00D6C9]/10 px-2 py-0.5 text-[10px] font-semibold text-[#18E0FF]">
-                    {d.tag}
-                  </span>
-                </div>
-              ))}
+          <div className="mt-auto border-t border-white/[0.06] pt-4">
+            <card.Diagram />
           </div>
         </div>
       ))}
