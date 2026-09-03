@@ -120,10 +120,9 @@ class AttributeModel(Base):
 class EligibilityRuleModel(Base):
     """One row = one fact about a product. Most rows are eligibility conditions:
     "this product needs this attribute to satisfy this operator against this
-    value" — checked against a borrower's answer. Rows with operator="fact" are
-    different: not a condition to check, just a stored value (interest rate,
-    tenure, ...) for display/scoring — see domain.py's filter_eligible and
-    WeightedScoringStrategy for how the two are told apart.
+    value". Rows with operator="fact" are different: not a condition to check,
+    just a stored value (interest rate, tenure, ...) for display — see
+    domain.py's get_fact.
 
     Either way, this is the table that grows constantly and is where an admin
     screen would add/edit/delete rows — no other file needs to change when a

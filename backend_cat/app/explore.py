@@ -1,17 +1,8 @@
-"""A second, exploratory way to query the same lender data domain.py's
-match_lenders uses — built for a filter-sidebar testing UI (checkboxes per
-category; checking several boxes in one category is "any of these", picking
-across categories is "all of these"), not for a real borrower application.
-That's why match_lenders (which requires a full profile: CIBIL, loan amount,
-one employment type...) isn't reused here — this dataset doesn't have that
-numeric data yet, and this UI is explicitly about browsing what *is* loaded
-so far (see app/load_client_property_data.py).
-
-Doesn't reuse domain.py's _rule_satisfied either, because the comparison
-shape is reversed: that function checks one borrower answer against a bank's
-accepted set. Here it's a set of *selected filter values* against a bank's
-accepted set — "does this bank accept any of what I picked" — so this module
-reads eligibility_rules' "in"/"==" values directly instead.
+"""Powers the Explore Lenders page: checkbox-style category filters
+(checking several boxes in one category is "any of these", picking across
+categories is "all of these"). Reads eligibility_rules' "in"/"==" values
+directly to check whether a bank's accepted set overlaps with what was
+picked — a borrower browsing by category, not submitting a full profile.
 """
 
 from dataclasses import dataclass
