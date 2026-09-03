@@ -45,11 +45,24 @@ export function EngineVisual({ lenderNames, topMatchName, bankCount }: EngineVis
     setTilt({ x: py * -8, y: px * 10 });
   }
 
-  const nodes = lenderNames.map((name, i) => {
+  // The top-match node goes first so it's always one of the ones kept
+  // visible once the mobile cutoff below hides the rest.
+  const orderedNames =
+    topMatchName && lenderNames.includes(topMatchName)
+      ? [topMatchName, ...lenderNames.filter((n) => n !== topMatchName)]
+      : lenderNames;
+
+  const nodes = orderedNames.map((name, i) => {
     const isTop = name === topMatchName;
-    const isDim = i === lenderNames.length - 1;
-    const pos = pointOnCircle(i, lenderNames.length, LENDER_RADIUS);
-    return { name, pos, isTop, isDim, delay: (i % 6) * 0.4 };
+    const isDim = i === orderedNames.length - 1;
+    const pos = pointOnCircle(i, orderedNames.length, LENDER_RADIUS);
+    // 14 nodes on one ring is too dense for a ~340px-wide mobile screen —
+    // several end up overlapping or running off the edge. Keeping every
+    // other one (not just the first N) means the visible mobile subset is
+    // still evenly spread around the full circle instead of bunched into
+    // one arc, since positions are computed against the full node count
+    // either way — a real mobile composition, not just a shrink.
+    return { name, pos, isTop, isDim, delay: (i % 6) * 0.4, mobileVisible: i % 2 === 0 };
   });
 
   const rules = RULE_LABELS.map((label, i) => ({
@@ -99,14 +112,17 @@ export function EngineVisual({ lenderNames, topMatchName, bankCount }: EngineVis
               stroke={n.isDim ? "rgba(145,160,174,0.25)" : n.isTop ? "#7CFF8A" : "#00D6C9"}
               strokeWidth={n.isTop ? 1.6 : 1}
               strokeDasharray="4 6"
-              className={reducedMotion ? "" : "motion-safe:[animation:dash-flow_1.8s_linear_infinite]"}
+              className={`${n.mobileVisible ? "" : "hidden sm:block"} ${reducedMotion ? "" : "motion-safe:[animation:dash-flow_1.8s_linear_infinite]"}`}
               opacity={n.isDim ? 0.5 : 0.85}
             />
           ))}
-          {/* Faint lines: core -> rule labels (data feeding in) */}
+          {/* Faint lines: core -> rule labels (data feeding in). Hidden
+              below sm: to match the labels themselves being hidden there —
+              no point drawing a line to an invisible label. */}
           {rules.map((r) => (
             <line
               key={r.label}
+              className="hidden sm:block"
               x1={CENTER}
               y1={CENTER}
               x2={r.pos.x}
@@ -146,11 +162,18 @@ export function EngineVisual({ lenderNames, topMatchName, bankCount }: EngineVis
           <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#050B12]">Engine</span>
         </div>
 
-        {/* Rule labels drifting toward the core */}
+        {/* Rule labels drifting toward the core — hidden below sm: the ring
+            radius is fixed relative to the core (both scale together with
+            the container), so at a small container width there's only a
+            few real pixels between the core's edge and this ring, and the
+            8 labels start overlapping each other and the core. They're
+            decorative/illustrative, not load-bearing information, so
+            dropping them on small screens is a real mobile composition
+            (per the brief's own guidance), not just a shrink. */}
         {rules.map((r) => (
           <span
             key={r.label}
-            className="absolute rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#91A0AE] backdrop-blur-sm motion-safe:[animation:node-float_5s_ease-in-out_infinite]"
+            className="absolute hidden rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[#91A0AE] backdrop-blur-sm motion-safe:[animation:node-float_5s_ease-in-out_infinite] sm:block"
             style={{
               left: `${((r.pos.x / SIZE) * 100).toFixed(3)}%`,
               top: `${((r.pos.y / SIZE) * 100).toFixed(3)}%`,
@@ -167,7 +190,7 @@ export function EngineVisual({ lenderNames, topMatchName, bankCount }: EngineVis
           <span
             key={n.name}
             title={n.name}
-            className="absolute max-w-[92px] truncate rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm motion-safe:[animation:node-float_6s_ease-in-out_infinite] sm:max-w-[150px]"
+            className={`absolute max-w-[92px] truncate rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm motion-safe:[animation:node-float_6s_ease-in-out_infinite] sm:max-w-[150px] ${n.mobileVisible ? "" : "hidden sm:block"}`}
             style={{
               left: `${((n.pos.x / SIZE) * 100).toFixed(3)}%`,
               top: `${((n.pos.y / SIZE) * 100).toFixed(3)}%`,

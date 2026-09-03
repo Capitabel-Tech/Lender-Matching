@@ -1,8 +1,14 @@
 const SIZE = 560;
 const CENTER = SIZE / 2;
-const INNER_RADIUS = 130;
-const OUTER_RADIUS = 235;
-const CORE_RADIUS = 46;
+// Inner radius bumped up from the core (was tight enough that inner-ring
+// labels visibly overlapped it on mobile) and outer radius pulled in from
+// the container edge (was tight enough that outer-ring labels could get
+// clipped by the overflow-hidden safety net) — both scale down with the
+// container just the same, so this is a small tradeoff at desktop size for
+// a real fix at mobile size.
+const INNER_RADIUS = 178;
+const OUTER_RADIUS = 212;
+const CORE_RADIUS = 40;
 
 function pointOnCircle(index: number, count: number, radius: number, offset = 0) {
   const angle = (2 * Math.PI * index) / count - Math.PI / 2 + offset;
@@ -21,10 +27,19 @@ function pointOnCircle(index: number, count: number, radius: number, offset = 0)
 // component (only the CSS keyframes need to run, not JS).
 export function LendersNetwork({ names }: { names: string[] }) {
   const half = Math.ceil(names.length / 2);
-  const inner = names.slice(0, half).map((name, i) => ({ name, pos: pointOnCircle(i, half, INNER_RADIUS) }));
-  const outer = names
-    .slice(half)
-    .map((name, i) => ({ name, pos: pointOnCircle(i, names.length - half, OUTER_RADIUS, Math.PI / (names.length - half)) }));
+  // Every other node in each ring stays visible below sm: rather than the
+  // first N — positions are computed against the full ring count either
+  // way, so keeping alternating ones spreads the mobile subset evenly
+  // around the ring instead of bunching them into one arc. ~20 nodes
+  // across two rings is far too dense for a ~340px screen otherwise.
+  const inner = names
+    .slice(0, half)
+    .map((name, i) => ({ name, pos: pointOnCircle(i, half, INNER_RADIUS), mobileVisible: i % 2 === 0 }));
+  const outer = names.slice(half).map((name, i) => ({
+    name,
+    pos: pointOnCircle(i, names.length - half, OUTER_RADIUS, Math.PI / (names.length - half)),
+    mobileVisible: i % 2 === 0,
+  }));
   const all = [...inner, ...outer];
 
   return (
@@ -50,7 +65,7 @@ export function LendersNetwork({ names }: { names: string[] }) {
             stroke={i % 5 === 0 ? "#7CFF8A" : "rgba(0,214,201,0.35)"}
             strokeWidth={i % 5 === 0 ? 1.4 : 0.75}
             strokeDasharray="3 7"
-            className="motion-safe:[animation:dash-flow_2.2s_linear_infinite]"
+            className={`${n.mobileVisible ? "" : "hidden sm:block"} motion-safe:[animation:dash-flow_2.2s_linear_infinite]`}
           />
         ))}
       </svg>
@@ -74,7 +89,7 @@ export function LendersNetwork({ names }: { names: string[] }) {
         <span
           key={n.name}
           title={n.name}
-          className="absolute max-w-[85px] truncate rounded-full border border-white/10 bg-[#08141D]/80 px-2 py-0.5 text-[10px] font-medium text-[#F5F7FA] backdrop-blur-sm motion-safe:[animation:node-float_6s_ease-in-out_infinite] sm:max-w-[140px]"
+          className={`absolute max-w-[85px] truncate rounded-full border border-white/10 bg-[#08141D]/80 px-2 py-0.5 text-[10px] font-medium text-[#F5F7FA] backdrop-blur-sm motion-safe:[animation:node-float_6s_ease-in-out_infinite] sm:max-w-[140px] ${n.mobileVisible ? "" : "hidden sm:block"}`}
           style={{
             left: `${((n.pos.x / SIZE) * 100).toFixed(3)}%`,
             top: `${((n.pos.y / SIZE) * 100).toFixed(3)}%`,
