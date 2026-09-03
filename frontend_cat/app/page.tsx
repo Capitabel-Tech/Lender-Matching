@@ -2,13 +2,14 @@ import { Space_Grotesk } from "next/font/google";
 import Link from "next/link";
 
 import { BeforeAfter } from "@/features/landing/BeforeAfter";
-import { EngineThinks } from "@/features/landing/EngineThinks";
-import { EngineVisual } from "@/features/landing/EngineVisual";
+import { EngineFlow } from "@/features/landing/EngineFlow";
+import { ExploreModePreview } from "@/features/landing/ExploreModePreview";
+import { FeatureCards } from "@/features/landing/FeatureCards";
 import { LendersNetwork } from "@/features/landing/LendersNetwork";
 import { MatchScore } from "@/features/landing/MatchScore";
 import { Metrics } from "@/features/landing/Metrics";
-import { Pipeline } from "@/features/landing/Pipeline";
 import { Reveal } from "@/features/landing/Reveal";
+import { VerifiedRatesTicker, type TickerRate } from "@/features/landing/VerifiedRatesTicker";
 import { EMPTY_FILTERS, FILTER_CATEGORIES, exploreBanks, fetchCategories, fetchLiveRates } from "@/lib/api/explore";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
@@ -39,8 +40,24 @@ export default async function Landing() {
     ? Object.entries(categories).reduce((sum, [key, value]) => (key === "property_type_groups" ? sum : sum + (value as unknown[]).length), 0)
     : 0;
   const topMatchName = rates[0]?.bank_name ?? null;
+  const topMatchRate = rates[0]?.rate_pct ?? null;
   const engineNodeNames = bankNames.slice(0, 14);
   const networkNodeNames = bankNames.slice(0, 20);
+
+  // Ticker shows both confirmed and estimated rates, tagged — unlike the
+  // tool's own LiveRatesTicker, which deliberately only shows confirmed
+  // ones (see its docstring). Deduped to the lowest rate per bank.
+  const tickerRates: TickerRate[] = banksRes
+    ? Object.values(
+        banksRes.results.reduce<Record<string, TickerRate>>((acc, p) => {
+          const existing = acc[p.bank_name];
+          if (!existing || p.interest_rate_pct < existing.ratePct) {
+            acc[p.bank_name] = { bankName: p.bank_name, ratePct: p.interest_rate_pct, isEstimated: p.interest_rate_is_estimated };
+          }
+          return acc;
+        }, {}),
+      ).sort((a, b) => a.ratePct - b.ratePct)
+    : [];
 
   const metrics = [
     { value: String(bankCount), label: "Lenders" },
@@ -76,8 +93,10 @@ export default async function Landing() {
         </div>
       </header>
 
+      <VerifiedRatesTicker rates={tickerRates} />
+
       {/* Hero */}
-      <section className="relative overflow-hidden px-6 pb-24 pt-16 sm:px-10 sm:pt-24">
+      <section className="relative overflow-hidden px-6 pb-24 pt-16 sm:px-10 sm:pt-20">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
           style={{
@@ -86,62 +105,62 @@ export default async function Landing() {
             backgroundSize: "48px 48px",
           }}
         />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
           <div className="flex flex-col gap-7">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#00D6C9]">
               Rule-Based Lender Matching Engine
             </p>
-            <h1 className="text-[48px] font-bold leading-[1.05] tracking-tight sm:text-[64px] lg:text-[76px]">
-              One profile.
+            <h1 className="text-[40px] font-bold leading-[1.1] tracking-tight sm:text-[56px] lg:text-[64px]">
+              One Profile. Every Lender.
               <br />
-              Every lender.
-              <br />
-              <span className="text-[#00D6C9]">Your best matches.</span>
+              <span className="text-[#00D6C9]">Your Best Match.</span>
             </h1>
-            <p className="max-w-md text-lg text-[#91A0AE] sm:text-xl">
-              Turn borrower information into lender matches using eligibility rules, FOIR, property criteria and
-              loan policies.
+            <p className="max-w-lg text-lg text-[#91A0AE]">
+              The engine that calculates <strong className="font-semibold text-[#F5F7FA]">real eligibility</strong>{" "}
+              and <strong className="font-semibold text-[#F5F7FA]">true affordability</strong> across{" "}
+              {bankCount || "24"}+ lenders in seconds. Stop guessing. Start matching.
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/explore"
                 className="group inline-flex items-center gap-2 rounded-full bg-[#00D6C9] px-7 py-3.5 text-base font-semibold text-[#050B12] shadow-[0_0_30px_rgba(0,214,201,0.35)] transition-transform hover:scale-[1.03]"
               >
-                Check your eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                Check Your Eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
               </Link>
-              <a
-                href="#how-it-works"
+              <Link
+                href="/explore"
                 className="inline-flex items-center gap-2 rounded-full border border-white/15 px-7 py-3.5 text-base font-semibold text-[#F5F7FA] transition-colors hover:border-white/30"
               >
-                Explore how it works
-              </a>
+                Explore Live Rates (Explore Mode)
+              </Link>
             </div>
             <p className="text-xs uppercase tracking-wide text-[#91A0AE]">
               No hard credit inquiry &nbsp;•&nbsp; Rule-based matching &nbsp;•&nbsp; Results in seconds
             </p>
           </div>
 
-          <EngineVisual lenderNames={engineNodeNames} topMatchName={topMatchName} bankCount={bankCount} />
+          <EngineFlow topBankName={topMatchName} topRatePct={topMatchRate} />
         </div>
       </section>
 
-      {/* Engine pipeline */}
-      <section className="border-t border-white/[0.06] bg-[#08141D] px-6 py-20 sm:px-10">
-        <Reveal className="mx-auto flex max-w-5xl flex-col gap-12">
-          <h2 className="text-center text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
-            One borrower. Intelligent lender matching.
-            <br />
-            One clear result.
-          </h2>
-          <Pipeline />
+      {/* How the engine thinks — 3 feature cards */}
+      <section id="how-it-works" className="border-t border-white/[0.06] bg-[#08141D] px-6 py-24 sm:px-10">
+        <Reveal className="mx-auto flex max-w-6xl flex-col gap-12">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">How the Engine Thinks</h2>
+          <FeatureCards />
         </Reveal>
       </section>
 
-      {/* How the engine thinks */}
-      <section id="how-it-works" className="px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-6xl flex-col gap-14">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">How the engine thinks</h2>
-          <EngineThinks sampleLenders={bankNames} />
+      {/* Explore Mode preview */}
+      <section className="px-6 py-24 sm:px-10">
+        <Reveal className="mx-auto flex max-w-6xl flex-col gap-10">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">Explore Mode</h2>
+            <p className="mt-3 max-w-xl text-[#91A0AE]">
+              Browse lenders by employment type and property filters before committing to a full profile.
+            </p>
+          </div>
+          <ExploreModePreview bankCount={bankCount} sampleBankName={topMatchName} sampleRatePct={topMatchRate} />
         </Reveal>
       </section>
 
@@ -177,9 +196,7 @@ export default async function Landing() {
       {/* Before / after */}
       <section className="border-t border-white/[0.06] bg-[#08141D] px-6 py-24 sm:px-10">
         <Reveal className="mx-auto flex max-w-4xl flex-col gap-12">
-          <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl">
-            Guessing vs. matching.
-          </h2>
+          <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl">Guessing vs. matching.</h2>
           <BeforeAfter />
         </Reveal>
       </section>
