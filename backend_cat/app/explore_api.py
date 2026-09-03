@@ -163,7 +163,7 @@ async def explore_banks(
     filter_map = {category: getattr(filters, category) for category in FILTERABLE_CATEGORIES}
     category_values = await load_category_values(session)
 
-    matched = filter_products(products, filter_map)
+    matched = sorted(filter_products(products, filter_map), key=lambda p: (p.bank_name, p.product_name))
     facets = facet_counts(products, filter_map, category_values)
 
     return ExploreResponseOut(
