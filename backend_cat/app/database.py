@@ -53,12 +53,12 @@ class Base(DeclarativeBase):
 
 
 class BankModel(Base):
-    """`source` marks where a bank row came from, so a bulk reload of one
-    source (see app/load_birbal_dataset.py) can safely wipe-and-replace only
-    its own rows without touching banks that came from somewhere else — e.g.
-    the hand-added calibration banks from app/seed_calibration_banks.py.
-    Without this, "reload the lender file" and "hand-added banks" can't
-    coexist: a full-table wipe can't tell the two apart.
+    """`source` marks where a bank row came from (e.g. "excel_import" for a
+    bulk lender-file load, "manual_calibration" for hand-added rows), so a
+    bulk reload of one source can safely wipe-and-replace only its own rows
+    without touching banks that came from somewhere else. Without this,
+    "reload the lender file" and "hand-added banks" can't coexist: a
+    full-table wipe can't tell the two apart.
     """
 
     __tablename__ = "banks"
