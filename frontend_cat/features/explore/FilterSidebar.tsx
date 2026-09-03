@@ -60,11 +60,15 @@ export function FilterSidebar({
   affordabilityResetKey,
 }: FilterSidebarProps) {
   return (
-    // h-full + its own overflow-y-auto — this is the pane that scrolls
-    // independently of the results pane next to it. Width comes from the
-    // --sidebar-pct CSS variable ExplorePage sets, which the drag divider
-    // updates — defaults to 60%, user-adjustable from there.
-    <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 sm:w-[var(--sidebar-pct)] sm:border-b-0 sm:border-r">
+    // sm:h-full + its own overflow-y-auto — this is the pane that scrolls
+    // independently of the results pane next to it, once they're side by
+    // side at sm: and up. Below sm: (stacked layout), it just flows with
+    // the rest of the page instead — see ExplorePage.tsx's comment on why
+    // an unconditional h-full breaks the stacked mobile layout. Width
+    // comes from the --sidebar-pct CSS variable ExplorePage sets, which
+    // the drag divider updates — defaults to 60%, user-adjustable from
+    // there (sm: and up only; the divider itself is hidden below sm:).
+    <aside className="flex w-full shrink-0 flex-col border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 sm:h-full sm:w-[var(--sidebar-pct)] sm:overflow-y-auto sm:border-b-0 sm:border-r">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b-2 border-zinc-900 bg-zinc-50/95 px-5 py-4 backdrop-blur dark:border-zinc-100 dark:bg-zinc-950/95">
         <h2 className="flex items-center gap-2.5 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
           Filters

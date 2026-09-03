@@ -170,16 +170,21 @@ export function ExplorePage() {
     requestedLoanAmount !== null;
 
   return (
-    // h-full + each child scrolling independently (overflow-y-auto on both
-    // the sidebar and the results pane) — scrolling one never moves the
-    // other, same as the reference site's filter panel behaves. The sidebar
-    // gets an explicit CSS-variable width so the divider between it and the
-    // results can be dragged to resize both at once.
-    <div className="flex h-full w-full flex-col">
+    // sm:h-full + each child scrolling independently (overflow-y-auto on
+    // both the sidebar and the results pane) — scrolling one never moves
+    // the other, same as the reference site's filter panel behaves. Below
+    // sm:, the two panes stack instead of sitting side by side, and this
+    // whole independent-scroll-pane setup stops making sense — h-full on a
+    // stacked flex-col child means "claim the entire available height",
+    // so the filter sidebar would claim 100% and the results pane below it
+    // would be squeezed to zero height and become unreachable. Below sm:,
+    // everything just flows in normal document order and the page itself
+    // scrolls instead.
+    <div className="flex w-full flex-col sm:h-full">
       <div
         ref={containerRef}
         style={{ "--sidebar-pct": `${sidebarPct}%` } as React.CSSProperties}
-        className={`flex min-h-0 w-full flex-1 flex-col sm:flex-row ${dragging ? "select-none" : ""}`}
+        className={`flex w-full flex-col sm:min-h-0 sm:flex-1 sm:flex-row ${dragging ? "select-none" : ""}`}
       >
         <FilterSidebar
           filters={filters}
@@ -211,7 +216,7 @@ export function ExplorePage() {
           <div className="m-auto h-10 w-0.5 rounded-full bg-zinc-400" />
         </div>
 
-        <div className="min-h-0 w-full flex-1 overflow-y-auto px-6 py-6">
+        <div className="w-full px-6 py-6 sm:min-h-0 sm:flex-1 sm:overflow-y-auto">
           {error ? (
             <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
               {error}

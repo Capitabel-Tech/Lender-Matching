@@ -10,10 +10,16 @@ export const metadata: Metadata = {
 
 export default function Explore() {
   return (
-    // Fixed to the viewport height on purpose — ExplorePage splits into two
-    // independently scrolling panes below the header, so scrolling the
-    // results never moves the filter sidebar and vice versa.
-    <div className="flex h-screen flex-col overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+    // Fixed to the viewport height from sm: up on purpose — ExplorePage
+    // splits into two independently scrolling panes below the header at
+    // that width, so scrolling the results never moves the filter sidebar
+    // and vice versa. Below sm: the two panes stack instead, and a fixed,
+    // clipped viewport height doesn't fit that: the sidebar would claim
+    // all of it and the results below would be squeezed to zero height,
+    // unreachable no matter how far you scroll (see ExplorePage.tsx's
+    // matching comment) — so below sm: this is just a normal page that
+    // scrolls as a whole.
+    <div className="flex min-h-screen flex-col overflow-visible bg-zinc-50 dark:bg-zinc-950 sm:h-screen sm:overflow-hidden">
       <header className="flex shrink-0 items-center justify-between border-b border-teal-900 bg-zinc-900 px-6 py-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -40,7 +46,7 @@ export default function Explore() {
         </Link>
       </header>
 
-      <div className="min-h-0 flex-1">
+      <div className="flex-1 sm:min-h-0">
         <ExplorePage />
       </div>
     </div>
