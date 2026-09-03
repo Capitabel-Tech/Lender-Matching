@@ -1,13 +1,8 @@
-"""Where lender data comes from: PostgreSQL, loaded from the Birbal reference lender
-dataset (see app/load_birbal_dataset.py).
+"""Where lender data comes from: PostgreSQL.
 
 LenderRepository is the interface the rest of the app relies on. SqlLenderRepository
 is the only implementation — if the data source ever changes again, it still loads
 through this same class, so nothing else in the app needs to change.
-
-Also exposes the attribute catalog (`get_attributes`) — the matching engine needs
-each rule's data_type (number/boolean/text) to know how to compare it, and that
-lives on AttributeModel, not on the rule itself.
 """
 
 from typing import Protocol
@@ -16,13 +11,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.database import AttributeModel, BankBiasFactModel, EligibilityRuleModel, HomeLoanProductModel
-from app.domain import AttributeDef, EligibilityRuleDef, HomeLoanProduct
+from app.database import BankBiasFactModel, EligibilityRuleModel, HomeLoanProductModel
+from app.domain import EligibilityRuleDef, HomeLoanProduct
 
 
 class LenderRepository(Protocol):
     async def list_products(self) -> list[HomeLoanProduct]: ...
-    async def get_attributes(self) -> dict[str, AttributeDef]: ...
 
 
 class SqlLenderRepository:
@@ -39,14 +33,6 @@ class SqlLenderRepository:
 
         bias_by_bank_name = await self._bias_facts_by_bank_name()
         return [self._to_domain(row, bias_by_bank_name.get(row.bank.name, [])) for row in products]
-
-    async def get_attributes(self) -> dict[str, AttributeDef]:
-        stmt = select(AttributeModel)
-        result = await self._session.execute(stmt)
-        return {
-            row.key: AttributeDef(key=row.key, label=row.label, category=row.category, data_type=row.data_type)
-            for row in result.scalars().all()
-        }
 
     async def _bias_facts_by_bank_name(self) -> dict[str, list[BankBiasFactModel]]:
         # bank_bias_facts is matched by name, not by home_loan_products' bank_id

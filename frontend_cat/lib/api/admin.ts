@@ -83,8 +83,6 @@ async function adminRequest<TResponse>(
 export const adminApi = {
   listBanks: (token: string) => adminRequest<AdminBankSummary[]>("/api/v1/admin/banks", token),
 
-  listAllProducts: (token: string) => adminRequest<AdminProductOut[]>("/api/v1/admin/products", token),
-
   getBankProducts: (token: string, bankName: string) =>
     adminRequest<AdminProductOut[]>(`/api/v1/admin/banks/${encodeURIComponent(bankName)}/products`, token),
 

@@ -245,21 +245,6 @@ async def list_ambak_banks(session: Annotated[AsyncSession, Depends(get_db)]) ->
     ]
 
 
-@admin_router.get("/products", response_model=list[AdminProductOut])
-async def list_all_products(session: Annotated[AsyncSession, Depends(get_db)]) -> list[AdminProductOut]:
-    """Every bank's every product in one flat list — powers the admin
-    spreadsheet grid, which shows every row up front rather than needing a
-    per-bank drill-down fetch."""
-    banks = (
-        await session.execute(
-            select(BankModel).options(
-                selectinload(BankModel.products).selectinload(HomeLoanProductModel.rules).selectinload(EligibilityRuleModel.attribute)
-            )
-        )
-    ).scalars().all()
-    return [_rules_to_detail(bank.name, product) for bank in banks for product in bank.products]
-
-
 @admin_router.get("/banks/{bank_name}/products", response_model=list[AdminProductOut])
 async def get_bank_products(
     bank_name: str, session: Annotated[AsyncSession, Depends(get_db)]
