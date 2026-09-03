@@ -67,7 +67,18 @@ export function EngineVisual({ lenderNames, topMatchName, bankCount }: EngineVis
       style={{ perspective: "1400px" }}
     >
       <div
-        className="relative h-full w-full transition-transform duration-300 ease-out"
+        // overflow-hidden here (not on the outer container) is a safety
+        // net, not the real fix: real bank names vary a lot in length
+        // ("Axis Bank" vs "Home First Finance Company India Ltd"), and
+        // whichever one lands at the orbit's leftmost/rightmost point
+        // depends on data order — on a narrow screen a long one there can
+        // stick out past the viewport. Clipping only this rotating layer
+        // (and not the outer box) means it can't break the page's width
+        // while still leaving room for the status readouts below, which
+        // are deliberately positioned just outside this circle. The
+        // per-label max-width+truncate is what actually degrades the text
+        // gracefully instead of an abrupt cut at this edge.
+        className="relative h-full w-full overflow-hidden transition-transform duration-300 ease-out"
         style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`, transformStyle: "preserve-3d" }}
       >
         {/* Radial glow behind everything */}
@@ -155,7 +166,8 @@ export function EngineVisual({ lenderNames, topMatchName, bankCount }: EngineVis
         {nodes.map((n) => (
           <span
             key={n.name}
-            className="absolute whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm motion-safe:[animation:node-float_6s_ease-in-out_infinite]"
+            title={n.name}
+            className="absolute max-w-[92px] truncate rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur-sm motion-safe:[animation:node-float_6s_ease-in-out_infinite] sm:max-w-[150px]"
             style={{
               left: `${((n.pos.x / SIZE) * 100).toFixed(3)}%`,
               top: `${((n.pos.y / SIZE) * 100).toFixed(3)}%`,

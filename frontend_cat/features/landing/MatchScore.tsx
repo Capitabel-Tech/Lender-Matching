@@ -20,7 +20,7 @@ export function MatchScore({ rates }: { rates: LiveRate[] }) {
             <span className="w-6 shrink-0 font-mono text-sm text-[#91A0AE]">{String(i + 1).padStart(2, "0")}</span>
             <div className="flex-1">
               <div
-                className={`flex items-center justify-between rounded-lg px-4 py-3 ${isTop ? "border border-[#7CFF8A]/40" : "border border-white/10"}`}
+                className={`flex min-w-0 items-center justify-between gap-3 rounded-lg px-4 py-3 ${isTop ? "border border-[#7CFF8A]/40" : "border border-white/10"}`}
                 style={{
                   width: `${widthPct}%`,
                   background: isTop
@@ -29,10 +29,13 @@ export function MatchScore({ rates }: { rates: LiveRate[] }) {
                   boxShadow: isTop ? "0 0 30px rgba(124,255,138,0.15)" : undefined,
                 }}
               >
-                <span className={`text-sm font-semibold ${isTop ? "text-[#7CFF8A]" : "text-[#F5F7FA]"}`}>
+                <span
+                  title={r.bank_name}
+                  className={`min-w-0 truncate text-sm font-semibold ${isTop ? "text-[#7CFF8A]" : "text-[#F5F7FA]"}`}
+                >
                   {r.bank_name}
                 </span>
-                <span className={`text-sm font-bold ${isTop ? "text-[#7CFF8A]" : "text-[#18E0FF]"}`}>
+                <span className={`shrink-0 text-sm font-bold ${isTop ? "text-[#7CFF8A]" : "text-[#18E0FF]"}`}>
                   {r.rate_pct.toFixed(2)}%
                 </span>
               </div>

@@ -64,12 +64,13 @@ export function EngineThinks({ sampleLenders }: { sampleLenders: string[] }) {
         {matches.map((m) => (
           <div
             key={m.name}
-            className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm font-semibold ${
+            title={m.name}
+            className={`flex min-w-0 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm font-semibold ${
               m.eligible ? "border-[#7CFF8A]/30 bg-[#7CFF8A]/[0.06] text-[#7CFF8A]" : "border-white/10 text-[#91A0AE]"
             }`}
           >
-            {m.name}
-            <span>{m.eligible ? "✓" : "×"}</span>
+            <span className="min-w-0 truncate">{m.name}</span>
+            <span className="shrink-0">{m.eligible ? "✓" : "×"}</span>
           </div>
         ))}
       </Column>

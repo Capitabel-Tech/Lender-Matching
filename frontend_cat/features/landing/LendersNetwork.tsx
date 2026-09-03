@@ -28,7 +28,13 @@ export function LendersNetwork({ names }: { names: string[] }) {
   const all = [...inner, ...outer];
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[560px]">
+    // overflow-hidden is a safety net: real bank names vary wildly in
+    // length, and whichever one lands at the ring's outer edge depends on
+    // data order — on a narrow screen a long one there can stick out past
+    // the viewport otherwise. The per-label max-width+truncate below is
+    // what actually degrades the text gracefully instead of an abrupt cut
+    // at this box's edge.
+    <div className="relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden">
       <div
         className="absolute inset-0 rounded-full opacity-50 blur-3xl"
         style={{ background: "radial-gradient(circle, rgba(24,224,255,0.18) 0%, transparent 60%)" }}
@@ -67,7 +73,8 @@ export function LendersNetwork({ names }: { names: string[] }) {
       {all.map((n, i) => (
         <span
           key={n.name}
-          className="absolute whitespace-nowrap rounded-full border border-white/10 bg-[#08141D]/80 px-2 py-0.5 text-[10px] font-medium text-[#F5F7FA] backdrop-blur-sm motion-safe:[animation:node-float_6s_ease-in-out_infinite]"
+          title={n.name}
+          className="absolute max-w-[85px] truncate rounded-full border border-white/10 bg-[#08141D]/80 px-2 py-0.5 text-[10px] font-medium text-[#F5F7FA] backdrop-blur-sm motion-safe:[animation:node-float_6s_ease-in-out_infinite] sm:max-w-[140px]"
           style={{
             left: `${((n.pos.x / SIZE) * 100).toFixed(3)}%`,
             top: `${((n.pos.y / SIZE) * 100).toFixed(3)}%`,
