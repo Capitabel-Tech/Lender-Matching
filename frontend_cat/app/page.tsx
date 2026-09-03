@@ -5,7 +5,7 @@ import { BeforeAfter } from "@/features/landing/BeforeAfter";
 import { EngineFlow } from "@/features/landing/EngineFlow";
 import { ExploreModePreview } from "@/features/landing/ExploreModePreview";
 import { FeatureCards } from "@/features/landing/FeatureCards";
-import { LendersNetwork } from "@/features/landing/LendersNetwork";
+import { LendersFlow, LendersFlowMobile } from "@/features/landing/LendersFlow";
 import { MatchScore } from "@/features/landing/MatchScore";
 import { Metrics } from "@/features/landing/Metrics";
 import { Reveal } from "@/features/landing/Reveal";
@@ -41,8 +41,7 @@ export default async function Landing() {
     : 0;
   const topMatchName = rates[0]?.bank_name ?? null;
   const topMatchRate = rates[0]?.rate_pct ?? null;
-  const engineNodeNames = bankNames.slice(0, 14);
-  const networkNodeNames = bankNames.slice(0, 20);
+  const networkNodeNames = bankNames.slice(0, 16);
 
   // Ticker shows both confirmed and estimated rates, tagged — unlike the
   // tool's own LiveRatesTicker, which deliberately only shows confirmed
@@ -139,7 +138,7 @@ export default async function Landing() {
             </p>
           </div>
 
-          <EngineFlow topBankName={topMatchName} topRatePct={topMatchRate} />
+          <EngineFlow topRates={rates} />
         </div>
       </section>
 
@@ -172,7 +171,8 @@ export default async function Landing() {
             <br />
             Every lender&rsquo;s rules.
           </h2>
-          <LendersNetwork names={networkNodeNames} />
+          <LendersFlow names={networkNodeNames} />
+          <LendersFlowMobile names={networkNodeNames} />
         </Reveal>
       </section>
 
