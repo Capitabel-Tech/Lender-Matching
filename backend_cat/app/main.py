@@ -4,7 +4,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.admin_api import admin_router
-from app.api import api_router
 from app.config import settings
 from app.database import create_all_tables
 from app.explore_api import explore_router
@@ -26,7 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router)
 app.include_router(admin_router)
 app.include_router(explore_router)
 
