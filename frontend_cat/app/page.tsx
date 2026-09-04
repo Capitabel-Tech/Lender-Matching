@@ -80,9 +80,6 @@ export default async function Landing() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <Link href="/admin/login" className="hidden text-sm text-[#91A0AE] hover:text-[#F5F7FA] sm:inline-block">
-            Sign in
-          </Link>
           <Link
             href="/explore"
             className="group inline-flex items-center gap-1.5 rounded-full bg-[#00D6C9] px-4 py-2 text-sm font-semibold text-[#050B12] shadow-[0_0_20px_rgba(0,214,201,0.35)] transition-transform hover:scale-[1.03]"
