@@ -1,21 +1,19 @@
 "use client";
 
-// Tracks whether an admin is logged in (via Firebase) and, separately,
-// whether they've actually been approved (a "role" custom claim on the
-// Firebase account itself — see backend_cat/app/auth.py). Every admin page
-// uses this to decide "show the page" vs "send to login" vs "send to the
-// waiting-for-approval screen."
+// Tracks whether an admin is logged in (via Google, through Firebase) and,
+// separately, whether they've actually been approved (a "role" custom claim
+// on the Firebase account itself — see backend_cat/app/auth.py). Every admin
+// page uses this to decide "show the page" vs "send to login" vs "send to
+// the waiting-for-approval screen."
+//
+// Google Sign-In is the only login method on purpose — there's no password
+// of ours for anyone to hand off to a coworker; whoever owns that Google
+// account (including its own 2FA, if they have it) is who gets in.
 
-import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  type User,
-} from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 
-import { auth } from "./firebase";
+import { auth, googleProvider } from "./firebase";
 
 export type AdminRole = "admin" | "super_admin";
 
@@ -46,29 +44,23 @@ export function useAuth() {
     });
   }, [readRole]);
 
-  async function login(email: string, password: string) {
+  async function loginWithGoogle() {
     setError(null);
     if (!auth) {
       setError("Admin login isn't set up for this deployment yet.");
       return;
     }
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch {
-      setError("Wrong email or password.");
-    }
-  }
-
-  async function signup(email: string, password: string) {
-    setError(null);
-    if (!auth) {
-      setError("Admin login isn't set up for this deployment yet.");
-      return;
-    }
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await signInWithPopup(auth, googleProvider);
     } catch (err) {
-      setError(errorMessageFor(err));
+      const code = (err as { code?: string } | null)?.code;
+      // Not a real error — they just closed the Google popup themselves.
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
+      if (code === "auth/popup-blocked") {
+        setError("Your browser blocked the sign-in popup — allow popups for this site and try again.");
+        return;
+      }
+      setError("Couldn't sign in with Google. Please try again.");
     }
   }
 
@@ -95,18 +87,9 @@ export function useAuth() {
     role,
     loading: user === undefined,
     error,
-    login,
-    signup,
+    loginWithGoogle,
     logout,
     getToken,
     refreshStatus,
   };
-}
-
-function errorMessageFor(err: unknown): string {
-  const code = (err as { code?: string } | null)?.code;
-  if (code === "auth/email-already-in-use") return "An account with that email already exists — try logging in instead.";
-  if (code === "auth/weak-password") return "Password must be at least 6 characters.";
-  if (code === "auth/invalid-email") return "That doesn't look like a valid email.";
-  return "Couldn't create the account. Please try again.";
 }

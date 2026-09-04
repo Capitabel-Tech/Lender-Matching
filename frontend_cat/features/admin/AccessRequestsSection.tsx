@@ -80,7 +80,7 @@ export function AccessRequestsSection({ getToken }: { getToken: () => Promise<st
       <div>
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Access Requests</h2>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Anyone who signs up at /admin/signup shows up here until you approve or deny them.
+          Anyone who signs in with Google for the first time shows up here until you approve or deny them.
         </p>
       </div>
 
