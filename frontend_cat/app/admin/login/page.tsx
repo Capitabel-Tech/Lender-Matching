@@ -1,10 +1,13 @@
 "use client";
 
+import { Space_Grotesk } from "next/font/google";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useAuth } from "@/lib/useAuth";
+
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 function GoogleIcon() {
   return (
@@ -41,28 +44,46 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 px-4 py-16 dark:bg-zinc-950">
-      <Link
-        href="/explore"
-        className="mb-4 w-full max-w-sm text-sm font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-      >
+    <div className={`${spaceGrotesk.className} relative flex flex-1 flex-col items-center justify-center overflow-hidden bg-[#050B12] px-4 py-16 text-[#F5F7FA]`}>
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: "radial-gradient(circle at 50% 0%, rgba(0,214,201,0.12) 0%, transparent 55%)" }}
+      />
+
+      <Link href="/explore" className="relative mb-8 text-sm font-medium text-[#91A0AE] hover:text-[#F5F7FA]">
         ← Back to the lender finder
       </Link>
-      <div className="flex w-full max-w-sm flex-col gap-5 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div>
-          <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Admin login</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Sign in with your Google account. First time here? This also creates your access request — a super admin
-            just needs to approve it before you can get in.
-          </p>
+
+      <div className="relative flex w-full max-w-sm flex-col gap-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 shadow-2xl backdrop-blur-md">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <span className="text-lg font-bold tracking-tight">
+            Lender<span className="text-[#00D6C9]">Match</span>
+          </span>
+          <div>
+            <h1 className="text-xl font-bold text-[#F5F7FA]">Admin login</h1>
+            <p className="mt-1.5 text-sm text-[#91A0AE]">
+              Sign in with your Google account. First time here? This also creates your access request — a super
+              admin just needs to approve it before you can get in.
+            </p>
+          </div>
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p className="rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-2 text-sm text-red-300">{error}</p>
+        )}
 
         <button
           onClick={handleGoogleLogin}
           disabled={submitting}
-          className="flex items-center justify-center gap-2.5 rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900"
+          className="flex items-center justify-center gap-2.5 rounded-lg bg-white px-5 py-3.5 text-sm font-semibold text-zinc-800 shadow-[0_0_20px_rgba(0,214,201,0.15)] transition-transform hover:scale-[1.02] disabled:opacity-50"
         >
           <GoogleIcon />
           {submitting ? "Signing in…" : "Continue with Google"}

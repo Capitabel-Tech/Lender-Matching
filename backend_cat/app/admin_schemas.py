@@ -75,11 +75,19 @@ class AmbakBankOption(BaseModel):
 class AdminStatusOut(BaseModel):
     email: str
     role: str | None  # None = logged in but not yet approved
+    has_profile: bool  # has this account already submitted its name + phone?
+
+
+class ProfileIn(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    phone: str = Field(min_length=6, max_length=30)
 
 
 class AccessRequestOut(BaseModel):
     uid: str
     email: str
+    name: str | None
+    phone: str | None
     requested_at: str | None  # ISO timestamp; None if Firebase didn't have one
 
 

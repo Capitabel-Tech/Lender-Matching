@@ -80,7 +80,8 @@ export function AccessRequestsSection({ getToken }: { getToken: () => Promise<st
       <div>
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Access Requests</h2>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Anyone who signs in with Google for the first time shows up here until you approve or deny them.
+          Anyone who signs in with Google for the first time shows up here, with the name and phone number they gave,
+          until you approve or deny them.
         </p>
       </div>
 
@@ -97,7 +98,9 @@ export function AccessRequestsSection({ getToken }: { getToken: () => Promise<st
         <table className="w-full text-base">
           <thead className="bg-zinc-50 text-left text-sm uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
             <tr>
+              <th className="px-5 py-3.5">Name</th>
               <th className="px-5 py-3.5">Email</th>
+              <th className="px-5 py-3.5">Phone</th>
               <th className="px-5 py-3.5">Requested</th>
               <th className="px-5 py-3.5" />
             </tr>
@@ -105,7 +108,11 @@ export function AccessRequestsSection({ getToken }: { getToken: () => Promise<st
           <tbody>
             {items?.map((req) => (
               <tr key={req.uid} className="border-t border-zinc-100 dark:border-zinc-800">
-                <td className="px-5 py-3.5 font-medium text-zinc-900 dark:text-zinc-50">{req.email}</td>
+                <td className="px-5 py-3.5 font-medium text-zinc-900 dark:text-zinc-50">
+                  {req.name ?? <span className="italic text-zinc-400">not provided</span>}
+                </td>
+                <td className="px-5 py-3.5 text-zinc-700 dark:text-zinc-300">{req.email}</td>
+                <td className="px-5 py-3.5 text-zinc-500 dark:text-zinc-400">{req.phone ?? "—"}</td>
                 <td className="px-5 py-3.5 text-zinc-500 dark:text-zinc-400">{formatRequestedAt(req.requested_at)}</td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex justify-end gap-3">
@@ -129,7 +136,7 @@ export function AccessRequestsSection({ getToken }: { getToken: () => Promise<st
             ))}
             {items?.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-5 py-6 text-center text-zinc-400">
+                <td colSpan={5} className="px-5 py-6 text-center text-zinc-400">
                   No pending requests.
                 </td>
               </tr>

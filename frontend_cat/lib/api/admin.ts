@@ -61,7 +61,15 @@ export interface AmbakBankOption {
 export interface AccessRequestOut {
   uid: string;
   email: string;
+  name: string | null;
+  phone: string | null;
   requested_at: string | null;
+}
+
+export interface AdminStatusOut {
+  email: string;
+  role: "admin" | "super_admin" | null;
+  has_profile: boolean;
 }
 
 export interface AdminAccountOut {
@@ -174,4 +182,9 @@ export const adminApi = {
     }),
 
   getActivityLog: (token: string) => adminRequest<ActivityLogEntryOut[]>("/api/v1/admin/activity-log", token),
+
+  getStatus: (token: string) => adminRequest<AdminStatusOut>("/api/v1/admin/status", token),
+
+  submitProfile: (token: string, name: string, phone: string) =>
+    adminRequest<{ status: string }>("/api/v1/admin/profile", token, { method: "POST", body: { name, phone } }),
 };

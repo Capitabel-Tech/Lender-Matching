@@ -15,27 +15,62 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from firebase_admin import auth as firebase_auth
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.activity_log import list_activity, log_activity
-from app.admin_schemas import AccessRequestOut, AdminAccountOut, AdminStatusOut, ActivityLogEntryOut
+from app.admin_schemas import (
+    AccessRequestOut,
+    ActivityLogEntryOut,
+    AdminAccountOut,
+    AdminStatusOut,
+    ProfileIn,
+)
 from app.auth import ADMIN_ROLES, LoggedInUser, _firebase_app, require_login, require_super_admin
-from app.database import get_db
+from app.database import AccessRequestProfileModel, get_db
 
 access_router = APIRouter(prefix="/api/v1/admin", tags=["admin-access"])
 
 
 @access_router.get("/status")
-async def status_check(user: Annotated[LoggedInUser, Depends(require_login)]) -> AdminStatusOut:
+async def status_check(
+    user: Annotated[LoggedInUser, Depends(require_login)], session: Annotated[AsyncSession, Depends(get_db)]
+) -> AdminStatusOut:
     """Polled by the "waiting for approval" screen — works for a logged-in
     account regardless of whether it's been approved yet, unlike /me."""
-    return AdminStatusOut(email=user.email, role=user.role)
+    profile = await session.get(AccessRequestProfileModel, user.uid)
+    return AdminStatusOut(email=user.email, role=user.role, has_profile=profile is not None)
+
+
+@access_router.post("/profile")
+async def submit_profile(
+    data: ProfileIn, user: Annotated[LoggedInUser, Depends(require_login)], session: Annotated[AsyncSession, Depends(get_db)]
+) -> dict[str, str]:
+    """Filled in once, right after a brand new account's first Google
+    sign-in — the name/phone a super admin sees next to the bare email
+    when deciding whether to approve. Keyed by the caller's own uid (from
+    their verified token, never trusted from the request body), so nobody
+    can submit a profile claiming to be someone else."""
+    stmt = (
+        insert(AccessRequestProfileModel)
+        .values(uid=user.uid, name=data.name, phone=data.phone, email=user.email)
+        .on_conflict_do_update(index_elements=["uid"], set_={"name": data.name, "phone": data.phone})
+    )
+    await session.execute(stmt)
+    await session.commit()
+    return {"status": "saved"}
 
 
 @access_router.get("/access-requests")
-async def list_access_requests(_: Annotated[LoggedInUser, Depends(require_super_admin)]) -> list[AccessRequestOut]:
+async def list_access_requests(
+    _: Annotated[LoggedInUser, Depends(require_super_admin)], session: Annotated[AsyncSession, Depends(get_db)]
+) -> list[AccessRequestOut]:
     """Every enabled Firebase account that doesn't already have an approved
     role — i.e. everyone waiting on a decision."""
+    profiles = {
+        row.uid: row for row in (await session.execute(select(AccessRequestProfileModel))).scalars().all()
+    }
     pending: list[AccessRequestOut] = []
     for user_record in firebase_auth.list_users(app=_firebase_app).iterate_all():
         if user_record.disabled:
@@ -43,10 +78,13 @@ async def list_access_requests(_: Annotated[LoggedInUser, Depends(require_super_
         if (user_record.custom_claims or {}).get("role") in ADMIN_ROLES:
             continue
         created_at = user_record.user_metadata.creation_timestamp if user_record.user_metadata else None
+        profile = profiles.get(user_record.uid)
         pending.append(
             AccessRequestOut(
                 uid=user_record.uid,
                 email=user_record.email or user_record.uid,
+                name=profile.name if profile else None,
+                phone=profile.phone if profile else None,
                 requested_at=str(created_at) if created_at is not None else None,
             )
         )

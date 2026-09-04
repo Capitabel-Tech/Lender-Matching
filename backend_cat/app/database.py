@@ -217,6 +217,24 @@ class AmbakBankCatalogModel(Base):
     name: Mapped[str] = mapped_column(String(120), unique=True)
 
 
+class AccessRequestProfileModel(Base):
+    """Name + phone number someone gives when they first request admin
+    access — Google Sign-In alone only proves an email address; a super
+    admin deciding whether to approve a stranger's email wants a real name
+    and a way to reach them, not just an inbox address. Keyed by Firebase
+    uid, filled in once (see app/access_api.py's /profile), then shown
+    alongside the pending request.
+    """
+
+    __tablename__ = "access_request_profiles"
+
+    uid: Mapped[str] = mapped_column(String(128), primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    phone: Mapped[str] = mapped_column(String(30))
+    email: Mapped[str] = mapped_column(String(255))
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class ActivityLogModel(Base):
     """One row per admin action that changes something — who, what, when,
     and from where. Super-admin-only to view (see app/access_api.py); the
