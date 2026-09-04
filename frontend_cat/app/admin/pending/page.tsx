@@ -1,6 +1,6 @@
 "use client";
 
-import { Space_Grotesk } from "next/font/google";
+import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -9,12 +9,13 @@ import { errorMessage } from "@/lib/api/client";
 import { useAuth } from "@/lib/useAuth";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "600"] });
 
 function CardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${spaceGrotesk.className} relative flex flex-1 flex-col items-center justify-center overflow-hidden bg-[#050B12] px-4 py-16 text-center text-[#F5F7FA]`}>
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        className="pointer-events-none absolute inset-0 opacity-[0.05]"
         style={{
           backgroundImage:
             "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
@@ -23,12 +24,23 @@ function CardShell({ children }: { children: React.ReactNode }) {
       />
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: "radial-gradient(circle at 50% 0%, rgba(0,214,201,0.12) 0%, transparent 55%)" }}
+        style={{ background: "radial-gradient(circle at 50% 0%, rgba(0,214,201,0.16) 0%, transparent 55%)" }}
       />
-      <div className="relative flex w-full max-w-sm flex-col gap-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 shadow-2xl backdrop-blur-md">
+      <div className="relative flex w-full max-w-md flex-col items-center gap-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-8 pb-9 pt-10 shadow-2xl backdrop-blur-md">
         {children}
+        <p className={`${mono.className} text-[10px] uppercase tracking-[0.15em] text-[#91A0AE]/70`}>
+          Lender<span className="text-[#00D6C9]">Match</span> · Admin Panel
+        </p>
       </div>
     </div>
+  );
+}
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <p className={`${mono.className} text-[11px] font-semibold uppercase tracking-[0.2em] text-[#18E0FF]`}>
+      {children}
+    </p>
   );
 }
 
@@ -100,14 +112,17 @@ export default function AdminPendingPage() {
   if (!hasProfile) {
     return (
       <CardShell>
-        <div>
-          <h1 className="text-xl font-bold text-[#F5F7FA]">One more thing</h1>
-          <p className="mt-1.5 text-sm text-[#91A0AE]">
-            Signed in as <span className="font-medium text-[#F5F7FA]">{user.email}</span>. Tell us who you are so the
-            super admin knows who's asking before approving.
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Eyebrow>One More Step</Eyebrow>
+          <h1 className="text-[28px] font-bold leading-[1.1] tracking-tight sm:text-[32px]">
+            Tell us <span className="text-[#00D6C9]">who you are</span>
+          </h1>
+          <p className="max-w-xs text-sm leading-relaxed text-[#91A0AE]">
+            Signed in as <span className="font-semibold text-[#F5F7FA]">{user.email}</span>. This is what the super
+            admin sees before deciding whether to approve you.
           </p>
         </div>
-        <form onSubmit={submitProfile} className="flex flex-col gap-4 text-left">
+        <form onSubmit={submitProfile} className="flex w-full flex-col gap-4 text-left">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="name" className="text-sm font-medium text-[#91A0AE]">
               Full name
@@ -138,7 +153,7 @@ export default function AdminPendingPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-[#00D6C9] px-5 py-3 text-sm font-semibold text-[#050B12] transition-transform hover:scale-[1.02] disabled:opacity-50"
+            className="rounded-lg bg-[#00D6C9] px-5 py-3 text-sm font-semibold text-[#050B12] shadow-[0_0_28px_rgba(0,214,201,0.25)] transition-transform hover:scale-[1.02] disabled:opacity-50"
           >
             {submitting ? "Submitting…" : "Submit request"}
           </button>
@@ -149,23 +164,26 @@ export default function AdminPendingPage() {
 
   return (
     <CardShell>
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#00D6C9]/10 text-[#18E0FF]">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#00D6C9]/10 text-[#18E0FF] shadow-[0_0_24px_rgba(0,214,201,0.2)]">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
           <path d="M12 6v6l4 2" />
         </svg>
       </span>
-      <div>
-        <h1 className="text-xl font-bold text-[#F5F7FA]">Waiting for approval</h1>
-        <p className="mt-1.5 text-sm text-[#91A0AE]">
-          Signed in as <span className="font-medium text-[#F5F7FA]">{user.email}</span>. A super admin needs to
+      <div className="flex flex-col items-center gap-3 text-center">
+        <Eyebrow>Pending Review</Eyebrow>
+        <h1 className="text-[28px] font-bold leading-[1.1] tracking-tight sm:text-[32px]">
+          Waiting for <span className="text-[#00D6C9]">approval</span>
+        </h1>
+        <p className="max-w-xs text-sm leading-relaxed text-[#91A0AE]">
+          Signed in as <span className="font-semibold text-[#F5F7FA]">{user.email}</span>. A super admin needs to
           approve your access request before you can get into the admin panel.
         </p>
       </div>
       <button
         onClick={checkAgain}
         disabled={checking}
-        className="rounded-lg bg-[#00D6C9] px-5 py-3 text-sm font-semibold text-[#050B12] transition-transform hover:scale-[1.02] disabled:opacity-50"
+        className="w-full rounded-lg bg-[#00D6C9] px-5 py-3 text-sm font-semibold text-[#050B12] shadow-[0_0_28px_rgba(0,214,201,0.25)] transition-transform hover:scale-[1.02] disabled:opacity-50"
       >
         {checking ? "Checking…" : "Check again"}
       </button>
