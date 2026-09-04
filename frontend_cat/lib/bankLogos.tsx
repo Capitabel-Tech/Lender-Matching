@@ -15,7 +15,12 @@ import { useState } from "react";
 const BANK_LOGO_URLS: Record<string, string> = {
   // From ambak.com's bank-rate cards.
   "Axis Bank": "https://static.ambak.com/Bank-fav-icon/Axis%20Bank.png",
-  "Bajaj Finserv": "https://static.ambak.com/Bank-fav-icon/Bajaj.png", // same Bajaj group mark as Bajaj Housing Finance
+  // Bajaj Finserv has its own distinct official favicon (confirmed via the
+  // <link rel="icon"> on bajajfinserv.in itself), so it no longer shares the
+  // group mark below. Bajaj Housing Finance's own site logo and favicon are
+  // both hotlink-protected (fail to load from any other origin) — the shared
+  // Bajaj Group "B" mark is the only reliably-loadable real logo for it.
+  "Bajaj Finserv": "https://www.bajajfinserv.in/myaccount/favicon.ico",
   "Bajaj Housing Finance Ltd": "https://static.ambak.com/Bank-fav-icon/Bajaj.png",
   "Bank Of Baroda": "https://static.ambak.com/Bank-fav-icon/Bank%20of%20Baroda.png",
   "Bank Of India": "https://static.ambak.com/Bank-fav-icon/BankofIndia%20.png",
@@ -64,7 +69,7 @@ export function BankLogo({ bankName, size = 20 }: { bankName: string; size?: num
 
   return (
     <span
-      className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm"
+      className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/[0.06]"
       style={{ width: size, height: size }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- tiny external icon, not worth next/image's config for a 40x40 chip */}
@@ -81,7 +86,7 @@ export function BankLogo({ bankName, size = 20 }: { bankName: string; size?: num
         onLoad={(e) => {
           if (e.currentTarget.naturalWidth === 0) setFailed(true);
         }}
-        className="h-full w-full object-contain p-[12%]"
+        className="h-full w-full object-contain p-[8%]"
       />
     </span>
   );
