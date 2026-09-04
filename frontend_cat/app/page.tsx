@@ -66,7 +66,9 @@ export default async function Landing() {
   ];
 
   return (
-    <div className={`${spaceGrotesk.className} flex flex-1 flex-col bg-[#050B12] text-[#F5F7FA]`}>
+    // pb-11 leaves just enough room at the very bottom for the fixed ticker
+    // below so it never sits on top of the final CTA's own buttons.
+    <div className={`${spaceGrotesk.className} flex flex-1 flex-col bg-[#050B12] pb-11 text-[#F5F7FA]`}>
       {/* Header — minimal, floating, transparent + blur */}
       <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#050B12]/70 px-6 py-4 backdrop-blur-md sm:px-10">
         <span className="text-base font-bold tracking-tight">
@@ -88,8 +90,6 @@ export default async function Landing() {
           </Link>
         </div>
       </header>
-
-      <VerifiedRatesTicker rates={tickerRates} />
 
       {/* Hero */}
       <section className="relative overflow-hidden px-6 pb-24 pt-16 sm:px-10 sm:pt-20">
@@ -234,6 +234,13 @@ export default async function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Pinned to the bottom of the viewport at all times, matching where
+          the Explore tool's own ticker sits — not just the last thing in
+          the page's scroll, an always-visible footer bar. */}
+      <div className="fixed inset-x-0 bottom-0 z-40">
+        <VerifiedRatesTicker rates={tickerRates} />
+      </div>
     </div>
   );
 }

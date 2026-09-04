@@ -22,6 +22,12 @@ export default function Explore() {
     <div className="flex min-h-screen flex-col overflow-visible bg-zinc-50 dark:bg-zinc-950 sm:h-screen sm:overflow-hidden">
       <header className="flex shrink-0 items-center justify-between border-b border-teal-900 bg-zinc-900 px-6 py-4">
         <div>
+          <Link
+            href="/"
+            className="mb-1.5 inline-flex items-center gap-1 text-xs font-semibold text-zinc-400 hover:text-teal-300"
+          >
+            ← Back to Home
+          </Link>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/" className="text-xl font-bold tracking-tight text-white hover:text-teal-300">
               Explore <span className="text-teal-400">Lenders</span>

@@ -1,3 +1,5 @@
+import { BankLogo } from "@/lib/bankLogos";
+
 export interface TickerRate {
   bankName: string;
   ratePct: number;
@@ -30,6 +32,7 @@ export function VerifiedRatesTicker({ rates }: { rates: TickerRate[] }) {
         >
           {doubled.map((r, i) => (
             <span key={`${r.bankName}-${i}`} className="mx-3 inline-flex shrink-0 items-center gap-1.5 text-xs">
+              <BankLogo bankName={r.bankName} size={18} />
               <span className="font-semibold text-[#F5F7FA]">{r.bankName}</span>
               <span className="font-bold text-[#00D6C9]">{r.ratePct.toFixed(2)}%</span>
               <span className={r.isEstimated ? "text-[#91A0AE]" : "text-[#7CFF8A]"}>

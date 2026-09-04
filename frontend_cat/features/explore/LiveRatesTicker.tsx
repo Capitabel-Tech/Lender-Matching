@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { errorMessage } from "@/lib/api/client";
 import { fetchLiveRates, type LiveRate } from "@/lib/api/explore";
+import { BankLogo } from "@/lib/bankLogos";
 
 // Scrolling footer bar showing every bank rate that's actually been
 // confirmed against Ambak (see the live-rates endpoint) — never the
@@ -14,7 +15,8 @@ const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 function RateChip({ rate }: { rate: LiveRate }) {
   return (
-    <span className="mx-3 inline-flex shrink-0 items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold text-white">
+    <span className="mx-3 inline-flex shrink-0 items-center gap-2 rounded-full bg-white/10 py-1.5 pl-1.5 pr-4 text-sm font-semibold text-white">
+      <BankLogo bankName={rate.bank_name} size={22} />
       {rate.bank_name}
       <span className="font-black text-teal-300">{rate.rate_pct.toFixed(2)}%</span>
     </span>
