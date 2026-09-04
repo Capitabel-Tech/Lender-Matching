@@ -66,9 +66,9 @@ export default async function Landing() {
   ];
 
   return (
-    // pb-11 leaves just enough room at the very bottom for the fixed ticker
+    // pb-14 leaves just enough room at the very bottom for the fixed ticker
     // below so it never sits on top of the final CTA's own buttons.
-    <div className={`${spaceGrotesk.className} flex flex-1 flex-col bg-[#050B12] pb-11 text-[#F5F7FA]`}>
+    <div className={`${spaceGrotesk.className} flex flex-1 flex-col bg-[#050B12] pb-14 text-[#F5F7FA]`}>
       {/* Header — minimal, floating, transparent + blur */}
       <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#050B12]/70 px-6 py-4 backdrop-blur-md sm:px-10">
         <span className="text-base font-bold tracking-tight">
