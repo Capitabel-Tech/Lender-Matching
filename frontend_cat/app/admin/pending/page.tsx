@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { adminApi } from "@/lib/api/admin";
-import { errorMessage } from "@/lib/api/client";
+import { ApiError, errorMessage } from "@/lib/api/client";
 import { useAuth } from "@/lib/useAuth";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
@@ -55,6 +55,10 @@ export default function AdminPendingPage() {
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  // Set only when the backend rejects this account outright (wrong email
+  // domain) — a different, dead-end state from "waiting," not just another
+  // error to retry.
+  const [deniedReason, setDeniedReason] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -73,8 +77,12 @@ export default function AdminPendingPage() {
         try {
           const status = await adminApi.getStatus(token);
           setHasProfile(status.has_profile);
-        } catch {
-          setHasProfile(false);
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 403) {
+            setDeniedReason(errorMessage(err));
+          } else {
+            setHasProfile(false);
+          }
         }
       })();
     }
@@ -103,7 +111,44 @@ export default function AdminPendingPage() {
     setChecking(false);
   }
 
-  if (loading || !user || role === "admin" || role === "super_admin" || hasProfile === undefined) {
+  if (loading || !user || role === "admin" || role === "super_admin") {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-[#050B12] text-sm text-[#91A0AE]">Checking…</div>
+    );
+  }
+
+  if (deniedReason) {
+    return (
+      <CardShell>
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 text-red-400">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M15 9l-6 6M9 9l6 6" />
+          </svg>
+        </span>
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Eyebrow>Access Denied</Eyebrow>
+          <h1 className="text-[28px] font-bold leading-[1.1] tracking-tight sm:text-[32px]">
+            This account <span className="text-red-400">can&apos;t request access</span>
+          </h1>
+          <p className="max-w-xs text-sm leading-relaxed text-[#91A0AE]">
+            Signed in as <span className="font-semibold text-[#F5F7FA]">{user.email}</span>. {deniedReason}
+          </p>
+        </div>
+        <button
+          onClick={async () => {
+            await logout();
+            router.push("/admin/login");
+          }}
+          className="w-full rounded-lg border border-white/15 px-5 py-3 text-sm font-semibold text-[#F5F7FA] hover:border-white/30"
+        >
+          Log out
+        </button>
+      </CardShell>
+    );
+  }
+
+  if (hasProfile === undefined) {
     return (
       <div className="flex flex-1 items-center justify-center bg-[#050B12] text-sm text-[#91A0AE]">Checking…</div>
     );

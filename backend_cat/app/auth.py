@@ -82,7 +82,26 @@ async def require_login(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Your access was revoked.") from exc
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired login.") from exc
-    return LoggedInUser(uid=decoded["uid"], email=decoded.get("email", decoded["uid"]), role=decoded.get("role"))
+
+    email = decoded.get("email", decoded["uid"])
+    role = decoded.get("role")
+
+    # Only gates brand new accounts on their way in — an account a super
+    # admin already approved keeps working regardless of domain (e.g. a
+    # developer's own personal Gmail, approved before this check existed).
+    # Without that carve-out, turning this on would lock out every admin
+    # who isn't on the company domain, including whoever just enabled it.
+    if role is None and not email.endswith(f"@{settings.allowed_email_domain}"):
+        try:
+            firebase_auth.update_user(decoded["uid"], disabled=True, app=_firebase_app)
+        except Exception:
+            pass
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Only @{settings.allowed_email_domain} accounts can request access.",
+        )
+
+    return LoggedInUser(uid=decoded["uid"], email=email, role=role)
 
 
 async def require_admin(user: Annotated[LoggedInUser, Depends(require_login)]) -> str:

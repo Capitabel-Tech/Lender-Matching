@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://lenderfinder:lenderfinder@localhost:5433/lender_finder"
     cors_origins: str = "http://localhost:3000"
     firebase_service_account_path: str = "firebase-service-account.json"
+    # A brand new (not-yet-approved) account must have an email on this domain
+    # to even reach the pending screen — see app/auth.py's require_login.
+    # Doesn't apply to accounts a super admin already approved before this
+    # existed (e.g. a developer's own personal Gmail), only to new ones.
+    allowed_email_domain: str = "capitabel.com"
 
     @property
     def cors_origin_list(self) -> list[str]:
