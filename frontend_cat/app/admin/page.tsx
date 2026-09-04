@@ -4,21 +4,29 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { AccessRequestsSection } from "@/features/admin/AccessRequestsSection";
 import { BanksSection } from "@/features/admin/BanksSection";
 import { BiasSection } from "@/features/admin/BiasSection";
 import { CategoriesSection } from "@/features/admin/CategoriesSection";
 import { useAuth } from "@/lib/useAuth";
 
 export default function AdminDashboardPage() {
-  const { user, loading, logout, getToken } = useAuth();
+  const { user, role, loading, logout, getToken } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<"banks" | "bias" | "categories">("banks");
+  const [tab, setTab] = useState<"banks" | "bias" | "categories" | "access">("banks");
 
   useEffect(() => {
-    if (!loading && !user) router.push("/admin/login");
-  }, [loading, user, router]);
+    if (loading) return;
+    if (!user) {
+      router.push("/admin/login");
+      return;
+    }
+    // A real, logged-in account that just hasn't been approved yet — send
+    // them to the waiting screen instead of a 403 wall of broken requests.
+    if (role === null) router.push("/admin/pending");
+  }, [loading, user, role, router]);
 
-  if (loading || !user) {
+  if (loading || !user || role === null || role === undefined) {
     return <div className="flex flex-1 items-center justify-center text-sm text-zinc-500">Checking login…</div>;
   }
 
@@ -72,14 +80,26 @@ export default function AdminDashboardPage() {
           >
             Categories
           </button>
+          {role === "super_admin" && (
+            <button
+              onClick={() => setTab("access")}
+              className={`px-4 py-2 text-sm font-medium ${
+                tab === "access" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+              }`}
+            >
+              Access Requests
+            </button>
+          )}
         </div>
 
         {tab === "banks" ? (
           <BanksSection getToken={getToken} />
         ) : tab === "bias" ? (
           <BiasSection getToken={getToken} />
-        ) : (
+        ) : tab === "categories" ? (
           <CategoriesSection getToken={getToken} />
+        ) : (
+          <AccessRequestsSection getToken={getToken} />
         )}
       </div>
     </div>

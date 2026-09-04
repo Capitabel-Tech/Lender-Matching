@@ -1,15 +1,27 @@
 """Checks that an admin request is really from someone who's logged in via
-Firebase — the actual "lock on the door" for anything that changes lender
-data. The login itself (username/password) is handled entirely by Firebase on
-the frontend; this file only verifies the proof-of-login (a signed token)
-Firebase hands the frontend after a successful login, using the private
-service account key so that proof can't be faked.
+Firebase AND has been approved — the "lock on the door" for anything that
+changes lender data. The login itself (username/password) is handled
+entirely by Firebase on the frontend; this file verifies the proof-of-login
+(a signed token) Firebase hands the frontend after a successful login, using
+the private service account key so that proof can't be faked, and checks the
+approval role stored on that Firebase account (a "custom claim") — not a
+database row, so there's nothing here for an admin to hand-edit.
 
-Any endpoint that changes data (add a bank, edit a rate, edit bias facts)
-should depend on `require_admin` — anything that only reads data (the
-borrower-facing match endpoint) stays open, same as today.
+Three tiers:
+  - require_login: any real Firebase account, approved or not. Used only by
+    the /status endpoint the pending-approval screen polls, and by the
+    access-request endpoints below (which read the caller's own claims to
+    decide if *they're* allowed to approve/deny someone else).
+  - require_admin: role is "admin" or "super_admin". Everything that reads
+    or writes lender data.
+  - require_super_admin: role is "super_admin" only. Approving/denying other
+    people's access requests — a regular admin can't do this.
+
+A brand new Firebase account has no role claim at all (None) until a super
+admin approves it — see app/access_api.py.
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated
 
@@ -35,15 +47,21 @@ _firebase_app: firebase_admin.App | None = None
 if _service_account_path.exists():
     _firebase_app = firebase_admin.initialize_app(credentials.Certificate(str(_service_account_path)))
 
+ADMIN_ROLES = frozenset({"admin", "super_admin"})
 
-async def require_admin(
+
+@dataclass(frozen=True)
+class LoggedInUser:
+    uid: str
+    email: str
+    role: str | None  # None = a real account that hasn't been approved yet
+
+
+async def require_login(
     credentials_header: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)],
-) -> str:
-    """FastAPI dependency — add to any admin-only route. Returns the logged-in
-    admin's email on success; raises 401 otherwise. A missing service account
-    file fails closed (every admin request rejected) rather than silently
-    skipping the check, so a misconfigured deploy can't accidentally leave
-    admin routes wide open.
+) -> LoggedInUser:
+    """Verifies the token is a real, current Firebase login — makes no
+    judgment about whether that person has been approved for anything.
     """
     if _firebase_app is None:
         raise HTTPException(
@@ -56,4 +74,26 @@ async def require_admin(
         decoded = firebase_auth.verify_id_token(credentials_header.credentials, app=_firebase_app)
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired login.") from exc
-    return decoded.get("email", decoded["uid"])
+    return LoggedInUser(uid=decoded["uid"], email=decoded.get("email", decoded["uid"]), role=decoded.get("role"))
+
+
+async def require_admin(user: Annotated[LoggedInUser, Depends(require_login)]) -> str:
+    """FastAPI dependency — add to any admin-only route. Returns the logged-in
+    admin's email on success; raises 403 if they're a real, logged-in account
+    that just hasn't been approved yet (distinct from 401 "not logged in at
+    all", so the frontend can send each case somewhere different).
+    """
+    if user.role not in ADMIN_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your access request hasn't been approved yet.",
+        )
+    return user.email
+
+
+async def require_super_admin(user: Annotated[LoggedInUser, Depends(require_login)]) -> LoggedInUser:
+    """Stricter than require_admin — only the super admin(s) can approve or
+    deny other people's access requests."""
+    if user.role != "super_admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required.")
+    return user

@@ -70,3 +70,14 @@ class AdminCategoryOptionOut(AdminCategoryOptionIn):
 
 class AmbakBankOption(BaseModel):
     name: str
+
+
+class AdminStatusOut(BaseModel):
+    email: str
+    role: str | None  # None = logged in but not yet approved
+
+
+class AccessRequestOut(BaseModel):
+    uid: str
+    email: str
+    requested_at: str | None  # ISO timestamp; None if Firebase didn't have one

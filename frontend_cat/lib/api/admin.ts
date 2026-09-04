@@ -58,6 +58,12 @@ export interface AmbakBankOption {
   name: string;
 }
 
+export interface AccessRequestOut {
+  uid: string;
+  email: string;
+  requested_at: string | null;
+}
+
 async function adminRequest<TResponse>(
   path: string,
   token: string,
@@ -134,4 +140,16 @@ export const adminApi = {
       token,
       { method: "DELETE" },
     ),
+
+  listAccessRequests: (token: string) => adminRequest<AccessRequestOut[]>("/api/v1/admin/access-requests", token),
+
+  approveAccessRequest: (token: string, uid: string) =>
+    adminRequest<{ status: string }>(`/api/v1/admin/access-requests/${encodeURIComponent(uid)}/approve`, token, {
+      method: "POST",
+    }),
+
+  denyAccessRequest: (token: string, uid: string) =>
+    adminRequest<{ status: string }>(`/api/v1/admin/access-requests/${encodeURIComponent(uid)}/deny`, token, {
+      method: "POST",
+    }),
 };

@@ -47,8 +47,9 @@ admin_router = APIRouter(prefix="/api/v1/admin", tags=["admin"], dependencies=[D
 
 @admin_router.get("/me")
 async def whoami(admin_email: Annotated[str, Depends(require_admin)]) -> dict[str, str]:
-    """Lets the frontend check "am I actually logged in" without any side
-    effects — just re-verifies the token and echoes back who it belongs to."""
+    """Lets an already-approved admin panel check "am I actually logged in"
+    without any side effects. A not-yet-approved account gets a 403 here —
+    see access_api.py's /status for the version that works either way."""
     return {"email": admin_email}
 
 
