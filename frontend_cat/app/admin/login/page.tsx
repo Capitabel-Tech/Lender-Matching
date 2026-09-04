@@ -66,7 +66,10 @@ export default function AdminLoginPage() {
       />
 
       <div className="relative flex w-full max-w-2xl flex-col items-center">
-        <Link href="/explore" className="mb-10 self-start text-sm font-medium text-[#91A0AE] hover:text-[#F5F7FA]">
+        <Link
+          href="/explore"
+          className="mb-10 self-start rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-sm font-bold text-[#F5F7FA] transition-colors hover:border-white/20 hover:bg-white/10"
+        >
           ← Back to the lender finder
         </Link>
 
