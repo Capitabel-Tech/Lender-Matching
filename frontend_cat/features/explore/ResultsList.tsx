@@ -311,7 +311,7 @@ function BankCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3.5">
           <BankLogo bankName={product.bank_name} size={56} />
-          <h3 className="text-2xl font-bold leading-tight text-zinc-900 dark:text-zinc-50">{product.bank_name}</h3>
+          <h3 className="text-4xl font-bold leading-tight text-zinc-900 dark:text-zinc-50">{product.bank_name}</h3>
         </div>
         <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1 text-xs font-bold text-white">
           {product.product_name}
