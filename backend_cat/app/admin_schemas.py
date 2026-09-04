@@ -81,3 +81,16 @@ class AccessRequestOut(BaseModel):
     uid: str
     email: str
     requested_at: str | None  # ISO timestamp; None if Firebase didn't have one
+
+
+class AdminAccountOut(BaseModel):
+    uid: str
+    email: str
+    role: str  # "admin" or "super_admin"
+
+
+class ActivityLogEntryOut(BaseModel):
+    actor_email: str
+    action: str
+    ip_address: str | None
+    created_at: str

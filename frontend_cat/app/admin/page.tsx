@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AccessRequestsSection } from "@/features/admin/AccessRequestsSection";
+import { ActivityLogSection } from "@/features/admin/ActivityLogSection";
 import { BanksSection } from "@/features/admin/BanksSection";
 import { BiasSection } from "@/features/admin/BiasSection";
 import { CategoriesSection } from "@/features/admin/CategoriesSection";
+import { ManageAdminsSection } from "@/features/admin/ManageAdminsSection";
 import { useAuth } from "@/lib/useAuth";
 
 export default function AdminDashboardPage() {
   const { user, role, loading, logout, getToken } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<"banks" | "bias" | "categories" | "access">("banks");
+  const [tab, setTab] = useState<"banks" | "bias" | "categories" | "access" | "admins" | "log">("banks");
 
   useEffect(() => {
     if (loading) return;
@@ -81,14 +83,32 @@ export default function AdminDashboardPage() {
             Categories
           </button>
           {role === "super_admin" && (
-            <button
-              onClick={() => setTab("access")}
-              className={`px-4 py-2 text-sm font-medium ${
-                tab === "access" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
-              }`}
-            >
-              Access Requests
-            </button>
+            <>
+              <button
+                onClick={() => setTab("access")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  tab === "access" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+                }`}
+              >
+                Access Requests
+              </button>
+              <button
+                onClick={() => setTab("admins")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  tab === "admins" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+                }`}
+              >
+                Manage Admins
+              </button>
+              <button
+                onClick={() => setTab("log")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  tab === "log" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+                }`}
+              >
+                Activity Log
+              </button>
+            </>
           )}
         </div>
 
@@ -98,8 +118,12 @@ export default function AdminDashboardPage() {
           <BiasSection getToken={getToken} />
         ) : tab === "categories" ? (
           <CategoriesSection getToken={getToken} />
-        ) : (
+        ) : tab === "access" ? (
           <AccessRequestsSection getToken={getToken} />
+        ) : tab === "admins" ? (
+          <ManageAdminsSection getToken={getToken} currentUserEmail={user.email} />
+        ) : (
+          <ActivityLogSection getToken={getToken} />
         )}
       </div>
     </div>

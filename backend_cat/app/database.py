@@ -25,8 +25,9 @@ Loaded from the Birbal reference lender dataset — see app/load_birbal_dataset.
 """
 
 from collections.abc import AsyncIterator
+from datetime import datetime
 
-from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint, func
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -214,6 +215,25 @@ class AmbakBankCatalogModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120), unique=True)
+
+
+class ActivityLogModel(Base):
+    """One row per admin action that changes something — who, what, when,
+    and from where. Super-admin-only to view (see app/access_api.py); the
+    point is visibility into what happened, not something every admin needs
+    day to day. `action` is a plain human-readable sentence rather than a
+    structured event type — this is read by a person looking for something
+    that seems off, not machine-parsed, so there's no fixed vocabulary to
+    maintain as new kinds of actions get added.
+    """
+
+    __tablename__ = "activity_log"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    actor_email: Mapped[str] = mapped_column(String(255), index=True)
+    action: Mapped[str] = mapped_column(Text)
+    ip_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
 
 async def create_all_tables() -> None:

@@ -12,12 +12,13 @@ a button click instead of a script.
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.activity_log import log_activity
 from app.admin_schemas import (
     AdminBankSummary,
     AdminBiasIn,
@@ -262,7 +263,11 @@ def _require_property_lists(detail: AdminProductDetail) -> None:
 
 @admin_router.post("/banks/{bank_name}/products", response_model=AdminProductOut, status_code=status.HTTP_201_CREATED)
 async def create_bank_product(
-    bank_name: str, detail: AdminProductDetail, session: Annotated[AsyncSession, Depends(get_db)]
+    bank_name: str,
+    detail: AdminProductDetail,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    request: Request,
+    admin_email: Annotated[str, Depends(require_admin)],
 ) -> AdminProductOut:
     _require_property_lists(detail)
     attributes = await _get_attributes(session)
@@ -292,6 +297,9 @@ async def create_bank_product(
 
     session.add_all(_detail_to_rules(product.id, detail, attributes))
     await session.commit()
+    await log_activity(
+        request, admin_email, f"Created {detail.employment_type.value} {detail.loan_type} product for {bank_name}"
+    )
 
     # Without this, the re-fetch below can hand back the newly-created
     # product with a stale, empty `.rules` collection — the `product` object
@@ -314,6 +322,8 @@ async def update_bank_product(
     employment_type: str,
     detail: AdminProductDetail,
     session: Annotated[AsyncSession, Depends(get_db)],
+    request: Request,
+    admin_email: Annotated[str, Depends(require_admin)],
 ) -> AdminProductOut:
     if detail.employment_type.value != employment_type:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "employment_type in the URL and body must match.")
@@ -334,6 +344,7 @@ async def update_bank_product(
     await session.execute(delete(EligibilityRuleModel).where(EligibilityRuleModel.product_id == product.id))
     session.add_all(_detail_to_rules(product.id, detail, attributes))
     await session.commit()
+    await log_activity(request, admin_email, f"Updated {employment_type} {loan_type} product for {bank_name}")
 
     # The bulk delete() above is a Core statement — it doesn't touch this
     # session's already-loaded `bank`/`product` objects, so without this,
@@ -348,7 +359,12 @@ async def update_bank_product(
 
 @admin_router.delete("/banks/{bank_name}/products/{loan_type}/{employment_type}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_bank_product(
-    bank_name: str, loan_type: str, employment_type: str, session: Annotated[AsyncSession, Depends(get_db)]
+    bank_name: str,
+    loan_type: str,
+    employment_type: str,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    request: Request,
+    admin_email: Annotated[str, Depends(require_admin)],
 ) -> None:
     bank = await _get_bank_or_404(session, bank_name)
     product = _find_product(bank, loan_type, employment_type)
@@ -356,13 +372,20 @@ async def delete_bank_product(
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"{bank_name} has no {employment_type} {loan_type} product.")
     await session.delete(product)
     await session.commit()
+    await log_activity(request, admin_email, f"Deleted {employment_type} {loan_type} product for {bank_name}")
 
 
 @admin_router.delete("/banks/{bank_name}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_bank(bank_name: str, session: Annotated[AsyncSession, Depends(get_db)]) -> None:
+async def delete_bank(
+    bank_name: str,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    request: Request,
+    admin_email: Annotated[str, Depends(require_admin)],
+) -> None:
     bank = await _get_bank_or_404(session, bank_name)
     await session.delete(bank)
     await session.commit()
+    await log_activity(request, admin_email, f"Deleted bank {bank_name} (all its products)")
 
 
 # ---------------------------------------------------------------------------
@@ -388,7 +411,11 @@ async def list_bias(session: Annotated[AsyncSession, Depends(get_db)]) -> list[A
 
 @admin_router.put("/bias/{bank_name}", response_model=AdminBiasOut)
 async def upsert_bias(
-    bank_name: str, data: AdminBiasIn, session: Annotated[AsyncSession, Depends(get_db)]
+    bank_name: str,
+    data: AdminBiasIn,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    request: Request,
+    admin_email: Annotated[str, Depends(require_admin)],
 ) -> AdminBiasOut:
     for metric_key, value in (
         ("recent_borrowers_processed", str(data.recent_borrowers_processed)),
@@ -401,15 +428,22 @@ async def upsert_bias(
         )
         await session.execute(stmt)
     await session.commit()
+    await log_activity(request, admin_email, f"Updated relationship data for {bank_name}")
     return AdminBiasOut(bank_name=bank_name, **data.model_dump())
 
 
 @admin_router.delete("/bias/{bank_name}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_bias(bank_name: str, session: Annotated[AsyncSession, Depends(get_db)]) -> None:
+async def delete_bias(
+    bank_name: str,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    request: Request,
+    admin_email: Annotated[str, Depends(require_admin)],
+) -> None:
     result = await session.execute(delete(BankBiasFactModel).where(BankBiasFactModel.bank_name == bank_name))
     await session.commit()
     if result.rowcount == 0:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"{bank_name} has no relationship data.")
+    await log_activity(request, admin_email, f"Removed relationship data for {bank_name}")
 
 
 # ---------------------------------------------------------------------------
@@ -423,7 +457,11 @@ async def delete_bias(bank_name: str, session: Annotated[AsyncSession, Depends(g
 
 @admin_router.post("/categories/{category_key}", response_model=AdminCategoryOptionOut, status_code=status.HTTP_201_CREATED)
 async def add_category_option(
-    category_key: str, option: AdminCategoryOptionIn, session: Annotated[AsyncSession, Depends(get_db)]
+    category_key: str,
+    option: AdminCategoryOptionIn,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    request: Request,
+    admin_email: Annotated[str, Depends(require_admin)],
 ) -> AdminCategoryOptionOut:
     if category_key not in FILTERABLE_CATEGORIES and category_key not in ADMIN_ONLY_CATEGORIES:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Unknown category {category_key!r}.")
@@ -451,11 +489,18 @@ async def add_category_option(
         )
     )
     await session.commit()
+    await log_activity(request, admin_email, f"Added {category_key!r} option {option.value!r}")
     return AdminCategoryOptionOut(category_key=category_key, **option.model_dump())
 
 
 @admin_router.delete("/categories/{category_key}/{value}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_category_option(category_key: str, value: str, session: Annotated[AsyncSession, Depends(get_db)]) -> None:
+async def delete_category_option(
+    category_key: str,
+    value: str,
+    session: Annotated[AsyncSession, Depends(get_db)],
+    request: Request,
+    admin_email: Annotated[str, Depends(require_admin)],
+) -> None:
     result = await session.execute(
         delete(CategoryOptionModel).where(
             CategoryOptionModel.category_key == category_key, CategoryOptionModel.value == value
@@ -464,3 +509,4 @@ async def delete_category_option(category_key: str, value: str, session: Annotat
     await session.commit()
     if result.rowcount == 0:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"{category_key!r} has no {value!r} value.")
+    await log_activity(request, admin_email, f"Removed {category_key!r} option {value!r}")

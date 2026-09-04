@@ -71,7 +71,15 @@ async def require_login(
     if credentials_header is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing login token.")
     try:
-        decoded = firebase_auth.verify_id_token(credentials_header.credentials, app=_firebase_app)
+        # check_revoked=True costs an extra Firebase lookup per request, but
+        # without it, revoke_refresh_tokens (see app/access_api.py's
+        # revoke_admin_access) wouldn't actually invalidate a token that was
+        # already issued and hasn't naturally expired yet — someone whose
+        # access was just revoked could keep using the admin panel for up to
+        # an hour. This is exactly the "instant" part of "revoke access."
+        decoded = firebase_auth.verify_id_token(credentials_header.credentials, app=_firebase_app, check_revoked=True)
+    except firebase_auth.RevokedIdTokenError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Your access was revoked.") from exc
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired login.") from exc
     return LoggedInUser(uid=decoded["uid"], email=decoded.get("email", decoded["uid"]), role=decoded.get("role"))

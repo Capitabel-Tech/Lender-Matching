@@ -64,6 +64,19 @@ export interface AccessRequestOut {
   requested_at: string | null;
 }
 
+export interface AdminAccountOut {
+  uid: string;
+  email: string;
+  role: "admin" | "super_admin";
+}
+
+export interface ActivityLogEntryOut {
+  actor_email: string;
+  action: string;
+  ip_address: string | null;
+  created_at: string;
+}
+
 async function adminRequest<TResponse>(
   path: string,
   token: string,
@@ -152,4 +165,13 @@ export const adminApi = {
     adminRequest<{ status: string }>(`/api/v1/admin/access-requests/${encodeURIComponent(uid)}/deny`, token, {
       method: "POST",
     }),
+
+  listAdmins: (token: string) => adminRequest<AdminAccountOut[]>("/api/v1/admin/admins", token),
+
+  revokeAdminAccess: (token: string, uid: string) =>
+    adminRequest<{ status: string }>(`/api/v1/admin/admins/${encodeURIComponent(uid)}/revoke`, token, {
+      method: "POST",
+    }),
+
+  getActivityLog: (token: string) => adminRequest<ActivityLogEntryOut[]>("/api/v1/admin/activity-log", token),
 };

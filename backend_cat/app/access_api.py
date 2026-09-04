@@ -1,7 +1,8 @@
-"""Login-status check + access-request approval — separate from admin_api.py
-because these routes need different gates per-route (require_login only for
-/status, require_super_admin for approve/deny) rather than the one blanket
-gate admin_router applies to every lender-data route.
+"""Login-status check, access-request approval, and the super-admin-only
+Manage Admins + Activity Log views — separate from admin_api.py because
+these routes need different gates per-route (require_login only for
+/status, require_super_admin for everything else here) rather than the one
+blanket gate admin_router applies to every lender-data route.
 
 Approval state lives entirely on the Firebase account itself, as a custom
 claim (role: "admin" | "super_admin" | unset) — not a database row, so
@@ -12,11 +13,14 @@ on every request.
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from firebase_admin import auth as firebase_auth
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.admin_schemas import AccessRequestOut, AdminStatusOut
+from app.activity_log import list_activity, log_activity
+from app.admin_schemas import AccessRequestOut, AdminAccountOut, AdminStatusOut, ActivityLogEntryOut
 from app.auth import ADMIN_ROLES, LoggedInUser, _firebase_app, require_login, require_super_admin
+from app.database import get_db
 
 access_router = APIRouter(prefix="/api/v1/admin", tags=["admin-access"])
 
@@ -50,20 +54,74 @@ async def list_access_requests(_: Annotated[LoggedInUser, Depends(require_super_
 
 
 @access_router.post("/access-requests/{uid}/approve")
-async def approve_access_request(uid: str, _: Annotated[LoggedInUser, Depends(require_super_admin)]) -> dict[str, str]:
+async def approve_access_request(
+    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_super_admin)]
+) -> dict[str, str]:
     try:
+        target = firebase_auth.get_user(uid, app=_firebase_app)
         firebase_auth.set_custom_user_claims(uid, {"role": "admin"}, app=_firebase_app)
     except firebase_auth.UserNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
+    await log_activity(request, caller.email, f"Approved access for {target.email or uid}")
     return {"status": "approved"}
 
 
 @access_router.post("/access-requests/{uid}/deny")
-async def deny_access_request(uid: str, _: Annotated[LoggedInUser, Depends(require_super_admin)]) -> dict[str, str]:
+async def deny_access_request(
+    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_super_admin)]
+) -> dict[str, str]:
     """Disables the Firebase account outright rather than leaving it pending
     forever — a denied request shouldn't just sit there re-appearing."""
     try:
+        target = firebase_auth.get_user(uid, app=_firebase_app)
         firebase_auth.update_user(uid, disabled=True, app=_firebase_app)
     except firebase_auth.UserNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
+    await log_activity(request, caller.email, f"Denied access for {target.email or uid}")
     return {"status": "denied"}
+
+
+@access_router.get("/admins")
+async def list_admins(_: Annotated[LoggedInUser, Depends(require_super_admin)]) -> list[AdminAccountOut]:
+    """Everyone who currently has real access — not pending requests, the
+    people who already got approved. This is what the Manage Admins /
+    Revoke Access screen shows."""
+    admins: list[AdminAccountOut] = []
+    for user_record in firebase_auth.list_users(app=_firebase_app).iterate_all():
+        role = (user_record.custom_claims or {}).get("role")
+        if role in ADMIN_ROLES:
+            admins.append(AdminAccountOut(uid=user_record.uid, email=user_record.email or user_record.uid, role=role))
+    return admins
+
+
+@access_router.post("/admins/{uid}/revoke")
+async def revoke_admin_access(
+    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_super_admin)]
+) -> dict[str, str]:
+    """Cuts off an already-approved admin immediately — removes their role
+    AND invalidates any session they're currently using, so it takes effect
+    right away rather than the next time their login token would naturally
+    expire."""
+    if uid == caller.uid:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "You can't revoke your own access.")
+    try:
+        target = firebase_auth.get_user(uid, app=_firebase_app)
+        firebase_auth.set_custom_user_claims(uid, {}, app=_firebase_app)
+        firebase_auth.revoke_refresh_tokens(uid, app=_firebase_app)
+    except firebase_auth.UserNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
+    await log_activity(request, caller.email, f"Revoked access for {target.email or uid}")
+    return {"status": "revoked"}
+
+
+@access_router.get("/activity-log")
+async def get_activity_log(
+    session: Annotated[AsyncSession, Depends(get_db)], _: Annotated[LoggedInUser, Depends(require_super_admin)]
+) -> list[ActivityLogEntryOut]:
+    entries = await list_activity(session)
+    return [
+        ActivityLogEntryOut(
+            actor_email=e.actor_email, action=e.action, ip_address=e.ip_address, created_at=e.created_at.isoformat()
+        )
+        for e in entries
+    ]
