@@ -134,6 +134,15 @@ export function ExplorePage() {
     });
   }
 
+  // Employment / Income Type is single-select and required — a borrower
+  // only ever has one employment status, so unlike the other categories
+  // this always replaces the selection rather than toggling membership, and
+  // (see hasEmploymentType below) results stay hidden until one is picked.
+  function setEmploymentType(value: string) {
+    setLoading(true);
+    setFilters((prev) => ({ ...prev, employment_type: [value] }));
+  }
+
   function clearFilters() {
     setLoading(true);
     setFilters(EMPTY_FILTERS);
@@ -168,6 +177,11 @@ export function ExplorePage() {
     filters.monthly_income !== null ||
     filters.obligations.length > 0 ||
     requestedLoanAmount !== null;
+  // Employment type is required — every product's rules are keyed on it, so
+  // results stay hidden (regardless of what else is set) until exactly one
+  // is picked. This is stricter than hasAnyInput, which the "Clear filters"
+  // button still relies on above.
+  const hasEmploymentType = filters.employment_type.length > 0;
 
   return (
     // sm:h-full + each child scrolling independently (overflow-y-auto on
@@ -193,6 +207,7 @@ export function ExplorePage() {
           activeCount={activeCount}
           showClear={hasAnyInput}
           onToggle={toggleFilter}
+          onEmploymentTypeChange={setEmploymentType}
           onClear={clearFilters}
           requestedLoanAmount={requestedLoanAmount}
           onAgeChange={setAge}
@@ -221,7 +236,7 @@ export function ExplorePage() {
             <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
               {error}
             </p>
-          ) : !hasAnyInput ? (
+          ) : !hasEmploymentType ? (
             <EmptyState />
           ) : (
             <ResultsList

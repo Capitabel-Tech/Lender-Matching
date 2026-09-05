@@ -32,6 +32,10 @@ interface FilterSidebarProps {
   // button when only Age/Income/Obligations are filled in).
   showClear: boolean;
   onToggle: (category: FilterCategory, value: string) => void;
+  // Employment / Income Type is single-select (see FilterGroup's `mode`
+  // prop) — a separate handler because it always *sets* the selection to
+  // exactly this one value rather than toggling membership like onToggle.
+  onEmploymentTypeChange: (value: string) => void;
   onClear: () => void;
   requestedLoanAmount: number | null;
   onAgeChange: (value: number | null) => void;
@@ -51,6 +55,7 @@ export function FilterSidebar({
   activeCount,
   showClear,
   onToggle,
+  onEmploymentTypeChange,
   onClear,
   requestedLoanAmount,
   onAgeChange,
@@ -91,7 +96,8 @@ export function FilterSidebar({
           title={CATEGORY_TITLES.employment_type}
           options={facets?.employment_type ?? []}
           selected={filters.employment_type}
-          onToggle={(value) => onToggle("employment_type", value)}
+          onToggle={onEmploymentTypeChange}
+          mode="radio"
         />
 
         <AffordabilityForm

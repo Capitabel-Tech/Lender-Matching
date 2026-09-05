@@ -26,13 +26,13 @@ export function EmptyState() {
       </div>
 
       <h2 className="max-w-lg text-4xl font-black leading-[1.05] tracking-tight text-zinc-900 sm:text-5xl dark:text-zinc-50">
-        Pick a filter.
+        Choose your employment type.
         <br />
         Meet your <span className="italic text-teal-600 dark:text-teal-400">match.</span>
       </h2>
 
       <p className="max-w-sm text-base font-medium italic text-zinc-500 dark:text-zinc-400">
-        &ldquo;The right lender isn&apos;t a guess — it&apos;s a match waiting to be found.&rdquo;
+        &ldquo;Every lender&apos;s rules start there — pick one to see who matches.&rdquo;
       </p>
     </div>
   );

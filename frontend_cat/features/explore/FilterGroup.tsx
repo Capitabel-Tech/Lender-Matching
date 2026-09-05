@@ -10,16 +10,26 @@ interface FilterGroupProps {
   // Optional: render options under sub-headings instead of one flat list —
   // used for Property Type, which has 14 values across 4 classifications.
   subgroups?: { heading: string; values: string[] }[];
+  // "radio" — used only for Employment / Income Type, since a borrower only
+  // ever has one employment status and mixing several just interleaves
+  // unrelated result groups (see ExplorePage's employment_type handling).
+  // Every other category stays "checkbox" (the default), where genuinely
+  // wanting "either of these" is a real use case.
+  mode?: "checkbox" | "radio";
 }
 
 function OptionRow({
   option,
   checked,
   onToggle,
+  mode = "checkbox",
+  groupName,
 }: {
   option: FacetOption;
   checked: boolean;
   onToggle: (value: string) => void;
+  mode?: "checkbox" | "radio";
+  groupName?: string;
 }) {
   const disabled = option.count === 0 && !checked;
   return (
@@ -34,11 +44,12 @@ function OptionRow({
     >
       <span className="flex items-center gap-2.5">
         <input
-          type="checkbox"
+          type={mode}
+          name={mode === "radio" ? groupName : undefined}
           checked={checked}
           disabled={disabled}
           onChange={() => onToggle(option.value)}
-          className="h-5 w-5 rounded border-zinc-400 text-teal-600 focus:ring-2 focus:ring-teal-500 dark:border-zinc-600"
+          className={`h-5 w-5 border-zinc-400 text-teal-600 focus:ring-2 focus:ring-teal-500 dark:border-zinc-600 ${mode === "checkbox" ? "rounded" : ""}`}
         />
         <span className={`font-semibold ${checked ? "text-teal-900 dark:text-teal-200" : "text-zinc-800 dark:text-zinc-200"}`}>
           {option.label}
@@ -59,7 +70,7 @@ function OptionRow({
   );
 }
 
-export function FilterGroup({ title, options, selected, onToggle, subgroups }: FilterGroupProps) {
+export function FilterGroup({ title, options, selected, onToggle, subgroups, mode = "checkbox" }: FilterGroupProps) {
   const byValue = new Map(options.map((o) => [o.value, o]));
 
   return (
@@ -128,6 +139,8 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups }: F
               option={option}
               checked={selected.includes(option.value)}
               onToggle={onToggle}
+              mode={mode}
+              groupName={title}
             />
           ))}
         </div>
