@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import type { ExploreProduct } from "@/lib/api/explore";
+import type { ExploreFilters, ExploreProduct } from "@/lib/api/explore";
 import { BankLogo } from "@/lib/bankLogos";
 
 import { labelFor } from "./labels";
@@ -23,6 +23,18 @@ function groupByEmploymentType(results: ExploreProduct[]): { employmentType: str
     employmentType: key,
     products: groups.get(key)!,
   }));
+}
+
+// A bank's card always lists everything it supports for a category — but
+// once the customer has actually picked value(s) in the sidebar for that
+// category, showing the bank's whole list buries the one thing they asked
+// about. Once something's picked, narrow the card down to just the picked
+// values (guaranteed non-empty here — matches() in the backend already
+// required this product's set to overlap with the picked ones before it
+// could appear in results at all).
+function displayValues(productValues: string[], selected: string[]): string[] {
+  if (selected.length === 0) return productValues;
+  return productValues.filter((value) => selected.includes(value));
 }
 
 function AffordabilityPanel({
@@ -302,9 +314,11 @@ function AffordabilityPanel({
 function BankCard({
   product,
   requestedLoanAmount,
+  filters,
 }: {
   product: ExploreProduct;
   requestedLoanAmount: number | null;
+  filters: ExploreFilters;
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border-l-4 border-teal-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:bg-zinc-900">
@@ -323,19 +337,27 @@ function BankCard({
       <dl className="grid grid-cols-1 gap-x-4 gap-y-2.5 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Usage</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">{product.property_usage.map(labelFor).join(", ") || "—"}</dd>
+          <dd className="text-zinc-700 dark:text-zinc-300">
+            {displayValues(product.property_usage, filters.property_usage).map(labelFor).join(", ") || "—"}
+          </dd>
         </div>
         <div>
           <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Stage</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">{product.property_stage.map(labelFor).join(", ") || "—"}</dd>
+          <dd className="text-zinc-700 dark:text-zinc-300">
+            {displayValues(product.property_stage, filters.property_stage).map(labelFor).join(", ") || "—"}
+          </dd>
         </div>
         <div>
           <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Location</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">{product.property_location.map(labelFor).join(", ") || "—"}</dd>
+          <dd className="text-zinc-700 dark:text-zinc-300">
+            {displayValues(product.property_location, filters.property_location).map(labelFor).join(", ") || "—"}
+          </dd>
         </div>
         <div className="sm:col-span-2">
           <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Property type</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">{product.property_type.map(labelFor).join(", ") || "—"}</dd>
+          <dd className="text-zinc-700 dark:text-zinc-300">
+            {displayValues(product.property_type, filters.property_type).map(labelFor).join(", ") || "—"}
+          </dd>
         </div>
       </dl>
     </div>
@@ -347,11 +369,13 @@ export function ResultsList({
   total,
   loading,
   requestedLoanAmount,
+  filters,
 }: {
   results: ExploreProduct[];
   total: number;
   loading: boolean;
   requestedLoanAmount: number | null;
+  filters: ExploreFilters;
 }) {
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -382,6 +406,7 @@ export function ResultsList({
                 key={`${product.bank_name}-${product.product_name}`}
                 product={product}
                 requestedLoanAmount={requestedLoanAmount}
+                filters={filters}
               />
             ))}
           </div>
