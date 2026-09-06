@@ -31,10 +31,14 @@ interface FilterSidebarProps {
   // is set, not just category checkboxes (activeCount alone would hide the
   // button when only Age/Income/Obligations are filled in).
   showClear: boolean;
-  onToggle: (category: FilterCategory, value: string) => void;
-  // Employment / Income Type is single-select (see FilterGroup's `mode`
-  // prop) — a separate handler because it always *sets* the selection to
-  // exactly this one value rather than toggling membership like onToggle.
+  // Property Type/Usage/Stage/Location — optional single-select (see
+  // FilterGroup's "single" mode): picking a value replaces any other in
+  // that category, and picking the already-selected one clears it.
+  onSingleSelect: (category: FilterCategory, value: string) => void;
+  // Employment / Income Type is single-select and required (see
+  // FilterGroup's "radio" mode) — a separate handler because it always
+  // *sets* the selection to exactly this one value and can never go back to
+  // empty, unlike onSingleSelect above.
   onEmploymentTypeChange: (value: string) => void;
   onClear: () => void;
   requestedLoanAmount: number | null;
@@ -54,7 +58,7 @@ export function FilterSidebar({
   propertyTypeGroups,
   activeCount,
   showClear,
-  onToggle,
+  onSingleSelect,
   onEmploymentTypeChange,
   onClear,
   requestedLoanAmount,
@@ -117,8 +121,9 @@ export function FilterSidebar({
             title={CATEGORY_TITLES[category]}
             options={facets?.[category] ?? []}
             selected={filters[category]}
-            onToggle={(value) => onToggle(category, value)}
+            onToggle={(value) => onSingleSelect(category, value)}
             subgroups={category === "property_type" ? propertyTypeGroups : undefined}
+            mode="single"
           />
         ))}
       </div>

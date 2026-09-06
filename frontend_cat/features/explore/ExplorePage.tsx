@@ -125,11 +125,16 @@ export function ExplorePage() {
     };
   }, [filters]);
 
-  function toggleFilter(category: FilterCategory, value: string) {
+  // Property Type/Usage/Stage/Location are single-select but optional (see
+  // FilterGroup's "single" mode) — each describes one real property, so
+  // picking a new value always replaces whatever was picked before, but
+  // clicking the currently-selected value clears it back to "no filter",
+  // unlike Employment Type below which can never go back to empty.
+  function setSingleOptionalFilter(category: FilterCategory, value: string) {
     setLoading(true);
     setFilters((prev) => {
       const current = prev[category];
-      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+      const next = current.includes(value) ? [] : [value];
       return { ...prev, [category]: next };
     });
   }
@@ -206,7 +211,7 @@ export function ExplorePage() {
           propertyTypeGroups={propertyTypeGroups}
           activeCount={activeCount}
           showClear={hasAnyInput}
-          onToggle={toggleFilter}
+          onSingleSelect={setSingleOptionalFilter}
           onEmploymentTypeChange={setEmploymentType}
           onClear={clearFilters}
           requestedLoanAmount={requestedLoanAmount}

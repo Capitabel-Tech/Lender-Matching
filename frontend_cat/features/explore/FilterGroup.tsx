@@ -10,12 +10,18 @@ interface FilterGroupProps {
   // Optional: render options under sub-headings instead of one flat list —
   // used for Property Type, which has 14 values across 4 classifications.
   subgroups?: { heading: string; values: string[] }[];
-  // "radio" — used only for Employment / Income Type, since a borrower only
-  // ever has one employment status and mixing several just interleaves
-  // unrelated result groups (see ExplorePage's employment_type handling).
-  // Every other category stays "checkbox" (the default), where genuinely
-  // wanting "either of these" is a real use case.
-  mode?: "checkbox" | "radio";
+  // "radio" — a native, required single-select (Employment / Income Type
+  // only: a borrower only ever has one employment status, and there's
+  // always a value once one's picked, so it can't be deselected).
+  // "single" — an optional single-select (Property Type/Usage/Stage/
+  // Location: each describes one real property, so picking a second value
+  // replaces the first, but unlike Employment Type nothing may be picked at
+  // all — rendered as a checkbox styled to look like a radio dot, since a
+  // real <input type="radio"> can't fire a change event to deselect itself).
+  // "checkbox" (the default) is true multi-select — not used anywhere
+  // currently, but kept for any future category where "either of these" is
+  // a real use case.
+  mode?: "checkbox" | "radio" | "single";
 }
 
 function OptionRow({
@@ -28,10 +34,16 @@ function OptionRow({
   option: FacetOption;
   checked: boolean;
   onToggle: (value: string) => void;
-  mode?: "checkbox" | "radio";
+  mode?: "checkbox" | "radio" | "single";
   groupName?: string;
 }) {
   const disabled = option.count === 0 && !checked;
+  // "single" still renders as a native checkbox (not radio) — clicking an
+  // already-checked native radio fires no change event, which would make it
+  // impossible to deselect back to "no filter." The circular styling below
+  // is what makes it *look* like a radio; ExplorePage's handler is what
+  // actually enforces "at most one" for these two modes.
+  const inputType = mode === "radio" ? "radio" : "checkbox";
   return (
     <label
       className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2.5 text-base transition-colors ${
@@ -44,12 +56,12 @@ function OptionRow({
     >
       <span className="flex items-center gap-2.5">
         <input
-          type={mode}
+          type={inputType}
           name={mode === "radio" ? groupName : undefined}
           checked={checked}
           disabled={disabled}
           onChange={() => onToggle(option.value)}
-          className={`h-5 w-5 border-zinc-400 text-teal-600 focus:ring-2 focus:ring-teal-500 dark:border-zinc-600 ${mode === "checkbox" ? "rounded" : ""}`}
+          className={`h-5 w-5 border-zinc-400 text-teal-600 focus:ring-2 focus:ring-teal-500 dark:border-zinc-600 ${mode === "checkbox" ? "rounded" : "rounded-full"}`}
         />
         <span className={`font-semibold ${checked ? "text-teal-900 dark:text-teal-200" : "text-zinc-800 dark:text-zinc-200"}`}>
           {option.label}
@@ -98,6 +110,8 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups, mod
                       option={byValue.get(value)!}
                       checked={selected.includes(value)}
                       onToggle={onToggle}
+                      mode={mode}
+                      groupName={title}
                     />
                   ))}
                 </div>
@@ -124,6 +138,8 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups, mod
                       option={option}
                       checked={selected.includes(option.value)}
                       onToggle={onToggle}
+                      mode={mode}
+                      groupName={title}
                     />
                   ))}
                 </div>
