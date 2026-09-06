@@ -57,27 +57,33 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        <div className="flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex flex-wrap gap-2 border-b border-zinc-200 pb-4 dark:border-zinc-800">
           <button
             onClick={() => setTab("banks")}
-            className={`px-4 py-2 text-sm font-medium ${
-              tab === "banks" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+            className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+              tab === "banks"
+                ? "bg-teal-600 text-white"
+                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
             }`}
           >
             Banks
           </button>
           <button
             onClick={() => setTab("bias")}
-            className={`px-4 py-2 text-sm font-medium ${
-              tab === "bias" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+            className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+              tab === "bias"
+                ? "bg-teal-600 text-white"
+                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
             }`}
           >
             Relationships
           </button>
           <button
             onClick={() => setTab("categories")}
-            className={`px-4 py-2 text-sm font-medium ${
-              tab === "categories" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+            className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+              tab === "categories"
+                ? "bg-teal-600 text-white"
+                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
             }`}
           >
             Categories
@@ -86,24 +92,30 @@ export default function AdminDashboardPage() {
             <>
               <button
                 onClick={() => setTab("access")}
-                className={`px-4 py-2 text-sm font-medium ${
-                  tab === "access" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                  tab === "access"
+                    ? "bg-teal-600 text-white"
+                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                 }`}
               >
                 Access Requests
               </button>
               <button
                 onClick={() => setTab("admins")}
-                className={`px-4 py-2 text-sm font-medium ${
-                  tab === "admins" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                  tab === "admins"
+                    ? "bg-teal-600 text-white"
+                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                 }`}
               >
                 Manage Admins
               </button>
               <button
                 onClick={() => setTab("log")}
-                className={`px-4 py-2 text-sm font-medium ${
-                  tab === "log" ? "border-b-2 border-emerald-600 text-emerald-600" : "text-zinc-500"
+                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                  tab === "log"
+                    ? "bg-teal-600 text-white"
+                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                 }`}
               >
                 Activity Log

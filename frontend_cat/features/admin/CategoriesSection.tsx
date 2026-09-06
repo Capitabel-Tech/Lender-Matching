@@ -7,6 +7,8 @@ import { adminApi } from "@/lib/api/admin";
 import { useCategories } from "@/lib/useCategories";
 import type { FilterCategory } from "@/lib/api/explore";
 
+import { AdminLoading } from "./AdminLoading";
+
 // loan_type isn't a FilterCategory (it's admin-only, see
 // backend_cat/app/explore.py's ADMIN_ONLY_CATEGORIES — no borrower-facing
 // filter for it yet) but it's still managed from this same screen.
@@ -51,7 +53,7 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
   const [busy, setBusy] = useState(false);
 
   if (!categories) {
-    return <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>;
+    return <AdminLoading />;
   }
 
   const groupHeadings = [...new Set(categories.property_type_groups.map((g) => g.heading))];

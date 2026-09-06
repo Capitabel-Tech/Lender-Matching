@@ -6,6 +6,7 @@ import { errorMessage } from "@/lib/api/client";
 import { adminApi, type AdminBankSummary, type AdminProductDetail, type AdminProductOut } from "@/lib/api/admin";
 import { useCategories } from "@/lib/useCategories";
 
+import { AdminLoading } from "./AdminLoading";
 import { BankNameCombobox } from "./BankNameCombobox";
 import { ProductDetailForm } from "./ProductDetailForm";
 
@@ -146,7 +147,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   const employmentLabelFor = (value: string) => categories?.employment_type.find((t) => t.value === value)?.label ?? value;
 
   if (!categories) {
-    return <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>;
+    return <AdminLoading />;
   }
 
   const errorBanner = error && (
