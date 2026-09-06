@@ -37,6 +37,32 @@ function displayValues(productValues: string[], selected: string[]): string[] {
   return productValues.filter((value) => selected.includes(value));
 }
 
+// Property Type's labels each carry their classification as a prefix (e.g.
+// "Residential — Apartment", from backend_cat/app/explore.py's
+// _DEFAULT_PROPERTY_TYPE_GROUPS) — repeating that prefix once per value
+// ("Residential — Vacant Land, Residential — Apartment, ...") is exactly
+// the clutter a customer complained about. Grouping by that same prefix
+// and stating it once ("Residential — Vacant Land, Apartment, ...") shows
+// the identical information without repeating it.
+function formatPropertyTypes(values: string[]): string {
+  const order: string[] = [];
+  const byHeading = new Map<string, string[]>();
+  for (const value of values) {
+    const label = labelFor(value);
+    const splitAt = label.indexOf(" — ");
+    const heading = splitAt === -1 ? "" : label.slice(0, splitAt);
+    const rest = splitAt === -1 ? label : label.slice(splitAt + 3);
+    if (!byHeading.has(heading)) {
+      order.push(heading);
+      byHeading.set(heading, []);
+    }
+    byHeading.get(heading)!.push(rest);
+  }
+  return order
+    .map((heading) => (heading ? `${heading} — ${byHeading.get(heading)!.join(", ")}` : byHeading.get(heading)!.join(", ")))
+    .join("; ");
+}
+
 function AffordabilityPanel({
   product,
   requestedLoanAmount,
@@ -356,7 +382,7 @@ function BankCard({
         <div className="sm:col-span-2">
           <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Property type</dt>
           <dd className="text-zinc-700 dark:text-zinc-300">
-            {displayValues(product.property_type, filters.property_type).map(labelFor).join(", ") || "—"}
+            {formatPropertyTypes(displayValues(product.property_type, filters.property_type)) || "—"}
           </dd>
         </div>
       </dl>
