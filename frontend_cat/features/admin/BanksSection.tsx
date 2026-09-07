@@ -23,7 +23,7 @@ type View =
   | { name: "add-new-bank" };
 
 export function BanksSection({ getToken }: { getToken: () => Promise<string | null> }) {
-  const [categories] = useCategories();
+  const [categories] = useCategories(getToken);
   const [view, setView] = useState<View>({ name: "list" });
   const [banks, setBanks] = useState<AdminBankSummary[] | null>(null);
   const [bankProducts, setBankProducts] = useState<AdminProductOut[] | null>(null);

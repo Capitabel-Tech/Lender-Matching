@@ -1,22 +1,28 @@
 "use client";
 
-// Tracks whether an admin is logged in (via a passwordless email link,
-// through Firebase) and, separately, whether they've actually been approved
-// (a "role" custom claim on the Firebase account itself — see
-// backend_cat/app/auth.py). Every admin page uses this to decide "show the
-// page" vs "send to login" vs "send to the waiting-for-approval screen."
+// Tracks who's logged in and, separately, what role their account has (a
+// custom claim on the Firebase account itself — see backend_cat/app/auth.py).
+// Every gated page uses this to decide "show the page" vs "send to login"
+// vs "send to the waiting-for-approval screen."
 //
-// Email-link sign-in is the only login method on purpose — there's no
-// password of ours for anyone to hand off to a coworker, and unlike Google
-// Sign-In it works for any email inbox regardless of who hosts it (Google
-// Workspace, Microsoft 365, anything) — company email doesn't require a
-// Google account behind it. Firebase sends the link itself; clicking it is
-// the proof that someone controls that inbox.
+// Two deliberately different login methods share this one hook, since they
+// share the same Firebase project and the same user/role state:
+//   - Admin (business staff): passwordless email-link sign-in (see
+//     sendLoginLink/confirmEmailAndCompleteLink below) — no password of
+//     ours for anyone to hand off to a coworker, works for any email inbox
+//     regardless of who hosts it.
+//   - Business (external partner) accounts: plain email + password
+//     (signUpBusiness/loginBusiness below) — self-service, immediate
+//     access to browse Explore Lenders, no approval step. Only a super
+//     admin promoting them (see features/admin/ManageAdminsSection.tsx)
+//     grants anything beyond that.
 
 import {
+  createUserWithEmailAndPassword,
   isSignInWithEmailLink,
   onAuthStateChanged,
   sendSignInLinkToEmail,
+  signInWithEmailAndPassword,
   signInWithEmailLink,
   signOut,
   type ActionCodeSettings,
@@ -24,9 +30,11 @@ import {
 } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 
+import { completeBusinessSignup } from "./api/business";
+import { errorMessage } from "./api/client";
 import { auth } from "./firebase";
 
-export type AdminRole = "admin" | "super_admin";
+export type Role = "business" | "admin" | "super_admin";
 
 // Firebase remembers which email a link was requested for so a click on the
 // same device/browser can complete sign-in without asking again — but a
@@ -35,10 +43,16 @@ export type AdminRole = "admin" | "super_admin";
 // to asking for the email again (see needsEmailConfirmation below).
 const PENDING_EMAIL_KEY = "adminLoginEmail";
 
+// How often a logged-in session quietly re-checks its own role — catches a
+// super admin promoting/demoting this account while they're already using
+// the site, without needing a live push connection (see ManageAdminsSection
+// and the bell icon in the header for the other half of this).
+const ROLE_POLL_INTERVAL_MS = 30_000;
+
 export function useAuth() {
   const [user, setUser] = useState<User | null | undefined>(undefined); // undefined = still checking
-  // undefined = still checking, null = logged in but not approved yet
-  const [role, setRole] = useState<AdminRole | null | undefined>(undefined);
+  // undefined = still checking, null = logged in but not approved/assigned yet
+  const [role, setRole] = useState<Role | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   // True while a clicked sign-in link is being exchanged for a real login —
   // the login page shows a "Signing you in…" state instead of the form.
@@ -46,10 +60,14 @@ export function useAuth() {
   // True when a sign-in link was opened on a device/browser that doesn't
   // have the requesting email stored — the login page asks for it again.
   const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
+  // Set the moment the 30s poll notices this account's role changed since
+  // the last check — the bell icon reads this and clears it via
+  // dismissRoleChangeNotice.
+  const [roleChangeNotice, setRoleChangeNotice] = useState<{ from: Role | null; to: Role | null } | null>(null);
 
   const readRole = useCallback(async (u: User, forceRefresh = false) => {
     const result = await u.getIdTokenResult(forceRefresh);
-    setRole((result.claims.role as AdminRole | undefined) ?? null);
+    setRole((result.claims.role as Role | undefined) ?? null);
   }, []);
 
   useEffect(() => {
@@ -93,6 +111,33 @@ export function useAuth() {
         setCompletingLink(false);
       });
   }, []);
+
+  // Quietly re-checks this account's role every 30s while logged in — see
+  // ROLE_POLL_INTERVAL_MS above for why polling instead of a live push.
+  // Keyed on uid (not `role`) so promoting/demoting doesn't restart the
+  // timer; the functional setRole below compares against the previous
+  // value atomically without needing `role` in this effect's closure.
+  const uid = user?.uid;
+  useEffect(() => {
+    if (!auth || !uid) return;
+    const interval = window.setInterval(async () => {
+      const current = auth.currentUser;
+      if (!current) return;
+      const result = await current.getIdTokenResult(true);
+      const nextRole = (result.claims.role as Role | undefined) ?? null;
+      setRole((prevRole) => {
+        if (prevRole !== undefined && nextRole !== prevRole) {
+          setRoleChangeNotice({ from: prevRole, to: nextRole });
+        }
+        return nextRole;
+      });
+    }, ROLE_POLL_INTERVAL_MS);
+    return () => window.clearInterval(interval);
+  }, [uid]);
+
+  function dismissRoleChangeNotice() {
+    setRoleChangeNotice(null);
+  }
 
   function buildActionCodeSettings(): ActionCodeSettings {
     // Points back at this same login page — that's what makes the
@@ -144,6 +189,42 @@ export function useAuth() {
     }
   }
 
+  // Business signup — plain email + password, self-service, immediate
+  // access (no approval step). Firebase creates the account first; the
+  // role only exists once completeBusinessSignup grants it server-side.
+  async function signUpBusiness(email: string, password: string) {
+    setError(null);
+    if (!auth) {
+      setError("Login isn't set up for this deployment yet.");
+      return false;
+    }
+    try {
+      const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      const token = await credential.user.getIdToken();
+      await completeBusinessSignup(token);
+      await readRole(credential.user, true);
+      return true;
+    } catch (err) {
+      setError(businessAuthErrorMessage(err));
+      return false;
+    }
+  }
+
+  async function loginBusiness(email: string, password: string) {
+    setError(null);
+    if (!auth) {
+      setError("Login isn't set up for this deployment yet.");
+      return false;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      return true;
+    } catch (err) {
+      setError(businessAuthErrorMessage(err));
+      return false;
+    }
+  }
+
   async function logout() {
     if (!auth) return;
     await signOut(auth);
@@ -154,9 +235,10 @@ export function useAuth() {
     return auth.currentUser.getIdToken();
   }
 
-  // Forces a fresh token so a just-approved account picks up its new role
-  // without needing to log out and back in — used by the "Check again"
-  // button on the waiting-for-approval screen.
+  // Forces a fresh token so a just-approved/promoted account picks up its
+  // new role without needing to log out and back in — used by the "Check
+  // again" button on the waiting-for-approval screen, and by the mount
+  // effect that fires right after signUpBusiness.
   async function refreshStatus() {
     if (!auth?.currentUser) return;
     await readRole(auth.currentUser, true);
@@ -169,10 +251,37 @@ export function useAuth() {
     error,
     completingLink,
     needsEmailConfirmation,
+    roleChangeNotice,
+    dismissRoleChangeNotice,
     sendLoginLink,
     confirmEmailAndCompleteLink,
+    signUpBusiness,
+    loginBusiness,
     logout,
     getToken,
     refreshStatus,
   };
+}
+
+function businessAuthErrorMessage(err: unknown): string {
+  const code = (err as { code?: string } | null)?.code;
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "An account with that email already exists — try logging in instead.";
+    case "auth/invalid-email":
+      return "That doesn't look like a valid email address.";
+    case "auth/weak-password":
+      return "Password must be at least 6 characters.";
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+      return "Incorrect email or password.";
+    case "auth/user-not-found":
+      return "No account found with that email — sign up instead.";
+    case "auth/too-many-requests":
+      return "Too many attempts — wait a bit and try again.";
+    default:
+      return errorMessage(err) === "Something went wrong. Check the backend is running and try again."
+        ? "Something went wrong. Please try again."
+        : errorMessage(err);
+  }
 }

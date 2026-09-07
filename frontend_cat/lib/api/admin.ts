@@ -75,7 +75,7 @@ export interface AdminStatusOut {
 export interface AdminAccountOut {
   uid: string;
   email: string;
-  role: "admin" | "super_admin";
+  role: "business" | "admin" | "super_admin";
 }
 
 export interface ActivityLogEntryOut {
@@ -180,6 +180,16 @@ export const adminApi = {
     adminRequest<{ status: string }>(`/api/v1/admin/admins/${encodeURIComponent(uid)}/revoke`, token, {
       method: "POST",
     }),
+
+  // Promotes/demotes an already-assigned account between business, admin,
+  // and super_admin — distinct from approveAccessRequest above, which only
+  // ever grants "admin" to a brand new, still-pending request.
+  setAccountRole: (token: string, uid: string, newRole: "business" | "admin" | "super_admin") =>
+    adminRequest<{ status: string; role: string }>(
+      `/api/v1/admin/admins/${encodeURIComponent(uid)}/set-role?new_role=${encodeURIComponent(newRole)}`,
+      token,
+      { method: "POST" },
+    ),
 
   getActivityLog: (token: string) => adminRequest<ActivityLogEntryOut[]>("/api/v1/admin/activity-log", token),
 

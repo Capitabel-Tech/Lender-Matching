@@ -14,6 +14,8 @@ import {
   type PropertyTypeGroup,
 } from "@/lib/api/explore";
 
+import { useAuth } from "@/lib/useAuth";
+
 import { EmptyState } from "./EmptyState";
 import { FilterSidebar } from "./FilterSidebar";
 import { LiveRatesTicker } from "./LiveRatesTicker";
@@ -25,6 +27,7 @@ const MAX_SIDEBAR_PCT = 80;
 const SIDEBAR_WIDTH_STORAGE_KEY = "explore-sidebar-width-pct";
 
 export function ExplorePage() {
+  const { getToken } = useAuth();
   const [filters, setFilters] = useState<ExploreFilters>(EMPTY_FILTERS);
   const [data, setData] = useState<ExploreResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,34 +95,41 @@ export function ExplorePage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchCategories()
-      .then((categories) => {
-        if (!cancelled) setPropertyTypeGroups(categories.property_type_groups);
-      })
-      .catch(() => {
-        // Non-fatal — the sidebar just falls back to an ungrouped flat list
-        // for property_type until this succeeds (see FilterGroup).
-      });
+    (async () => {
+      const token = await getToken();
+      fetchCategories(token)
+        .then((categories) => {
+          if (!cancelled) setPropertyTypeGroups(categories.property_type_groups);
+        })
+        .catch(() => {
+          // Non-fatal — the sidebar just falls back to an ungrouped flat list
+          // for property_type until this succeeds (see FilterGroup).
+        });
+    })();
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-    exploreBanks(filters)
-      .then((response) => {
-        if (cancelled) return;
-        setData(response);
-        setError(null);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(errorMessage(err));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    (async () => {
+      const token = await getToken();
+      exploreBanks(filters, token)
+        .then((response) => {
+          if (cancelled) return;
+          setData(response);
+          setError(null);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setError(errorMessage(err));
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    })();
     return () => {
       cancelled = true;
     };

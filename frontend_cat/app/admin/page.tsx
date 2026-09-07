@@ -10,10 +10,11 @@ import { BanksSection } from "@/features/admin/BanksSection";
 import { BiasSection } from "@/features/admin/BiasSection";
 import { CategoriesSection } from "@/features/admin/CategoriesSection";
 import { ManageAdminsSection } from "@/features/admin/ManageAdminsSection";
+import { RoleChangeBell } from "@/features/auth/RoleChangeBell";
 import { useAuth } from "@/lib/useAuth";
 
 export default function AdminDashboardPage() {
-  const { user, role, loading, logout, getToken } = useAuth();
+  const { user, role, loading, logout, getToken, roleChangeNotice, dismissRoleChangeNotice } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<"banks" | "bias" | "categories" | "access" | "admins" | "log">("banks");
 
@@ -25,10 +26,18 @@ export default function AdminDashboardPage() {
     }
     // A real, logged-in account that just hasn't been approved yet — send
     // them to the waiting screen instead of a 403 wall of broken requests.
-    if (role === null) router.push("/admin/pending");
+    if (role === null) {
+      router.push("/admin/pending");
+      return;
+    }
+    // A business (Explore-only) account has a real, non-null role but no
+    // business being here at all — every route this page calls is
+    // require_admin-gated, so without this they'd land on a half-rendered
+    // dashboard full of 403 errors instead of a clean redirect.
+    if (role === "business") router.push("/explore");
   }, [loading, user, role, router]);
 
-  if (loading || !user || role === null || role === undefined) {
+  if (loading || !user || role === null || role === undefined || role === "business") {
     return <div className="flex flex-1 items-center justify-center text-sm text-zinc-500">Checking login…</div>;
   }
 
@@ -46,15 +55,18 @@ export default function AdminDashboardPage() {
             <h1 className="mt-1 text-xl font-bold text-zinc-900 dark:text-zinc-50">Admin</h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">Logged in as {user.email}</p>
           </div>
-          <button
-            onClick={async () => {
-              await logout();
-              router.push("/admin/login");
-            }}
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-2">
+            <RoleChangeBell notice={roleChangeNotice} onDismiss={dismissRoleChangeNotice} />
+            <button
+              onClick={async () => {
+                await logout();
+                router.push("/admin/login");
+              }}
+              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 border-b border-zinc-200 pb-4 dark:border-zinc-800">

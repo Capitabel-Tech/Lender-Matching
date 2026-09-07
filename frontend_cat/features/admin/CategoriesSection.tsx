@@ -45,7 +45,7 @@ function slugify(text: string): string {
 }
 
 export function CategoriesSection({ getToken }: { getToken: () => Promise<string | null> }) {
-  const [categories, refetch] = useCategories();
+  const [categories, refetch] = useCategories(getToken);
   const [addingTo, setAddingTo] = useState<AdminCategoryKey | null>(null);
   const [labelInput, setLabelInput] = useState("");
   const [groupInput, setGroupInput] = useState("");
