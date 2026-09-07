@@ -1,50 +1,51 @@
 "use client";
 
 import { motion } from "framer-motion";
-
+import Image from "next/image";
 import type { LiveRate } from "@/lib/api/explore";
 
-function CibilIcon() {
+function BriefcaseIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="5" width="20" height="14" rx="2" />
-      <path d="M2 10h20M6 15h4" />
+      <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
     </svg>
   );
 }
 
-function FoirIcon() {
+function HomeIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="7" cy="7" r="3" />
-      <circle cx="17" cy="17" r="3" />
-      <path d="m4 20 16-16" />
+      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
   );
 }
 
-function IncomeIcon() {
+function BanknoteIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2v20M17 6.5c0-1.9-2.2-3.5-5-3.5S7 4.6 7 6.5 9.2 10 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5" />
+      <rect width="20" height="12" x="2" y="6" rx="2" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M6 12h.01M18 12h.01" />
     </svg>
   );
 }
 
-function DocsIcon() {
+function UserIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
-      <path d="M14 2v6h6M9 13h6M9 17h6" />
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   );
 }
 
 const INPUTS = [
-  { Icon: CibilIcon, label: "CIBIL" },
-  { Icon: FoirIcon, label: "FOIR" },
-  { Icon: IncomeIcon, label: "Income" },
-  { Icon: DocsIcon, label: "Documents" },
+  { Icon: BriefcaseIcon, label: "Employment" },
+  { Icon: HomeIcon, label: "Property" },
+  { Icon: BanknoteIcon, label: "Loan Amount" },
+  { Icon: UserIcon, label: "Age" },
 ] as const;
 
 const SIZE = { w: 940, h: 460 };
@@ -58,14 +59,7 @@ function pct(v: number, total: number) {
   return `${((v / total) * 100).toFixed(3)}%`;
 }
 
-// A stylized, technical stand-in for the turbine — layered rotating rings
-// plus thin radiating "blade" spokes for texture, all CSS/SVG. Not a
-// photorealistic render (that needs an image generator, not code) but
-// pushed as far as that toolset goes: more depth, more motion, more detail
-// than a single flat gradient circle.
-// Exported so LendersFlow.tsx (the "One Engine, Every Lender's Rules"
-// section) can reuse the exact same core instead of a second, slightly
-// different-looking one.
+// Needed by LendersFlow.tsx
 export function EngineCore() {
   const spokes = Array.from({ length: 12 }, (_, i) => i);
   return (
@@ -90,10 +84,6 @@ export function EngineCore() {
       >
         {spokes.map((i) => {
           const angle = (360 / spokes.length) * i;
-          // Rounded — Math.cos/sin aren't guaranteed bit-identical between
-          // Node's SSR pass and the browser's engine, which otherwise shows
-          // up as a React hydration mismatch on these coordinates (hit this
-          // exact bug once already with the previous engine visual).
           const x2 = Math.round((85 + 64 * Math.cos((angle * Math.PI) / 180)) * 100) / 100;
           const y2 = Math.round((85 + 64 * Math.sin((angle * Math.PI) / 180)) * 100) / 100;
           return <line key={i} x1="85" y1="85" x2={x2} y2={y2} stroke="rgba(24,224,255,0.2)" strokeWidth="1" />;
@@ -134,9 +124,6 @@ function RankBadge({ rank }: { rank: number }) {
   );
 }
 
-// The top (rank 1) card gets full detail; the rest stay compact — matches
-// the reference's cascading-stack composition without needing four full
-// reason-lists' worth of vertical space.
 function RankedCard({ rank, rate, compact }: { rank: number; rate: LiveRate; compact?: boolean }) {
   if (compact) {
     return (
@@ -151,12 +138,12 @@ function RankedCard({ rank, rate, compact }: { rank: number; rate: LiveRate; com
   }
   return (
     <div
-      className="rounded-2xl border border-[#7CFF8A]/30 bg-[#08141D]/90 p-3.5 backdrop-blur-md"
+      className="rounded-2xl border border-[#7CFF8A]/30 bg-[#08141D]/90 p-3.5 backdrop-blur-md relative"
       style={{ boxShadow: "0 0 30px rgba(124,255,138,0.15)" }}
     >
       <div className="mb-1.5 flex items-center justify-between">
         <RankBadge rank={rank} />
-        <span className="text-[9px] text-[#91A0AE]">Illustrative</span>
+        <span className="text-[9px] text-[#18E0FF]/70">BEST MATCH</span>
       </div>
       <p className="text-sm font-bold text-[#F5F7FA]">{rate.bank_name}</p>
       <ul className="mt-1.5 flex flex-col gap-1 text-[10px] text-[#91A0AE]">
@@ -173,10 +160,6 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
 
   return (
     <>
-      {/* Desktop/tablet: the full positioned diagram — fixed-width cards
-          placed by percentage of a 940px design don't scale down cleanly
-          below that, so this is sm: and up only (see the mobile stack
-          below for phones). */}
       <div
         className="relative mx-auto hidden w-full sm:block"
         style={{ aspectRatio: `${SIZE.w} / ${SIZE.h}`, maxWidth: 940 }}
@@ -184,7 +167,7 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
         <svg viewBox={`0 0 ${SIZE.w} ${SIZE.h}`} className="absolute inset-0 h-full w-full overflow-visible">
           {INPUTS.map((input, i) => {
             const y = inputY(i);
-            const path = `M ${INPUT_X} ${y} Q ${(INPUT_X + CORE.x) / 2} ${y}, ${CORE.x - 95} ${CORE.y}`;
+            const path = `M ${INPUT_X} ${y} Q ${(INPUT_X + CORE.x) / 2} ${y}, ${CORE.x - 110} ${CORE.y}`;
             return (
               <g key={input.label}>
                 <path d={path} fill="none" stroke="rgba(0,214,201,0.25)" strokeWidth="1.5" />
@@ -200,7 +183,7 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
           })}
           {cards.map((rate, i) => {
             const y = outputY(i);
-            const path = `M ${CORE.x + 95} ${CORE.y} Q ${(CORE.x + OUTPUT_X) / 2} ${y}, ${OUTPUT_X} ${y}`;
+            const path = `M ${CORE.x + 110} ${CORE.y} Q ${(CORE.x + OUTPUT_X) / 2} ${y}, ${OUTPUT_X} ${y}`;
             return (
               <g key={rate.bank_name}>
                 <path d={path} fill="none" stroke="rgba(124,255,138,0.28)" strokeWidth="1.5" />
@@ -233,10 +216,17 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
         ))}
 
         <div
-          className="absolute h-[170px] w-[170px] -translate-x-1/2 -translate-y-1/2"
+          className="absolute h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
           style={{ left: pct(CORE.x, SIZE.w), top: pct(CORE.y, SIZE.h) }}
         >
-          <EngineCore />
+          <Image
+            src="/engine-core.jpg"
+            alt="Lender Match Engine 3D Core"
+            fill
+            className="object-contain"
+            priority
+            unoptimized
+          />
         </div>
 
         {cards.map((rate, i) => (
@@ -253,9 +243,6 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
         ))}
       </div>
 
-      {/* Mobile: a real stacked composition, not a shrunk version of the
-          above — inputs in a row, arrow down to the core, arrow down to
-          the ranked cards, all in normal document flow. */}
       <div className="flex flex-col items-center gap-4 sm:hidden">
         <div className="flex flex-wrap justify-center gap-2">
           {INPUTS.map((input) => (
@@ -271,8 +258,14 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
           ))}
         </div>
         <span className="text-[#00D6C9]">↓</span>
-        <div className="relative h-[130px] w-[130px] shrink-0">
-          <EngineCore />
+        <div className="relative h-[200px] w-[200px] shrink-0 mix-blend-screen">
+          <Image
+            src="/engine-core.jpg"
+            alt="Lender Match Engine 3D Core"
+            fill
+            className="object-contain"
+            unoptimized
+          />
         </div>
         <span className="text-[#7CFF8A]">↓</span>
         <div className="flex w-full max-w-xs flex-col gap-2">
