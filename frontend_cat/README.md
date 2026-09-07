@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lender Match Engine — Frontend
 
-## Getting Started
+Next.js frontend for the Lender Match Engine, a rule-based home loan
+lender-matching platform. Talks to the FastAPI backend in `../backend_cat`.
 
-First, run the development server:
+Two areas:
+- **Public site** (`/`, `/explore`) — the landing page and the Explore
+  Lenders tool. No login required.
+- **Admin console** (`/admin`) — manages bank/product data, categories, and
+  admin access. Requires signing in with a company email (passwordless
+  email-link sign-in via Firebase) and approval from a super admin.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Runs on [http://localhost:3001](http://localhost:3001) (not 3000 — the
+backend usually runs on 3000/8000-range ports locally, see `backend_cat`'s
+own README/setup).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You'll need a `.env.local` with:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8043
 
-## Learn More
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+```
 
-To learn more about Next.js, take a look at the following resources:
+The Firebase values come from the project's Firebase console (same project
+the backend's service account key points at). Admin login only works with
+these set — without them the admin pages show a "not configured yet"
+message instead of crashing.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Next.js 16 (App Router), Tailwind v4, Framer Motion, Firebase Auth
+(email-link sign-in — see `lib/useAuth.ts`).
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploys to Netlify — see `netlify.toml` at the repo root. Every push to the
+connected branch auto-deploys.
