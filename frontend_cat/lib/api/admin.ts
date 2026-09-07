@@ -58,20 +58,6 @@ export interface AmbakBankOption {
   name: string;
 }
 
-export interface AccessRequestOut {
-  uid: string;
-  email: string;
-  name: string | null;
-  phone: string | null;
-  requested_at: string | null;
-}
-
-export interface AdminStatusOut {
-  email: string;
-  role: "admin" | "super_admin" | null;
-  has_profile: boolean;
-}
-
 export interface AdminAccountOut {
   uid: string;
   email: string;
@@ -162,18 +148,6 @@ export const adminApi = {
       { method: "DELETE" },
     ),
 
-  listAccessRequests: (token: string) => adminRequest<AccessRequestOut[]>("/api/v1/admin/access-requests", token),
-
-  approveAccessRequest: (token: string, uid: string) =>
-    adminRequest<{ status: string }>(`/api/v1/admin/access-requests/${encodeURIComponent(uid)}/approve`, token, {
-      method: "POST",
-    }),
-
-  denyAccessRequest: (token: string, uid: string) =>
-    adminRequest<{ status: string }>(`/api/v1/admin/access-requests/${encodeURIComponent(uid)}/deny`, token, {
-      method: "POST",
-    }),
-
   listAdmins: (token: string) => adminRequest<AdminAccountOut[]>("/api/v1/admin/admins", token),
 
   revokeAdminAccess: (token: string, uid: string) =>
@@ -182,8 +156,7 @@ export const adminApi = {
     }),
 
   // Promotes/demotes an already-assigned account between business, admin,
-  // and super_admin — distinct from approveAccessRequest above, which only
-  // ever grants "admin" to a brand new, still-pending request.
+  // and super_admin.
   setAccountRole: (token: string, uid: string, newRole: "business" | "admin" | "super_admin") =>
     adminRequest<{ status: string; role: string }>(
       `/api/v1/admin/admins/${encodeURIComponent(uid)}/set-role?new_role=${encodeURIComponent(newRole)}`,
@@ -192,9 +165,4 @@ export const adminApi = {
     ),
 
   getActivityLog: (token: string) => adminRequest<ActivityLogEntryOut[]>("/api/v1/admin/activity-log", token),
-
-  getStatus: (token: string) => adminRequest<AdminStatusOut>("/api/v1/admin/status", token),
-
-  submitProfile: (token: string, name: string, phone: string) =>
-    adminRequest<{ status: string }>("/api/v1/admin/profile", token, { method: "POST", body: { name, phone } }),
 };

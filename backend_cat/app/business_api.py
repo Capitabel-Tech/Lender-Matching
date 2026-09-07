@@ -1,12 +1,12 @@
-"""Business-user signup completion — a brand new Firebase account (created
-client-side via createUserWithEmailAndPassword) has no role claim until this
-runs once, right after. Deliberately open to any email domain, unlike admin
-signup: business accounts are external partner companies, not company staff.
+"""Signup completion for every account, staff included — a brand new
+Firebase account (created client-side via createUserWithEmailAndPassword)
+has no role claim until this runs once, right after. No domain
+restriction and no approval step: everyone starts at the same "business"
+(Explore-only) tier the moment they sign up.
 
-Approval-free by design — the whole point of this tier is self-service
-browsing access to Explore Lenders (see app/auth.py's require_any_role).
 Only a super admin manually promoting someone (app/access_api.py's
-set_role) grants anything beyond that.
+set_account_role) grants anything beyond that — see app/auth.py's
+require_any_role for what "business" alone gets you.
 """
 
 from typing import Annotated

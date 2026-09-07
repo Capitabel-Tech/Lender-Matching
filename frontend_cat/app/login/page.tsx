@@ -1,7 +1,6 @@
 "use client";
 
 import { Space_Grotesk } from "next/font/google";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -11,7 +10,7 @@ import { useAuth } from "@/lib/useAuth";
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export default function LoginPage() {
-  const { user, role, loading, error, signUpBusiness, loginBusiness } = useAuth();
+  const { user, role, loading, error, signUp, login } = useAuth();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -27,7 +26,7 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const ok = mode === "signup" ? await signUpBusiness(email, password) : await loginBusiness(email, password);
+    const ok = mode === "signup" ? await signUp(email, password) : await login(email, password);
     setSubmitting(false);
     if (ok) router.push("/explore");
   }
@@ -123,10 +122,6 @@ export default function LoginPage() {
               {submitting ? "One moment…" : mode === "signup" ? "Create account" : "Log in"}
             </button>
           </form>
-
-          <Link href="/admin/login" className="text-xs font-medium text-[#91A0AE] hover:text-[#F5F7FA]">
-            Company admin? Sign in here instead →
-          </Link>
         </div>
       </div>
     </div>

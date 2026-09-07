@@ -2,9 +2,9 @@
 email. Needed because a super admin can't be approved by anyone through the
 normal flow — nobody with that role exists yet the very first time.
 
-The account has to already exist (sign up for it first at /admin/signup,
-same as anyone else) — this script only grants the role, it doesn't create
-the account.
+The account has to already exist (sign up for it first at /login, same as
+anyone else) — this script only grants the role, it doesn't create the
+account.
 
 Run with: python -m app.bootstrap_super_admin you@example.com
 """
@@ -27,7 +27,7 @@ def main() -> None:
     try:
         user = firebase_auth.get_user_by_email(email, app=_firebase_app)
     except firebase_auth.UserNotFoundError:
-        print(f"No Firebase account for {email} yet — sign up at /admin/signup first, then re-run this.")
+        print(f"No Firebase account for {email} yet — sign up at /login first, then re-run this.")
         sys.exit(1)
     firebase_auth.set_custom_user_claims(user.uid, {"role": "super_admin"}, app=_firebase_app)
     print(f"{email} is now a super_admin.")

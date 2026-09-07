@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { AccessRequestsSection } from "@/features/admin/AccessRequestsSection";
 import { ActivityLogSection } from "@/features/admin/ActivityLogSection";
 import { BanksSection } from "@/features/admin/BanksSection";
 import { BiasSection } from "@/features/admin/BiasSection";
@@ -16,18 +15,20 @@ import { useAuth } from "@/lib/useAuth";
 export default function AdminDashboardPage() {
   const { user, role, loading, logout, getToken, roleChangeNotice, dismissRoleChangeNotice } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<"banks" | "bias" | "categories" | "access" | "admins" | "log">("banks");
+  const [tab, setTab] = useState<"banks" | "bias" | "categories" | "admins" | "log">("banks");
 
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      router.push("/admin/login");
+      router.push("/login");
       return;
     }
-    // A real, logged-in account that just hasn't been approved yet — send
-    // them to the waiting screen instead of a 403 wall of broken requests.
+    // Every account gets a role (at minimum "business") the moment it signs
+    // up — see business_api.py — so role ever being null here shouldn't
+    // normally happen, but if it does, there's nowhere useful to send them
+    // except back to log in again.
     if (role === null) {
-      router.push("/admin/pending");
+      router.push("/login");
       return;
     }
     // A business (Explore-only) account has a real, non-null role but no
@@ -60,7 +61,7 @@ export default function AdminDashboardPage() {
             <button
               onClick={async () => {
                 await logout();
-                router.push("/admin/login");
+                router.push("/login");
               }}
               className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
             >
@@ -103,16 +104,6 @@ export default function AdminDashboardPage() {
           {role === "super_admin" && (
             <>
               <button
-                onClick={() => setTab("access")}
-                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                  tab === "access"
-                    ? "bg-teal-600 text-white"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                }`}
-              >
-                Access Requests
-              </button>
-              <button
                 onClick={() => setTab("admins")}
                 className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
                   tab === "admins"
@@ -142,8 +133,6 @@ export default function AdminDashboardPage() {
           <BiasSection getToken={getToken} />
         ) : tab === "categories" ? (
           <CategoriesSection getToken={getToken} />
-        ) : tab === "access" ? (
-          <AccessRequestsSection getToken={getToken} />
         ) : tab === "admins" ? (
           <ManageAdminsSection getToken={getToken} currentUserEmail={user.email} />
         ) : (

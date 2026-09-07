@@ -1,24 +1,24 @@
-"""Checks that an admin request is really from someone who's logged in via
-Firebase AND has been approved — the "lock on the door" for anything that
-changes lender data. The login itself (username/password) is handled
-entirely by Firebase on the frontend; this file verifies the proof-of-login
-(a signed token) Firebase hands the frontend after a successful login, using
-the private service account key so that proof can't be faked, and checks the
-approval role stored on that Firebase account (a "custom claim") — not a
-database row, so there's nothing here for an admin to hand-edit.
+"""Checks that a request is really from someone who's logged in via Firebase
+AND has the right role for what they're trying to do. The login itself
+(email/password) is handled entirely by Firebase on the frontend; this file
+verifies the proof-of-login (a signed token) Firebase hands the frontend
+after a successful login, using the private service account key so that
+proof can't be faked, and checks the role stored on that Firebase account (a
+"custom claim") — not a database row, so there's nothing here for anyone to
+hand-edit outside this flow.
+
+Every account gets the "business" role the moment it signs up (see
+app/business_api.py) — no approval step. A super admin can promote an
+account to admin/super_admin, or demote it back down, from the Manage
+Admins screen (app/access_api.py's set_account_role) whenever they choose.
 
 Three tiers:
-  - require_login: any real Firebase account, approved or not. Used only by
-    the /status endpoint the pending-approval screen polls, and by the
-    access-request endpoints below (which read the caller's own claims to
-    decide if *they're* allowed to approve/deny someone else).
+  - require_any_role: any real, assigned account (business, admin, or
+    super_admin). Gates the borrower-facing Explore routes.
   - require_admin: role is "admin" or "super_admin". Everything that reads
     or writes lender data.
-  - require_super_admin: role is "super_admin" only. Approving/denying other
-    people's access requests — a regular admin can't do this.
-
-A brand new Firebase account has no role claim at all (None) until a super
-admin approves it — see app/access_api.py.
+  - require_super_admin: role is "super_admin" only. Promoting/demoting/
+    revoking other accounts — a regular admin can't do this.
 """
 
 from dataclasses import dataclass
@@ -48,9 +48,8 @@ if _service_account_path.exists():
     _firebase_app = firebase_admin.initialize_app(credentials.Certificate(str(_service_account_path)))
 
 ADMIN_ROLES = frozenset({"admin", "super_admin"})
-# "business" is the borrower-facing tier added for Explore Lenders access —
-# see app/business_api.py. Deliberately separate from ADMIN_ROLES: a business
-# account can browse Explore but never touch admin_router's lender-data routes.
+# The role every account starts at right after signup — Explore-only access,
+# no admin dashboard. See app/business_api.py.
 BUSINESS_ROLE = "business"
 ALL_ROLES = ADMIN_ROLES | {BUSINESS_ROLE}
 
@@ -59,22 +58,19 @@ ALL_ROLES = ADMIN_ROLES | {BUSINESS_ROLE}
 class LoggedInUser:
     uid: str
     email: str
-    role: str | None  # None = a real account that hasn't been approved yet
+    role: str | None  # None = a real account with no role assigned (shouldn't normally happen post-signup)
 
 
 async def _verify_token(
     credentials_header: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)],
 ) -> LoggedInUser:
     """Verifies the token is a real, current Firebase login — makes no
-    judgment about domain or approval. Shared by require_login (which adds
-    the admin-only domain check below) and app/business_api.py's signup
-    endpoint (which must NOT apply that admin-specific check to a brand new
-    business account, since those are deliberately allowed from any email).
-    """
+    judgment about role. Shared by every dependency below, and by
+    app/business_api.py's signup endpoint."""
     if _firebase_app is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Admin login isn't configured on this server yet (missing Firebase service account file).",
+            detail="Login isn't configured on this server yet (missing Firebase service account file).",
         )
     if credentials_header is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing login token.")
@@ -96,57 +92,26 @@ async def _verify_token(
     return LoggedInUser(uid=decoded["uid"], email=email, role=role)
 
 
-async def require_login(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:
-    """Same real-login check as _verify_token, plus the admin-only company
-    domain gate — used by every *admin* access-request route. Business
-    signups (app/business_api.py) deliberately use _verify_token directly so
-    this domain restriction never applies to them.
-
-    Only gates brand new accounts on their way in — an account a super
-    admin already approved keeps working regardless of domain (e.g. a
-    developer's own personal Gmail, approved before this check existed).
-    Without that carve-out, turning this on would lock out every admin
-    who isn't on the company domain, including whoever just enabled it.
-    """
-    if user.role is None and not user.email.endswith(f"@{settings.allowed_email_domain}"):
-        try:
-            firebase_auth.update_user(user.uid, disabled=True, app=_firebase_app)
-        except Exception:
-            pass
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Only @{settings.allowed_email_domain} accounts can request access.",
-        )
-    return user
-
-
 async def require_any_role(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:
     """Gates the borrower-facing Explore routes — any real, assigned role
-    (business, admin, or super_admin) is enough; a pending/unassigned
-    account (role is None) is not. No domain check here on purpose: business
-    accounts are external partner companies, not company staff."""
+    (business, admin, or super_admin) is enough."""
     if user.role not in ALL_ROLES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Sign in to use this.")
     return user
 
 
-async def require_admin(user: Annotated[LoggedInUser, Depends(require_login)]) -> str:
+async def require_admin(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> str:
     """FastAPI dependency — add to any admin-only route. Returns the logged-in
-    admin's email on success; raises 403 if they're a real, logged-in account
-    that just hasn't been approved yet (distinct from 401 "not logged in at
-    all", so the frontend can send each case somewhere different).
-    """
+    admin's email on success; raises 403 for a real account that just isn't
+    an admin (distinct from 401 "not logged in at all")."""
     if user.role not in ADMIN_ROLES:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Your access request hasn't been approved yet.",
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have admin access.")
     return user.email
 
 
-async def require_super_admin(user: Annotated[LoggedInUser, Depends(require_login)]) -> LoggedInUser:
-    """Stricter than require_admin — only the super admin(s) can approve or
-    deny other people's access requests."""
+async def require_super_admin(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:
+    """Stricter than require_admin — only the super admin(s) can promote,
+    demote, or revoke other accounts."""
     if user.role != "super_admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required.")
     return user
