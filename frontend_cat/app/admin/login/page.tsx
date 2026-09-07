@@ -3,7 +3,7 @@
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { EngineCore } from "@/features/landing/EngineFlow";
 import { useAuth } from "@/lib/useAuth";
@@ -12,42 +12,49 @@ const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", 
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "600"] });
 
 // Same company domain app/auth.py's require_login enforces for brand new
-// accounts — shown here only so the button is honest about what happens
+// accounts — shown here only so the form is honest about what happens
 // next, not re-checked client-side (the backend is the real gate).
 const COMPANY_DOMAIN = "capitabel.com";
 
-function GoogleIcon() {
+function MailIcon({ size = 18 }: { size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24">
-      <path
-        fill="#4285F4"
-        d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 24c3.24 0 5.95-1.07 7.94-2.9l-3.88-3.01c-1.08.72-2.45 1.15-4.06 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.11A12 12 0 0 0 12 24Z"
-      />
-      <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28V6.61H1.26A12 12 0 0 0 0 12c0 1.94.46 3.77 1.26 5.39l4.01-3.11Z" />
-      <path
-        fill="#EA4335"
-        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.94 1.19 15.23 0 12 0A12 12 0 0 0 1.26 6.61l4.01 3.11C6.22 6.86 8.87 4.75 12 4.75Z"
-      />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
     </svg>
   );
 }
 
 export default function AdminLoginPage() {
-  const { loginWithGoogle, error } = useAuth();
+  const { user, error, completingLink, needsEmailConfirmation, sendLoginLink, confirmEmailAndCompleteLink } =
+    useAuth();
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [linkSentTo, setLinkSentTo] = useState<string | null>(null);
 
-  async function handleGoogleLogin() {
+  // Fires once a link click (same device, via useAuth's mount effect, or
+  // the "confirm your email" fallback below) actually signs someone in.
+  // /admin itself checks the role and redirects to /admin/pending if this
+  // account hasn't been approved yet — no need to duplicate that check here.
+  useEffect(() => {
+    if (user) router.push("/admin");
+  }, [user, router]);
+
+  async function handleSendLink(e: React.FormEvent) {
+    e.preventDefault();
     setSubmitting(true);
-    await loginWithGoogle();
+    const ok = await sendLoginLink(email);
     setSubmitting(false);
-    // /admin itself checks the role and redirects to /admin/pending if this
-    // account hasn't been approved yet — no need to duplicate that check here.
-    router.push("/admin");
+    if (ok) setLinkSentTo(email.trim());
+  }
+
+  async function handleConfirmEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    await confirmEmailAndCompleteLink(confirmEmail);
+    setSubmitting(false);
   }
 
   return (
@@ -89,34 +96,120 @@ export default function AdminLoginPage() {
             <EngineCore />
           </div>
 
-          <div className="flex flex-col items-center gap-3 text-center">
-            <p className={`${mono.className} text-[11px] font-semibold uppercase tracking-[0.2em] text-[#18E0FF]`}>
-              Restricted Access
-            </p>
-            <h2 className="text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[38px]">
-              Admin <span className="text-[#00D6C9]">Login</span>
-            </h2>
-            <p className="max-w-xs text-sm leading-relaxed text-[#91A0AE]">
-              New here? Signing in also creates your access request —{" "}
-              <span className="font-semibold text-[#F5F7FA]">a super admin just needs to approve it</span> before you
-              can get in.
-            </p>
-          </div>
+          {completingLink ? (
+            <div className="flex flex-col items-center gap-3 text-center">
+              <p className={`${mono.className} text-[11px] font-semibold uppercase tracking-[0.2em] text-[#18E0FF]`}>
+                One Moment
+              </p>
+              <h2 className="text-[28px] font-bold leading-[1.1] tracking-tight sm:text-[32px]">Signing you in…</h2>
+            </div>
+          ) : needsEmailConfirmation ? (
+            <>
+              <div className="flex flex-col items-center gap-3 text-center">
+                <p className={`${mono.className} text-[11px] font-semibold uppercase tracking-[0.2em] text-[#18E0FF]`}>
+                  Confirm To Continue
+                </p>
+                <h2 className="text-[28px] font-bold leading-[1.1] tracking-tight sm:text-[32px]">
+                  Confirm your <span className="text-[#00D6C9]">email</span>
+                </h2>
+                <p className="max-w-xs text-sm leading-relaxed text-[#91A0AE]">
+                  This link was opened on a different device or browser than the one you requested it from — type
+                  your email again to finish signing in.
+                </p>
+              </div>
+              {error && (
+                <p className="w-full rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-2 text-center text-sm text-red-300">
+                  {error}
+                </p>
+              )}
+              <form onSubmit={handleConfirmEmail} className="flex w-full flex-col gap-3">
+                <input
+                  type="email"
+                  required
+                  value={confirmEmail}
+                  onChange={(e) => setConfirmEmail(e.target.value)}
+                  placeholder={`you@${COMPANY_DOMAIN}`}
+                  className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#F5F7FA] outline-none focus:border-[#00D6C9]"
+                />
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full rounded-lg bg-[#00D6C9] px-5 py-3.5 text-sm font-semibold text-[#050B12] shadow-[0_0_28px_rgba(0,214,201,0.25)] transition-transform hover:scale-[1.02] disabled:opacity-50"
+                >
+                  {submitting ? "Signing in…" : "Confirm and continue"}
+                </button>
+              </form>
+            </>
+          ) : linkSentTo ? (
+            <>
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#00D6C9]/10 text-[#18E0FF] shadow-[0_0_24px_rgba(0,214,201,0.2)]">
+                <MailIcon size={28} />
+              </span>
+              <div className="flex flex-col items-center gap-3 text-center">
+                <p className={`${mono.className} text-[11px] font-semibold uppercase tracking-[0.2em] text-[#18E0FF]`}>
+                  Check Your Inbox
+                </p>
+                <h2 className="text-[28px] font-bold leading-[1.1] tracking-tight sm:text-[32px]">
+                  Link sent to <span className="text-[#00D6C9]">{linkSentTo}</span>
+                </h2>
+                <p className="max-w-xs text-sm leading-relaxed text-[#91A0AE]">
+                  Click the link in that email to sign in — it also creates your access request, and{" "}
+                  <span className="font-semibold text-[#F5F7FA]">a super admin just needs to approve it</span> before
+                  you can get in.
+                </p>
+              </div>
+              <button
+                onClick={() => setLinkSentTo(null)}
+                className="text-sm font-medium text-[#91A0AE] hover:text-[#F5F7FA]"
+              >
+                Use a different email
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col items-center gap-3 text-center">
+                <p className={`${mono.className} text-[11px] font-semibold uppercase tracking-[0.2em] text-[#18E0FF]`}>
+                  Restricted Access
+                </p>
+                <h2 className="text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[38px]">
+                  Admin <span className="text-[#00D6C9]">Login</span>
+                </h2>
+                <p className="max-w-xs text-sm leading-relaxed text-[#91A0AE]">
+                  New here? Signing in also creates your access request —{" "}
+                  <span className="font-semibold text-[#F5F7FA]">a super admin just needs to approve it</span> before
+                  you can get in.
+                </p>
+              </div>
 
-          {error && (
-            <p className="w-full rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-2 text-center text-sm text-red-300">
-              {error}
-            </p>
+              {error && (
+                <p className="w-full rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-2 text-center text-sm text-red-300">
+                  {error}
+                </p>
+              )}
+
+              <form onSubmit={handleSendLink} className="flex w-full flex-col gap-3">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={`you@${COMPANY_DOMAIN}`}
+                  className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#F5F7FA] outline-none focus:border-[#00D6C9]"
+                />
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-white px-5 py-3.5 text-sm font-semibold text-zinc-800 shadow-[0_0_28px_rgba(0,214,201,0.25)] transition-transform hover:scale-[1.02] disabled:opacity-50"
+                >
+                  <MailIcon />
+                  {submitting ? "Sending…" : "Send me a sign-in link"}
+                </button>
+              </form>
+              <p className="text-xs text-[#91A0AE]/70">
+                No password needed — works with any @{COMPANY_DOMAIN} email, whoever hosts it.
+              </p>
+            </>
           )}
-
-          <button
-            onClick={handleGoogleLogin}
-            disabled={submitting}
-            className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-white px-5 py-3.5 text-sm font-semibold text-zinc-800 shadow-[0_0_28px_rgba(0,214,201,0.25)] transition-transform hover:scale-[1.02] disabled:opacity-50"
-          >
-            <GoogleIcon />
-            {submitting ? "Signing in…" : `Continue with your @${COMPANY_DOMAIN} email`}
-          </button>
 
           <p className={`${mono.className} text-[10px] uppercase tracking-[0.15em] text-[#91A0AE]/70`}>
             Lender<span className="text-[#00D6C9]">Match</span> · Admin Panel

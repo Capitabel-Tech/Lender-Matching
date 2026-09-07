@@ -4,7 +4,7 @@
 // allowing anything (see backend/app/auth.py).
 
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { GoogleAuthProvider, getAuth } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -24,8 +24,3 @@ const isConfigured = Boolean(firebaseConfig.apiKey);
 const app = isConfigured ? (getApps().length ? getApp() : initializeApp(firebaseConfig)) : null;
 
 export const auth = app ? getAuth(app) : null;
-
-// Google Sign-In is the only login method — no separate password for us to
-// store or for someone to hand off to a coworker. Whoever owns the Google
-// account (including its own 2FA, if they have it) is who gets in.
-export const googleProvider = new GoogleAuthProvider();
