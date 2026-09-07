@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.access_api import access_router
 from app.admin_api import admin_router
+from app.business_api import business_router
 from app.config import settings
 from app.database import create_all_tables
 from app.explore_api import explore_router
@@ -28,6 +29,7 @@ app.add_middleware(
 
 app.include_router(admin_router)
 app.include_router(access_router)
+app.include_router(business_router)
 app.include_router(explore_router)
 
 

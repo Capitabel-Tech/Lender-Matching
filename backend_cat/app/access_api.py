@@ -27,7 +27,7 @@ from app.admin_schemas import (
     AdminStatusOut,
     ProfileIn,
 )
-from app.auth import ADMIN_ROLES, LoggedInUser, _firebase_app, require_login, require_super_admin
+from app.auth import ALL_ROLES, LoggedInUser, _firebase_app, require_login, require_super_admin
 from app.database import AccessRequestProfileModel, get_db
 
 access_router = APIRouter(prefix="/api/v1/admin", tags=["admin-access"])
@@ -67,7 +67,9 @@ async def list_access_requests(
     _: Annotated[LoggedInUser, Depends(require_super_admin)], session: Annotated[AsyncSession, Depends(get_db)]
 ) -> list[AccessRequestOut]:
     """Every enabled Firebase account that doesn't already have an approved
-    role — i.e. everyone waiting on a decision."""
+    role — i.e. everyone waiting on a decision. Excludes business accounts
+    too (ALL_ROLES, not just ADMIN_ROLES) — they already have a role, just
+    not an admin one, so they're not "pending" anything."""
     profiles = {
         row.uid: row for row in (await session.execute(select(AccessRequestProfileModel))).scalars().all()
     }
@@ -75,7 +77,7 @@ async def list_access_requests(
     for user_record in firebase_auth.list_users(app=_firebase_app).iterate_all():
         if user_record.disabled:
             continue
-        if (user_record.custom_claims or {}).get("role") in ADMIN_ROLES:
+        if (user_record.custom_claims or {}).get("role") in ALL_ROLES:
             continue
         created_at = user_record.user_metadata.creation_timestamp if user_record.user_metadata else None
         profile = profiles.get(user_record.uid)
@@ -121,15 +123,49 @@ async def deny_access_request(
 
 @access_router.get("/admins")
 async def list_admins(_: Annotated[LoggedInUser, Depends(require_super_admin)]) -> list[AdminAccountOut]:
-    """Everyone who currently has real access — not pending requests, the
-    people who already got approved. This is what the Manage Admins /
-    Revoke Access screen shows."""
+    """Everyone who currently has real access — admin, super_admin, AND
+    business accounts (self-service Explore signups) — not pending admin
+    requests, which /access-requests covers separately. This is what the
+    Manage Admins screen shows, including the promote/demote controls for
+    business accounts."""
     admins: list[AdminAccountOut] = []
     for user_record in firebase_auth.list_users(app=_firebase_app).iterate_all():
         role = (user_record.custom_claims or {}).get("role")
-        if role in ADMIN_ROLES:
+        if role in ALL_ROLES:
             admins.append(AdminAccountOut(uid=user_record.uid, email=user_record.email or user_record.uid, role=role))
     return admins
+
+
+@access_router.post("/admins/{uid}/set-role")
+async def set_account_role(
+    uid: str,
+    new_role: str,
+    request: Request,
+    caller: Annotated[LoggedInUser, Depends(require_super_admin)],
+) -> dict[str, str]:
+    """Promotes or demotes an already-assigned account between business,
+    admin, and super_admin — e.g. turning a business (Explore-only) user
+    into a full admin, or stepping a super admin back down to business.
+    Distinct from approve_access_request above, which only ever grants
+    "admin" to a brand new, still-pending request."""
+    if new_role not in ALL_ROLES:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"role must be one of {sorted(ALL_ROLES)}.")
+    if uid == caller.uid:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "You can't change your own role.")
+    try:
+        target = firebase_auth.get_user(uid, app=_firebase_app)
+        firebase_auth.set_custom_user_claims(uid, {"role": new_role}, app=_firebase_app)
+        # Deliberately NOT revoking refresh tokens here (unlike
+        # revoke_admin_access below) — this person should stay logged in and
+        # just pick up the new role on their next poll (getIdTokenResult
+        # with forceRefresh reads the updated claim using their existing,
+        # still-valid session). Revoking would sign them out entirely
+        # instead of smoothly transitioning them, breaking the "bell
+        # notification, access just updates" flow this is built for.
+    except firebase_auth.UserNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
+    await log_activity(request, caller.email, f"Set {target.email or uid}'s role to {new_role}")
+    return {"status": "updated", "role": new_role}
 
 
 @access_router.post("/admins/{uid}/revoke")

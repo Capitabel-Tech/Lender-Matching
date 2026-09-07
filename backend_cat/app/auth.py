@@ -48,6 +48,11 @@ if _service_account_path.exists():
     _firebase_app = firebase_admin.initialize_app(credentials.Certificate(str(_service_account_path)))
 
 ADMIN_ROLES = frozenset({"admin", "super_admin"})
+# "business" is the borrower-facing tier added for Explore Lenders access —
+# see app/business_api.py. Deliberately separate from ADMIN_ROLES: a business
+# account can browse Explore but never touch admin_router's lender-data routes.
+BUSINESS_ROLE = "business"
+ALL_ROLES = ADMIN_ROLES | {BUSINESS_ROLE}
 
 
 @dataclass(frozen=True)
@@ -57,11 +62,14 @@ class LoggedInUser:
     role: str | None  # None = a real account that hasn't been approved yet
 
 
-async def require_login(
+async def _verify_token(
     credentials_header: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)],
 ) -> LoggedInUser:
     """Verifies the token is a real, current Firebase login — makes no
-    judgment about whether that person has been approved for anything.
+    judgment about domain or approval. Shared by require_login (which adds
+    the admin-only domain check below) and app/business_api.py's signup
+    endpoint (which must NOT apply that admin-specific check to a brand new
+    business account, since those are deliberately allowed from any email).
     """
     if _firebase_app is None:
         raise HTTPException(
@@ -85,23 +93,41 @@ async def require_login(
 
     email = decoded.get("email", decoded["uid"])
     role = decoded.get("role")
+    return LoggedInUser(uid=decoded["uid"], email=email, role=role)
 
-    # Only gates brand new accounts on their way in — an account a super
-    # admin already approved keeps working regardless of domain (e.g. a
-    # developer's own personal Gmail, approved before this check existed).
-    # Without that carve-out, turning this on would lock out every admin
-    # who isn't on the company domain, including whoever just enabled it.
-    if role is None and not email.endswith(f"@{settings.allowed_email_domain}"):
+
+async def require_login(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:
+    """Same real-login check as _verify_token, plus the admin-only company
+    domain gate — used by every *admin* access-request route. Business
+    signups (app/business_api.py) deliberately use _verify_token directly so
+    this domain restriction never applies to them.
+
+    Only gates brand new accounts on their way in — an account a super
+    admin already approved keeps working regardless of domain (e.g. a
+    developer's own personal Gmail, approved before this check existed).
+    Without that carve-out, turning this on would lock out every admin
+    who isn't on the company domain, including whoever just enabled it.
+    """
+    if user.role is None and not user.email.endswith(f"@{settings.allowed_email_domain}"):
         try:
-            firebase_auth.update_user(decoded["uid"], disabled=True, app=_firebase_app)
+            firebase_auth.update_user(user.uid, disabled=True, app=_firebase_app)
         except Exception:
             pass
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Only @{settings.allowed_email_domain} accounts can request access.",
         )
+    return user
 
-    return LoggedInUser(uid=decoded["uid"], email=email, role=role)
+
+async def require_any_role(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:
+    """Gates the borrower-facing Explore routes — any real, assigned role
+    (business, admin, or super_admin) is enough; a pending/unassigned
+    account (role is None) is not. No domain check here on purpose: business
+    accounts are external partner companies, not company staff."""
+    if user.role not in ALL_ROLES:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Sign in to use this.")
+    return user
 
 
 async def require_admin(user: Annotated[LoggedInUser, Depends(require_login)]) -> str:

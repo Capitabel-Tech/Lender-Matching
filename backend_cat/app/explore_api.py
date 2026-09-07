@@ -1,13 +1,18 @@
 """The filter-sidebar testing endpoint — browses whatever is currently
 loaded in the database via checkbox-style category filters, instead of
 requiring a full borrower profile like /api/v1/lenders/match does. See
-app/explore.py for the matching/faceting logic."""
+app/explore.py for the matching/faceting logic.
+
+Every route here requires a logged-in business/admin/super_admin account
+(require_any_role) — Explore Lenders is no longer public; see app/auth.py.
+"""
 
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth import require_any_role
 from app.database import get_db
 from app.domain import (
     HomeLoanProduct,
@@ -38,7 +43,7 @@ from app.explore_schemas import (
 )
 from app.repository import LenderRepository, SqlLenderRepository
 
-explore_router = APIRouter(prefix="/api/v1/explore")
+explore_router = APIRouter(prefix="/api/v1/explore", dependencies=[Depends(require_any_role)])
 
 
 def get_lender_repository(db: Annotated[AsyncSession, Depends(get_db)]) -> LenderRepository:

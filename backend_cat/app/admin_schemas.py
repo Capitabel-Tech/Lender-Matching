@@ -94,7 +94,7 @@ class AccessRequestOut(BaseModel):
 class AdminAccountOut(BaseModel):
     uid: str
     email: str
-    role: str  # "admin" or "super_admin"
+    role: str  # "business", "admin", or "super_admin"
 
 
 class ActivityLogEntryOut(BaseModel):
