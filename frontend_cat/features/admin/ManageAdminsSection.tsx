@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { errorMessage } from "@/lib/api/client";
 import { adminApi, type AdminAccountOut } from "@/lib/api/admin";
 
+import { AdminLoading } from "./AdminLoading";
+
 export function ManageAdminsSection({
   getToken,
   currentUserEmail,
@@ -24,10 +26,18 @@ export function ManageAdminsSection({
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const token = await getToken();
-      if (!token || cancelled) return;
+    let retryTimer: number | undefined;
+
+    async function load() {
       try {
+        const token = await getToken();
+        // getToken only returns null in the moment right after login before
+        // Firebase's own state has settled — retry shortly instead of
+        // silently leaving `items` at null forever with no feedback at all.
+        if (!token) {
+          if (!cancelled) retryTimer = window.setTimeout(load, 300);
+          return;
+        }
         const data = await adminApi.listAdmins(token);
         if (!cancelled) {
           setItems(data);
@@ -36,9 +46,12 @@ export function ManageAdminsSection({
       } catch (err) {
         if (!cancelled) setListError(errorMessage(err));
       }
-    })();
+    }
+
+    void load();
     return () => {
       cancelled = true;
+      window.clearTimeout(retryTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders, run once on mount
   }, []);
@@ -77,6 +90,10 @@ export function ManageAdminsSection({
   // action that actually locks someone out.
   function promote(uid: string) {
     void runAction(uid, (token) => adminApi.setAccountRole(token, uid, "admin"));
+  }
+
+  if (items === null && !listError) {
+    return <AdminLoading />;
   }
 
   return (

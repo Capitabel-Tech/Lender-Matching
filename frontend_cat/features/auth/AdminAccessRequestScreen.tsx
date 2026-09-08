@@ -88,7 +88,7 @@ export function AdminAccessRequestScreen({
 
           <div className="mt-7">
             {pending ? (
-              <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+              <div className="rounded-lg border border-teal-300 bg-teal-50 px-4 py-3 text-sm font-bold text-teal-800 dark:border-teal-900/60 dark:bg-teal-950/40 dark:text-teal-300">
                 Request sent — an existing admin still needs to review it. You&rsquo;ll get a notice here the moment
                 they decide.
               </div>

@@ -44,9 +44,17 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   // completely normal state, not an error.
   useEffect(() => {
     let cancelled = false;
+    let retryTimer: number | undefined;
     async function load() {
       const token = await getToken();
-      if (!token || cancelled) return;
+      // getToken only returns null in the moment right after login before
+      // Firebase's own state has settled — retry shortly instead of
+      // silently leaving the view stuck with no feedback at all.
+      if (!token) {
+        if (!cancelled) retryTimer = window.setTimeout(load, 300);
+        return;
+      }
+      if (cancelled) return;
       try {
         if (view.name === "list") {
           const data = await adminApi.listBanks(token);
@@ -76,6 +84,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
     load();
     return () => {
       cancelled = true;
+      window.clearTimeout(retryTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders
   }, [view]);
@@ -146,7 +155,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   const loanLabelFor = (value: string) => categories?.loan_type.find((t) => t.value === value)?.label ?? value;
   const employmentLabelFor = (value: string) => categories?.employment_type.find((t) => t.value === value)?.label ?? value;
 
-  if (!categories) {
+  if (!categories || (view.name === "list" && banks === null && !error)) {
     return <AdminLoading />;
   }
 

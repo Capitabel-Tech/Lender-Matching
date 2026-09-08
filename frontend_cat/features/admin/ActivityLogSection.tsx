@@ -5,16 +5,26 @@ import { useEffect, useState } from "react";
 import { errorMessage } from "@/lib/api/client";
 import { adminApi, type ActivityLogEntryOut } from "@/lib/api/admin";
 
+import { AdminLoading } from "./AdminLoading";
+
 export function ActivityLogSection({ getToken }: { getToken: () => Promise<string | null> }) {
   const [items, setItems] = useState<ActivityLogEntryOut[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const token = await getToken();
-      if (!token || cancelled) return;
+    let retryTimer: number | undefined;
+
+    async function load() {
       try {
+        const token = await getToken();
+        // getToken only returns null in the moment right after login before
+        // Firebase's own state has settled — retry shortly instead of
+        // silently leaving `items` at null forever with no feedback at all.
+        if (!token) {
+          if (!cancelled) retryTimer = window.setTimeout(load, 300);
+          return;
+        }
         const data = await adminApi.getActivityLog(token);
         if (!cancelled) {
           setItems(data);
@@ -23,12 +33,19 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
       } catch (err) {
         if (!cancelled) setListError(errorMessage(err));
       }
-    })();
+    }
+
+    void load();
     return () => {
       cancelled = true;
+      window.clearTimeout(retryTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders, run once on mount
   }, []);
+
+  if (items === null && !listError) {
+    return <AdminLoading />;
+  }
 
   return (
     <div className="flex flex-col gap-4">
