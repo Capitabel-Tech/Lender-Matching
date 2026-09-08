@@ -15,7 +15,6 @@ import {
 import { useAuth } from "@/lib/useAuth";
 
 import { BeforeAfter } from "./BeforeAfter";
-import { EngineFlow } from "./EngineFlow";
 import { ExploreModePreview } from "./ExploreModePreview";
 import { FeatureCards } from "./FeatureCards";
 import { LendersFlow, LendersFlowMobile } from "./LendersFlow";
@@ -139,39 +138,35 @@ export function LandingContent() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden px-6 pb-24 pt-16 sm:px-10 sm:pt-20">
-        <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
-          <div className="flex flex-col gap-7">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#F58220]">
-              Rule-Based Lender Matching Engine
-            </p>
-            <h1 className="text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[48px] lg:text-[56px]">
-              One Profile. Every Lender.
-              <br />
-              <span className="text-[#F58220]">Your Best Match.</span>
-            </h1>
-            <p className="max-w-lg text-lg text-brand-500">
-              The engine that calculates <strong className="font-semibold text-[#16264D]">real eligibility</strong>{" "}
-              and <strong className="font-semibold text-[#16264D]">true affordability</strong> across{" "}
-              {bankCount || "24"}+ lenders in seconds. Stop guessing. Start matching.
-            </p>
-            {/* Just this one hero CTA now, plus the nav's own "Check eligibility" —
-                both went to /explore, and a 3rd/4th button here ("Explore Live
-                Rates", a "Product" nav link) said the same thing again. */}
-            <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href="/explore"
-                className="group inline-flex items-center gap-2 rounded-full bg-[#F58220] px-7 py-3.5 text-base font-semibold text-[#0F1A33] shadow-[0_0_30px_rgba(245,130,32,0.35)] transition-transform hover:scale-[1.03]"
-              >
-                Check Your Eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
-              </Link>
-            </div>
-            <p className="text-xs uppercase tracking-wide text-brand-500">
-              No hard credit inquiry &nbsp;•&nbsp; Rule-based matching &nbsp;•&nbsp; Results in seconds
-            </p>
+      <section className="relative overflow-hidden px-6 pb-24 pt-20 sm:px-10 sm:pt-28">
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-7 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#F58220]">
+            Rule-Based Lender Matching Engine
+          </p>
+          <h1 className="text-[36px] font-bold leading-[1.1] tracking-tight sm:text-[52px] lg:text-[60px]">
+            One Profile. Every Lender.
+            <br />
+            <span className="text-[#F58220]">Your Best Match.</span>
+          </h1>
+          <p className="max-w-lg text-lg text-brand-500">
+            The engine that calculates <strong className="font-semibold text-[#16264D]">real eligibility</strong> and{" "}
+            <strong className="font-semibold text-[#16264D]">true affordability</strong> across {bankCount || "24"}+
+            lenders in seconds. Stop guessing. Start matching.
+          </p>
+          {/* Just this one hero CTA now, plus the nav's own "Check eligibility" —
+              both went to /explore, and a 3rd/4th button here ("Explore Live
+              Rates", a "Product" nav link) said the same thing again. */}
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/explore"
+              className="group inline-flex items-center gap-2 rounded-full bg-[#F58220] px-7 py-3.5 text-base font-semibold text-[#0F1A33] shadow-[0_0_30px_rgba(245,130,32,0.35)] transition-transform hover:scale-[1.03]"
+            >
+              Check Your Eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
+            </Link>
           </div>
-
-          <EngineFlow topRates={rates} />
+          <p className="text-xs uppercase tracking-wide text-brand-500">
+            No hard credit inquiry &nbsp;•&nbsp; Rule-based matching &nbsp;•&nbsp; Results in seconds
+          </p>
         </div>
       </section>
 
