@@ -119,12 +119,10 @@ export function ManageAdminsSection({
     <div className="flex flex-col gap-5">
       <div>
         <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Manage Admins</h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          You first, then the protected accounts, then every other admin, then business, then anyone revoked.
-          There's no tier above admin — any admin can edit lender data and manage every other admin, equally.
-          Revoking is immediate and can always be undone by granting access again; a revoked account can also be
-          deleted permanently if it's not coming back.
-        </p>
+        <ul className="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-sm text-zinc-500 dark:text-zinc-400">
+          <li>Every admin has the same power — full access to lender data, and to promote, demote, or revoke any other admin. There's no higher tier.</li>
+          <li>Revoking someone is instant but reversible — grant them access again anytime. Delete a revoked account permanently once it's not coming back.</li>
+        </ul>
       </div>
 
       {listError && (

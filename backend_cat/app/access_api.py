@@ -34,25 +34,34 @@ from app.database import get_db
 access_router = APIRouter(prefix="/api/v1/admin", tags=["admin-access"])
 
 
+# The three core accounts always lead the list, in this exact order,
+# regardless of who's viewing — not "whoever's logged in first" like every
+# other tier below. Praveen and Harish are also in PROTECTED_EMAILS
+# (auth.py), which is a separate rule (can't be revoked); this is purely
+# about display order.
+_PINNED_ORDER = {"praveen@lventur.com": 0, "harish.b@capitabel.com": 1, "charanreddy.9246@gmail.com": 2}
+
+
 @access_router.get("/admins")
 async def list_admins(caller: Annotated[LoggedInUser, Depends(require_admin_user)]) -> list[AdminAccountOut]:
     """Everyone who currently has an account, plus anyone previously revoked
     — revoking cuts off access but deliberately doesn't erase the person
     from this list, so they can be granted access again with one click
-    instead of needing to sign up from scratch. Sorted: whoever's viewing
-    this first, then the protected accounts, then every other admin, then
-    business, then revoked last."""
+    instead of needing to sign up from scratch. Sorted: the three pinned
+    core accounts first (see _PINNED_ORDER), then whoever's viewing this,
+    then every other admin, then business, then revoked last."""
 
     def sort_tier(a: AdminAccountOut) -> int:
+        if a.email in _PINNED_ORDER:
+            return _PINNED_ORDER[a.email]
+        offset = len(_PINNED_ORDER)
         if a.email == caller.email:
-            return 0
-        if a.protected:
-            return 1
+            return offset
         if a.revoked:
-            return 4
+            return offset + 3
         if a.role == ADMIN_ROLE:
-            return 2
-        return 3
+            return offset + 1
+        return offset + 2
 
     admins: list[AdminAccountOut] = []
     for user_record in firebase_auth.list_users(app=_firebase_app).iterate_all():
