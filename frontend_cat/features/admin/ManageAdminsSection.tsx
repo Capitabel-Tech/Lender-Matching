@@ -119,10 +119,20 @@ export function ManageAdminsSection({
     <div className="flex flex-col gap-5">
       <div>
         <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Manage Admins</h2>
-        <ul className="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-sm text-zinc-500 dark:text-zinc-400">
-          <li>Every admin has the same power — full access to lender data, and to promote, demote, or revoke any other admin. There's no higher tier.</li>
-          <li>Revoking someone is instant but reversible — grant them access again anytime. Delete a revoked account permanently once it's not coming back.</li>
-        </ul>
+        <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+          <p className="text-sm font-bold text-amber-900 dark:text-amber-300">
+            ⚠ Granting admin access gives full power over the database
+          </p>
+          <p className="mt-1 text-sm text-amber-800 dark:text-amber-400">
+            Anyone you promote to admin can add, edit, or delete lender data directly — changes go live
+            immediately, with no review step. They can also promote, demote, or revoke any other admin, you
+            included. Only approve access for people you'd trust with that.
+          </p>
+        </div>
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+          Revoking someone is instant but reversible — grant them access again anytime. Delete a revoked account
+          permanently once it's not coming back.
+        </p>
       </div>
 
       {listError && (
