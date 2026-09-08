@@ -8,8 +8,8 @@ export function Metrics({ metrics }: { metrics: Metric[] }) {
     <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-4">
       {metrics.map((m) => (
         <div key={m.label} className="flex flex-col gap-1">
-          <p className="text-5xl font-bold tracking-tight text-[#FFFFFF] sm:text-7xl">{m.value}</p>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#A9B4C9]">{m.label}</p>
+          <p className="text-5xl font-bold tracking-tight text-[#16264D] sm:text-7xl">{m.value}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-500">{m.label}</p>
         </div>
       ))}
     </div>

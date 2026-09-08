@@ -22,7 +22,7 @@ export default function Explore() {
   // scrolls as a whole.
   return (
     <RequireAuth>
-      <div className="flex min-h-screen flex-col overflow-visible bg-cream-100 dark:bg-brand-950 sm:h-screen sm:overflow-hidden">
+      <div className="flex min-h-screen flex-col overflow-visible sm:h-screen sm:overflow-hidden">
         <header className="flex shrink-0 items-center justify-between border-b border-brand-900 bg-brand-800 px-6 py-4">
           <div>
             <Link

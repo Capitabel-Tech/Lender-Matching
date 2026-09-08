@@ -111,9 +111,9 @@ export function LandingContent() {
   return (
     // pb-14 leaves just enough room at the very bottom for the fixed ticker
     // below so it never sits on top of the final CTA's own buttons.
-    <div className={`${spaceGrotesk.className} flex flex-1 flex-col bg-[#0F1A33] pb-14 text-[#FFFFFF]`}>
+    <div className={`${spaceGrotesk.className} flex flex-1 flex-col pb-14 text-[#16264D]`}>
       {/* Header — minimal, floating, transparent + blur */}
-      <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#0F1A33]/70 px-6 py-4 backdrop-blur-md sm:px-10">
+      <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-brand-100 bg-white/80 px-6 py-4 backdrop-blur-md sm:px-10">
         <span className="text-base font-bold tracking-tight">
           Lender<span className="text-[#F58220]">Match</span>
         </span>
@@ -122,7 +122,7 @@ export function LandingContent() {
             <Link
               key={l.label}
               href={l.href}
-              className="rounded-full bg-white/[0.06] px-4 py-2 font-bold text-[#FFFFFF] transition-colors hover:bg-white/[0.12]"
+              className="rounded-full bg-brand-50 px-4 py-2 font-bold text-[#16264D] transition-colors hover:bg-brand-100"
             >
               {l.label}
             </Link>
@@ -140,14 +140,6 @@ export function LandingContent() {
 
       {/* Hero */}
       <section className="relative overflow-hidden px-6 pb-24 pt-16 sm:px-10 sm:pt-20">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
         <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
           <div className="flex flex-col gap-7">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#F58220]">
@@ -158,9 +150,9 @@ export function LandingContent() {
               <br />
               <span className="text-[#F58220]">Your Best Match.</span>
             </h1>
-            <p className="max-w-lg text-lg text-[#A9B4C9]">
-              The engine that calculates <strong className="font-semibold text-[#FFFFFF]">real eligibility</strong>{" "}
-              and <strong className="font-semibold text-[#FFFFFF]">true affordability</strong> across{" "}
+            <p className="max-w-lg text-lg text-brand-500">
+              The engine that calculates <strong className="font-semibold text-[#16264D]">real eligibility</strong>{" "}
+              and <strong className="font-semibold text-[#16264D]">true affordability</strong> across{" "}
               {bankCount || "24"}+ lenders in seconds. Stop guessing. Start matching.
             </p>
             {/* Just this one hero CTA now, plus the nav's own "Check eligibility" —
@@ -174,7 +166,7 @@ export function LandingContent() {
                 Check Your Eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
               </Link>
             </div>
-            <p className="text-xs uppercase tracking-wide text-[#A9B4C9]">
+            <p className="text-xs uppercase tracking-wide text-brand-500">
               No hard credit inquiry &nbsp;•&nbsp; Rule-based matching &nbsp;•&nbsp; Results in seconds
             </p>
           </div>
@@ -184,7 +176,7 @@ export function LandingContent() {
       </section>
 
       {/* How the engine thinks — 3 feature cards */}
-      <section id="how-it-works" className="border-t border-white/[0.06] bg-[#101D3D] px-6 py-24 sm:px-10">
+      <section id="how-it-works" className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10">
         <Reveal className="mx-auto flex max-w-6xl flex-col gap-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">How the Engine Thinks</h2>
           <FeatureCards />
@@ -196,7 +188,7 @@ export function LandingContent() {
         <Reveal className="mx-auto flex max-w-6xl flex-col gap-10">
           <div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">Explore Mode</h2>
-            <p className="mt-3 max-w-xl text-[#A9B4C9]">
+            <p className="mt-3 max-w-xl text-brand-500">
               Browse lenders by employment type and property filters before committing to a full profile.
             </p>
           </div>
@@ -205,7 +197,7 @@ export function LandingContent() {
       </section>
 
       {/* One engine, every lender's rules */}
-      <section id="lenders" className="border-t border-white/[0.06] bg-[#101D3D] px-6 py-24 sm:px-10">
+      <section id="lenders" className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10">
         <Reveal className="mx-auto flex max-w-6xl flex-col items-center gap-14 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
             One engine.
@@ -226,7 +218,7 @@ export function LandingContent() {
               <br />
               Ranked.
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-[#A9B4C9]">
+            <p className="mx-auto mt-4 max-w-lg text-brand-500">
               We evaluate lender-specific rules and rank the lenders that best fit the borrower.
             </p>
           </div>
@@ -235,7 +227,7 @@ export function LandingContent() {
       </section>
 
       {/* Before / after */}
-      <section className="border-t border-white/[0.06] bg-[#101D3D] px-6 py-24 sm:px-10">
+      <section className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10">
         <Reveal className="mx-auto flex max-w-4xl flex-col gap-12">
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl">Guessing vs. matching.</h2>
           <BeforeAfter />
@@ -250,7 +242,7 @@ export function LandingContent() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden border-t border-white/[0.06] bg-[#101D3D] px-6 py-28 text-center sm:px-10">
+      <section className="relative overflow-hidden border-t border-brand-100 bg-cream-50 px-6 py-28 text-center sm:px-10">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{ background: "radial-gradient(circle at 50% 40%, rgba(245,130,32,0.12) 0%, transparent 60%)" }}
@@ -261,7 +253,7 @@ export function LandingContent() {
             <br />
             Start matching.
           </h2>
-          <p className="text-lg text-[#A9B4C9]">Find lenders whose rules actually fit your profile.</p>
+          <p className="text-lg text-brand-500">Find lenders whose rules actually fit your profile.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/explore"
@@ -271,7 +263,7 @@ export function LandingContent() {
             </Link>
             <a
               href="#how-it-works"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 px-8 py-4 text-lg font-semibold hover:border-white/30"
+              className="inline-flex items-center gap-2 rounded-full border border-brand-300 px-8 py-4 text-lg font-semibold text-[#16264D] hover:border-brand-500"
             >
               Explore the engine
             </a>

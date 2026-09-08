@@ -106,24 +106,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`${spaceGrotesk.className} relative flex flex-1 flex-col items-center overflow-hidden bg-[#0F1A33] px-6 py-16 text-[#FFFFFF] sm:px-10`}>
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-      />
+    <div className={`${spaceGrotesk.className} relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16 text-[#16264D] sm:px-10`}>
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: "radial-gradient(circle at 50% 0%, rgba(245,130,32,0.16) 0%, transparent 55%)" }}
+        style={{ background: "radial-gradient(circle at 50% 0%, rgba(245,130,32,0.08) 0%, transparent 55%)" }}
       />
 
       <div className="relative flex w-full max-w-lg flex-col items-center">
         <Link
           href="/"
-          className="mb-8 self-start text-sm font-semibold text-[#A9B4C9] transition-colors hover:text-[#FFFFFF]"
+          className="mb-8 self-start text-sm font-semibold text-brand-500 transition-colors hover:text-[#16264D]"
         >
           ← Back to home
         </Link>
@@ -136,18 +128,18 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        <div className="flex w-full flex-col items-center gap-6 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-8 pb-9 pt-10 shadow-2xl backdrop-blur-md sm:px-12">
+        <div className="flex w-full flex-col items-center gap-6 rounded-2xl border border-brand-100 bg-white px-8 pb-9 pt-10 shadow-xl sm:px-12">
           <div className="relative h-[90px] w-[90px] shrink-0">
             <EngineCore />
           </div>
 
-          <div className="flex w-full rounded-full border border-white/10 bg-white/[0.04] p-1">
+          <div className="flex w-full rounded-full border border-brand-100 bg-brand-50 p-1">
             <button
               type="button"
               onClick={() => switchMode("login")}
               disabled={signupSuccess}
               className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors disabled:opacity-40 ${
-                mode === "login" ? "bg-[#F58220] text-[#0F1A33]" : "text-[#A9B4C9] hover:text-[#FFFFFF]"
+                mode === "login" ? "bg-[#F58220] text-[#0F1A33]" : "text-brand-500 hover:text-[#16264D]"
               }`}
             >
               Log in
@@ -157,7 +149,7 @@ export default function LoginPage() {
               onClick={() => switchMode("signup")}
               disabled={signupSuccess}
               className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors disabled:opacity-40 ${
-                mode === "signup" ? "bg-[#F58220] text-[#0F1A33]" : "text-[#A9B4C9] hover:text-[#FFFFFF]"
+                mode === "signup" ? "bg-[#F58220] text-[#0F1A33]" : "text-brand-500 hover:text-[#16264D]"
               }`}
             >
               Sign up
@@ -165,18 +157,18 @@ export default function LoginPage() {
           </div>
 
           {signupSuccess ? (
-            <p className="w-full rounded-lg border border-brand-900/50 bg-brand-950/30 px-3 py-2 text-center text-sm text-brand-300">
+            <p className="w-full rounded-lg border border-success-500/30 bg-success-50 px-3 py-2 text-center text-sm text-success-700">
               Signed up successfully! Taking you to log in…
             </p>
           ) : (
             <>
               {(formError || error) && (
-                <p className="w-full rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-2 text-center text-sm text-red-300">
+                <p className="w-full rounded-lg border border-error-500/30 bg-error-50 px-3 py-2 text-center text-sm text-error-700">
                   {formError || error}
                 </p>
               )}
               {resetSent && !error && (
-                <p className="w-full rounded-lg border border-brand-900/50 bg-brand-950/30 px-3 py-2 text-center text-sm text-brand-300">
+                <p className="w-full rounded-lg border border-success-500/30 bg-success-50 px-3 py-2 text-center text-sm text-success-700">
                   Reset link sent — check your email.
                 </p>
               )}
@@ -187,7 +179,7 @@ export default function LoginPage() {
             {mode === "signup" && (
               <>
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="displayName" className="text-sm font-medium text-[#A9B4C9]">
+                  <label htmlFor="displayName" className="text-sm font-medium text-brand-500">
                     Full name
                   </label>
                   <input
@@ -197,12 +189,12 @@ export default function LoginPage() {
                     disabled={signupSuccess}
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none focus:border-[#F58220] disabled:opacity-50"
+                    className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none focus:border-[#F58220] focus:bg-white disabled:opacity-50"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="orgRole" className="text-sm font-medium text-[#A9B4C9]">
-                    Your role in the organization <span className="font-normal text-[#A9B4C9]/60">(optional)</span>
+                  <label htmlFor="orgRole" className="text-sm font-medium text-brand-500">
+                    Your role in the organization <span className="font-normal text-brand-400">(optional)</span>
                   </label>
                   <input
                     id="orgRole"
@@ -211,13 +203,13 @@ export default function LoginPage() {
                     placeholder="e.g. Loan Ops Manager"
                     value={orgRole}
                     onChange={(e) => setOrgRole(e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none placeholder:text-[#A9B4C9]/50 focus:border-[#F58220] disabled:opacity-50"
+                    className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none placeholder:text-brand-400/70 focus:border-[#F58220] focus:bg-white disabled:opacity-50"
                   />
                 </div>
               </>
             )}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-[#A9B4C9]">
+              <label htmlFor="email" className="text-sm font-medium text-brand-500">
                 Email
               </label>
               <input
@@ -228,12 +220,12 @@ export default function LoginPage() {
                 placeholder="you@capitabel.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none placeholder:text-[#A9B4C9]/50 focus:border-[#F58220] disabled:opacity-50"
+                className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none placeholder:text-brand-400/70 focus:border-[#F58220] focus:bg-white disabled:opacity-50"
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-[#A9B4C9]">
+                <label htmlFor="password" className="text-sm font-medium text-brand-500">
                   Password
                 </label>
                 {mode === "login" && (
@@ -254,12 +246,12 @@ export default function LoginPage() {
                 disabled={signupSuccess}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none focus:border-[#F58220] disabled:opacity-50"
+                className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none focus:border-[#F58220] focus:bg-white disabled:opacity-50"
               />
             </div>
             {mode === "signup" && (
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="confirmPassword" className="text-sm font-medium text-[#A9B4C9]">
+                <label htmlFor="confirmPassword" className="text-sm font-medium text-brand-500">
                   Confirm password
                 </label>
                 <input
@@ -270,7 +262,7 @@ export default function LoginPage() {
                   disabled={signupSuccess}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none focus:border-[#F58220] disabled:opacity-50"
+                  className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none focus:border-[#F58220] focus:bg-white disabled:opacity-50"
                 />
               </div>
             )}

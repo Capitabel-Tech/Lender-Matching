@@ -115,13 +115,13 @@ export function LendersFlow({ names }: { names: string[] }) {
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: i * 0.1 }}
-          className="absolute flex -translate-y-1/2 items-center gap-2 rounded-xl border border-[#F58220]/25 bg-white/[0.04] px-3 py-2 backdrop-blur-md"
+          className="absolute flex -translate-y-1/2 items-center gap-2 rounded-xl border border-[#F58220]/25 bg-white px-3 py-2 shadow-sm"
           style={{ left: 0, top: pct(inputY(i), SIZE.h) }}
         >
-          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#F58220]/10 text-[#F7A755]">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#F58220]/10 text-[#C2590A]">
             <rule.Icon />
           </span>
-          <span className="text-xs font-semibold text-[#FFFFFF]">{rule.label}</span>
+          <span className="text-xs font-semibold text-[#16264D]">{rule.label}</span>
         </motion.div>
       ))}
 
@@ -133,7 +133,7 @@ export function LendersFlow({ names }: { names: string[] }) {
         col.map((name, i) => (
           <span
             key={name}
-            className="absolute max-w-[150px] -translate-y-1/2 truncate rounded-full border border-white/10 bg-[#101D3D]/85 px-2.5 py-1 text-[11px] font-medium text-[#FFFFFF] backdrop-blur-sm"
+            className="absolute max-w-[150px] -translate-y-1/2 truncate rounded-full border border-brand-100 bg-white px-2.5 py-1 text-[11px] font-medium text-[#16264D] shadow-sm"
             title={name}
             style={{ left: pct(COL_X[c], SIZE.w), top: pct(colY(c, i), SIZE.h) }}
           >
@@ -154,11 +154,11 @@ export function LendersFlowMobile({ names }: { names: string[] }) {
     <div className="flex flex-col items-center gap-4 sm:hidden">
       <div className="flex flex-wrap justify-center gap-2">
         {RULES.map((rule) => (
-          <div key={rule.label} className="flex items-center gap-1.5 rounded-xl border border-[#F58220]/25 bg-white/[0.04] px-2.5 py-1.5">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F58220]/10 text-[#F7A755]">
+          <div key={rule.label} className="flex items-center gap-1.5 rounded-xl border border-[#F58220]/25 bg-white px-2.5 py-1.5 shadow-sm">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F58220]/10 text-[#C2590A]">
               <rule.Icon />
             </span>
-            <span className="text-xs font-semibold text-[#FFFFFF]">{rule.label}</span>
+            <span className="text-xs font-semibold text-[#16264D]">{rule.label}</span>
           </div>
         ))}
       </div>
@@ -169,7 +169,7 @@ export function LendersFlowMobile({ names }: { names: string[] }) {
       <span className="text-[#F58220]">↓</span>
       <div className="flex flex-wrap justify-center gap-2">
         {names.map((name) => (
-          <span key={name} className="rounded-full border border-white/10 bg-[#101D3D]/85 px-2.5 py-1 text-[11px] font-medium text-[#FFFFFF]">
+          <span key={name} className="rounded-full border border-brand-100 bg-white px-2.5 py-1 text-[11px] font-medium text-[#16264D] shadow-sm">
             {name}
           </span>
         ))}

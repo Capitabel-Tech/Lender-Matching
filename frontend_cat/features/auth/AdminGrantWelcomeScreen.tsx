@@ -22,7 +22,7 @@ export function AdminGrantWelcomeScreen({
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-cream-100 px-4 py-14 dark:bg-brand-950 sm:px-8">
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-14 sm:px-8">
       <div className="w-full max-w-xl rounded-2xl border border-brand-200 bg-white p-8 text-center shadow-sm dark:border-brand-900/50 dark:bg-brand-800">
         <span className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand-800 dark:bg-brand-950/60 dark:text-brand-300">
           Access granted

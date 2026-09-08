@@ -47,7 +47,7 @@ function TaxonomyDiagram() {
   return (
     <svg viewBox="0 0 260 100" className="h-24 w-full">
       <rect x="4" y="6" width="112" height="22" rx="5" className="fill-[#F58220]/10 stroke-[#F58220]/40" strokeWidth="1" />
-      <text x="60" y="21" textAnchor="middle" className={`${mono.className} fill-[#F7A755] text-[9px] font-bold`}>
+      <text x="60" y="21" textAnchor="middle" className={`${mono.className} fill-[#C2590A] text-[9px] font-bold`}>
         category_options
       </text>
       <path d="M60 28 V42 M60 42 H30 M60 42 H90 M60 42 H150" stroke="rgba(245,130,32,0.3)" strokeWidth="1" fill="none" />
@@ -57,8 +57,8 @@ function TaxonomyDiagram() {
         { x: 150, label: "…" },
       ].map((n) => (
         <g key={n.label}>
-          <rect x={n.x - 26} y="42" width="52" height="18" rx="4" className="fill-white/[0.04] stroke-white/15" strokeWidth="1" />
-          <text x={n.x} y="54" textAnchor="middle" className={`${mono.className} fill-[#A9B4C9] text-[7px]`}>
+          <rect x={n.x - 26} y="42" width="52" height="18" rx="4" className="fill-brand-50 stroke-brand-200" strokeWidth="1" />
+          <text x={n.x} y="54" textAnchor="middle" className={`${mono.className} fill-brand-500 text-[7px]`}>
             {n.label}
           </text>
         </g>
@@ -84,16 +84,16 @@ function IntersectionDiagram() {
     <svg viewBox="0 0 260 100" className="h-24 w-full">
       <circle cx="100" cy="50" r="38" className="fill-[#F7A755]/10 stroke-[#F7A755]/40" strokeWidth="1.5" />
       <circle cx="150" cy="50" r="38" className="fill-[#F58220]/10 stroke-[#F58220]/40" strokeWidth="1.5" />
-      <text x="72" y="30" className="fill-[#A9B4C9] text-[7px] font-semibold">
+      <text x="72" y="30" className="fill-brand-500 text-[7px] font-semibold">
         Your filters
       </text>
-      <text x="168" y="30" className="fill-[#A9B4C9] text-[7px] font-semibold" textAnchor="end">
+      <text x="168" y="30" className="fill-brand-500 text-[7px] font-semibold" textAnchor="end">
         Bank accepts
       </text>
-      <text x="125" y="54" textAnchor="middle" className={`${mono.className} fill-[#FFFFFF] text-[11px] font-bold`}>
+      <text x="125" y="54" textAnchor="middle" className={`${mono.className} fill-[#16264D] text-[11px] font-bold`}>
         ∩
       </text>
-      <text x="125" y="80" textAnchor="middle" className="fill-[#34D399] text-[7px] font-bold">
+      <text x="125" y="80" textAnchor="middle" className="fill-success-500 text-[7px] font-bold">
         eligible
       </text>
     </svg>
@@ -116,12 +116,12 @@ function FacetDiagram() {
         const afterW = (r.after / r.before) * fullW;
         return (
           <g key={r.label}>
-            <text x="0" y={y - 2} className="fill-[#A9B4C9] text-[7px]">
+            <text x="0" y={y - 2} className="fill-brand-500 text-[7px]">
               {r.label}
             </text>
-            <rect x="0" y={y} width={fullW} height="8" rx="4" className="fill-white/[0.06]" />
+            <rect x="0" y={y} width={fullW} height="8" rx="4" className="fill-brand-50" />
             <rect x="0" y={y} width={afterW} height="8" rx="4" className="fill-[#F58220]" />
-            <text x={fullW + 6} y={y + 7} className={`${mono.className} fill-[#F7A755] text-[7px] font-bold`}>
+            <text x={fullW + 6} y={y + 7} className={`${mono.className} fill-[#C2590A] text-[7px] font-bold`}>
               {r.after}/{r.before}
             </text>
           </g>
@@ -139,18 +139,18 @@ function AffordabilityDiagram() {
     <svg viewBox="0 0 260 60" className="h-16 w-full">
       {steps.map((label, i) => (
         <g key={label}>
-          <rect x={4 + i * 65} y="18" width="54" height="24" rx="6" className="fill-white/[0.04] stroke-[#F58220]/30" strokeWidth="1" />
-          <text x={31 + i * 65} y="33" textAnchor="middle" className={`${mono.className} fill-[#FFFFFF] text-[7px] font-bold`}>
+          <rect x={4 + i * 65} y="18" width="54" height="24" rx="6" className="fill-brand-50 stroke-[#F58220]/30" strokeWidth="1" />
+          <text x={31 + i * 65} y="33" textAnchor="middle" className={`${mono.className} fill-[#16264D] text-[7px] font-bold`}>
             {label}
           </text>
           {i < steps.length - 1 && (
-            <path d={`M${60 + i * 65} 30 H${68 + i * 65}`} stroke="#F7A755" strokeWidth="1.5" markerEnd="url(#arrow)" />
+            <path d={`M${60 + i * 65} 30 H${68 + i * 65}`} stroke="#E06F10" strokeWidth="1.5" markerEnd="url(#arrow)" />
           )}
         </g>
       ))}
       <defs>
         <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-          <path d="M0 0 L6 3 L0 6 Z" fill="#F7A755" />
+          <path d="M0 0 L6 3 L0 6 Z" fill="#E06F10" />
         </marker>
       </defs>
     </svg>
@@ -194,20 +194,20 @@ export function FeatureCards() {
       {CARDS.map((card) => (
         <div
           key={card.title}
-          className="flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6"
+          className="flex flex-col gap-4 rounded-2xl border border-brand-100 bg-white p-6 shadow-sm"
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F58220]/10 text-[#F7A755]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F58220]/10 text-[#C2590A]">
               <card.Icon />
             </span>
-            <span className={`${mono.className} text-xs font-bold tracking-wider text-[#A9B4C9]`}>
+            <span className={`${mono.className} text-xs font-bold tracking-wider text-brand-500`}>
               STEP {card.step}
             </span>
           </div>
-          <h3 className="text-lg font-bold leading-tight text-[#FFFFFF] sm:text-xl">{card.title}</h3>
-          <p className="text-sm leading-relaxed text-[#A9B4C9]">{card.body}</p>
+          <h3 className="text-lg font-bold leading-tight text-[#16264D] sm:text-xl">{card.title}</h3>
+          <p className="text-sm leading-relaxed text-brand-500">{card.body}</p>
 
-          <div className="mt-auto border-t border-white/[0.06] pt-4">
+          <div className="mt-auto border-t border-brand-100 pt-4">
             <card.Diagram />
           </div>
         </div>

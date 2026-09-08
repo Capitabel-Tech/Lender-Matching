@@ -122,7 +122,7 @@ export function EngineCore() {
 
 function RankBadge({ rank }: { rank: number }) {
   return (
-    <span className="rounded-full bg-[#34D399]/15 px-2 py-0.5 text-[10px] font-bold text-[#34D399]">
+    <span className="rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-bold text-success-700">
       Ranked #{rank}
     </span>
   );
@@ -131,26 +131,26 @@ function RankBadge({ rank }: { rank: number }) {
 function RankedCard({ rank, rate, compact }: { rank: number; rate: LiveRate; compact?: boolean }) {
   if (compact) {
     return (
-      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#101D3D]/85 px-3 py-2 backdrop-blur-md">
+      <div className="flex items-center justify-between rounded-xl border border-brand-100 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-[#A9B4C9]">#{rank}</span>
-          <span className="text-xs font-semibold text-[#FFFFFF]">{rate.bank_name}</span>
+          <span className="text-[10px] font-bold text-brand-500">#{rank}</span>
+          <span className="text-xs font-semibold text-[#16264D]">{rate.bank_name}</span>
         </div>
-        <span className="text-xs font-bold text-[#F7A755]">{rate.rate_pct.toFixed(2)}%</span>
+        <span className="text-xs font-bold text-[#C2590A]">{rate.rate_pct.toFixed(2)}%</span>
       </div>
     );
   }
   return (
     <div
-      className="rounded-2xl border border-[#34D399]/30 bg-[#101D3D]/90 p-3.5 backdrop-blur-md relative"
-      style={{ boxShadow: "0 0 30px rgba(52,211,153,0.15)" }}
+      className="rounded-2xl border border-success-500/30 bg-white/95 p-3.5 shadow-sm backdrop-blur-md relative"
+      style={{ boxShadow: "0 0 30px rgba(31,138,91,0.12)" }}
     >
       <div className="mb-1.5 flex items-center justify-between">
         <RankBadge rank={rank} />
-        <span className="text-[9px] text-[#F7A755]/70">BEST MATCH</span>
+        <span className="text-[9px] text-[#C2590A]/80">BEST MATCH</span>
       </div>
-      <p className="text-sm font-bold text-[#FFFFFF]">{rate.bank_name}</p>
-      <ul className="mt-1.5 flex flex-col gap-1 text-[10px] text-[#A9B4C9]">
+      <p className="text-sm font-bold text-[#16264D]">{rate.bank_name}</p>
+      <ul className="mt-1.5 flex flex-col gap-1 text-[10px] text-brand-500">
         <li>• Lowest live rate: {rate.rate_pct.toFixed(2)}%</li>
         <li>• Max loan estimated from your FOIR</li>
         <li>• High approval tier</li>
@@ -209,18 +209,18 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: i * 0.1 }}
-            className="absolute flex -translate-y-1/2 items-center gap-2 rounded-xl border border-[#F58220]/25 bg-white/[0.04] px-3 py-2 backdrop-blur-md"
+            className="absolute flex -translate-y-1/2 items-center gap-2 rounded-xl border border-[#F58220]/25 bg-white px-3 py-2 shadow-sm"
             style={{ left: 0, top: pct(inputY(i), SIZE.h) }}
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F58220]/10 text-[#F7A755]">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F58220]/10 text-[#C2590A]">
               <input.Icon />
             </span>
-            <span className="text-xs font-semibold text-[#FFFFFF]">{input.label}</span>
+            <span className="text-xs font-semibold text-[#16264D]">{input.label}</span>
           </motion.div>
         ))}
 
         <div
-          className="absolute h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
+          className="absolute h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full bg-[#101D3D] shadow-[0_0_60px_rgba(16,29,61,0.25)]"
           style={{ left: pct(CORE.x, SIZE.w), top: pct(CORE.y, SIZE.h) }}
         >
           <Image
@@ -252,17 +252,17 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
           {INPUTS.map((input) => (
             <div
               key={input.label}
-              className="flex items-center gap-1.5 rounded-xl border border-[#F58220]/25 bg-white/[0.04] px-2.5 py-1.5"
+              className="flex items-center gap-1.5 rounded-xl border border-[#F58220]/25 bg-white px-2.5 py-1.5 shadow-sm"
             >
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F58220]/10 text-[#F7A755]">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F58220]/10 text-[#C2590A]">
                 <input.Icon />
               </span>
-              <span className="text-xs font-semibold text-[#FFFFFF]">{input.label}</span>
+              <span className="text-xs font-semibold text-[#16264D]">{input.label}</span>
             </div>
           ))}
         </div>
         <span className="text-[#F58220]">↓</span>
-        <div className="relative h-[200px] w-[200px] shrink-0 mix-blend-screen">
+        <div className="relative h-[200px] w-[200px] shrink-0 overflow-hidden rounded-full bg-[#101D3D] shadow-[0_0_40px_rgba(16,29,61,0.25)]">
           <Image
             src="/engine-core.jpg"
             alt="Lender Match Engine 3D Core"
@@ -271,7 +271,7 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
             unoptimized
           />
         </div>
-        <span className="text-[#34D399]">↓</span>
+        <span className="text-success-500">↓</span>
         <div className="flex w-full max-w-xs flex-col gap-2">
           {cards.map((rate, i) => (
             <RankedCard key={rate.bank_name} rank={i + 1} rate={rate} compact={i > 0} />

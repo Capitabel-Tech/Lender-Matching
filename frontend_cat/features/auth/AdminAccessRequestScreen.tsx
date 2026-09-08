@@ -32,7 +32,7 @@ export function AdminAccessRequestScreen({
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center bg-cream-100 px-4 py-14 dark:bg-brand-950 sm:px-8">
+    <div className="flex flex-1 flex-col items-center px-4 py-14 sm:px-8">
       <div className="w-full max-w-xl">
         <Link
           href="/explore"

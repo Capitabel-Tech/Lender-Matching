@@ -72,7 +72,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-cream-100 px-4 py-10 dark:bg-brand-950 sm:px-8">
+    <div className="flex flex-1 flex-col px-4 py-10 sm:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <div className="flex items-center justify-between">
           <div>
