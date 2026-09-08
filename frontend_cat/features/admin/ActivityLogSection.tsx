@@ -10,6 +10,7 @@ import { AdminLoading } from "./AdminLoading";
 export function ActivityLogSection({ getToken }: { getToken: () => Promise<string | null> }) {
   const [items, setItems] = useState<ActivityLogEntryOut[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const [retryKey, setRetryKey] = useState(0);
 
@@ -56,13 +57,28 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
     return <AdminLoading />;
   }
 
+  const query = search.trim().toLowerCase();
+  const filteredItems = query
+    ? items?.filter(
+        (entry) => entry.actor_email.toLowerCase().includes(query) || entry.action.toLowerCase().includes(query),
+      )
+    : items;
+
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Activity Log</h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Every change any admin made, most recent first. Only you can see this.
-        </p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Activity Log</h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Every change any admin made, most recent first. Only you can see this.
+          </p>
+        </div>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name or email…"
+          className="w-64 shrink-0 rounded-lg border border-zinc-300 px-3.5 py-2 text-sm outline-none focus:border-teal-500 dark:border-zinc-700 dark:bg-zinc-950"
+        />
       </div>
 
       {listError && (
@@ -97,7 +113,7 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
             </tr>
           </thead>
           <tbody>
-            {items?.map((entry, i) => (
+            {filteredItems?.map((entry, i) => (
               <tr key={i} className="border-t border-zinc-100 dark:border-zinc-800">
                 <td className="whitespace-nowrap px-5 py-3.5 text-zinc-500 dark:text-zinc-400">
                   {new Date(entry.created_at).toLocaleString()}
@@ -111,6 +127,13 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
               <tr>
                 <td colSpan={4} className="px-5 py-6 text-center text-zinc-400">
                   No activity recorded yet.
+                </td>
+              </tr>
+            )}
+            {items && items.length > 0 && filteredItems?.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-5 py-6 text-center text-zinc-400">
+                  No activity matches &ldquo;{search.trim()}&rdquo;.
                 </td>
               </tr>
             )}
