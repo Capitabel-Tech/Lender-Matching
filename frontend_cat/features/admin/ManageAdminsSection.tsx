@@ -71,19 +71,12 @@ export function ManageAdminsSection({
   // power, including editing lender data and managing (promoting/demoting/
   // revoking) every other admin, you included. The person being changed
   // picks this up on their own within ~30s (see useAuth's role polling) —
-  // no need to revoke/kick them out for it to take effect.
-  function promote(uid: string, email: string) {
-    if (!confirm(`Make ${email} an admin? They'll have full access, equal to you — including the power to manage other admins.`)) {
-      return;
-    }
+  // no need to revoke/kick them out for it to take effect. No confirm
+  // dialog here — the button's own wording already says exactly what it
+  // does, and "Revoke access" below is the one destructive, confirmed
+  // action that actually locks someone out.
+  function promote(uid: string) {
     void runAction(uid, (token) => adminApi.setAccountRole(token, uid, "admin"));
-  }
-
-  function demote(uid: string, email: string) {
-    if (!confirm(`Move ${email} back to business (Explore-only)? They'll lose the ability to edit lender data or manage admins.`)) {
-      return;
-    }
-    void runAction(uid, (token) => adminApi.setAccountRole(token, uid, "business"));
   }
 
   return (
@@ -151,7 +144,7 @@ export function ManageAdminsSection({
                       <div className="flex flex-wrap items-center justify-end gap-4">
                         {admin.admin_requested && (
                           <button
-                            onClick={() => promote(admin.uid, admin.email)}
+                            onClick={() => promote(admin.uid)}
                             disabled={actingOn === admin.uid}
                             className="text-base font-bold text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
                           >
@@ -169,20 +162,11 @@ export function ManageAdminsSection({
                         )}
                         {!admin.admin_requested && !isAdmin && (
                           <button
-                            onClick={() => promote(admin.uid, admin.email)}
+                            onClick={() => promote(admin.uid)}
                             disabled={actingOn === admin.uid}
                             className="text-base font-bold text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
                           >
                             Grant admin access
-                          </button>
-                        )}
-                        {isAdmin && (
-                          <button
-                            onClick={() => demote(admin.uid, admin.email)}
-                            disabled={actingOn === admin.uid}
-                            className="text-base font-medium text-zinc-500 hover:underline disabled:opacity-50 dark:text-zinc-400"
-                          >
-                            Move to business
                           </button>
                         )}
                         <button
