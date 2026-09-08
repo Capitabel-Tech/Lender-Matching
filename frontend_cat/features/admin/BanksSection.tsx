@@ -23,7 +23,7 @@ type View =
   | { name: "add-new-bank" };
 
 export function BanksSection({ getToken }: { getToken: () => Promise<string | null> }) {
-  const [categories] = useCategories(getToken);
+  const [categories, retryCategories, categoriesError] = useCategories(getToken);
   const [view, setView] = useState<View>({ name: "list" });
   const [banks, setBanks] = useState<AdminBankSummary[] | null>(null);
   const [bankProducts, setBankProducts] = useState<AdminProductOut[] | null>(null);
@@ -164,6 +164,17 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
 
   const loanLabelFor = (value: string) => categories?.loan_type.find((t) => t.value === value)?.label ?? value;
   const employmentLabelFor = (value: string) => categories?.employment_type.find((t) => t.value === value)?.label ?? value;
+
+  if (!categories && categoriesError) {
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+        <span>{categoriesError}</span>
+        <button onClick={retryCategories} className="font-semibold hover:underline">
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   if (!categories || (view.name === "list" && banks === null && !error)) {
     return <AdminLoading />;

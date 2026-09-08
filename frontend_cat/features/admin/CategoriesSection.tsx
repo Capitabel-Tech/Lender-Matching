@@ -45,12 +45,23 @@ function slugify(text: string): string {
 }
 
 export function CategoriesSection({ getToken }: { getToken: () => Promise<string | null> }) {
-  const [categories, refetch] = useCategories(getToken);
+  const [categories, refetch, categoriesError] = useCategories(getToken);
   const [addingTo, setAddingTo] = useState<AdminCategoryKey | null>(null);
   const [labelInput, setLabelInput] = useState("");
   const [groupInput, setGroupInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  if (!categories && categoriesError) {
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+        <span>{categoriesError}</span>
+        <button onClick={refetch} className="font-semibold hover:underline">
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   if (!categories) {
     return <AdminLoading />;

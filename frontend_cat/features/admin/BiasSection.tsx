@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { errorMessage } from "@/lib/api/client";
 import { adminApi, type AdminBiasOut } from "@/lib/api/admin";
 
+import { AdminLoading } from "./AdminLoading";
+
 export function BiasSection({ getToken }: { getToken: () => Promise<string | null> }) {
   const [items, setItems] = useState<AdminBiasOut[] | null>(null);
   const [editingBank, setEditingBank] = useState<string | null>(null);
@@ -12,6 +14,7 @@ export function BiasSection({ getToken }: { getToken: () => Promise<string | nul
   const [form, setForm] = useState({ bank_name: "", recent_borrowers_processed: 0, relationship_note: "" });
   const [error, setError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   async function refresh() {
     const token = await getToken();
@@ -21,24 +24,42 @@ export function BiasSection({ getToken }: { getToken: () => Promise<string | nul
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const token = await getToken();
-      if (!token || cancelled) return;
+    let retryTimer: number | undefined;
+
+    async function load(attempt = 0) {
       try {
+        const token = await getToken();
+        // getToken only returns null in the moment right after login before
+        // Firebase's own state has settled — retry shortly instead of
+        // silently leaving `items` at null forever with no feedback at all.
+        if (!token) {
+          if (!cancelled) retryTimer = window.setTimeout(() => load(attempt), 300);
+          return;
+        }
         const data = await adminApi.listBias(token);
         if (!cancelled) {
           setItems(data);
           setListError(null);
         }
       } catch (err) {
+        // A transient Firebase hiccup (e.g. "Database is closing" if the
+        // tab was backgrounded) is common enough to deserve one silent
+        // retry before bothering the user with an error banner.
+        if (attempt === 0) {
+          if (!cancelled) retryTimer = window.setTimeout(() => load(1), 500);
+          return;
+        }
         if (!cancelled) setListError(errorMessage(err));
       }
-    })();
+    }
+
+    void load();
     return () => {
       cancelled = true;
+      window.clearTimeout(retryTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders, run once on mount
-  }, []);
+  }, [retryKey]);
 
   function startEdit(item: AdminBiasOut) {
     setEditingBank(item.bank_name);
@@ -89,6 +110,10 @@ export function BiasSection({ getToken }: { getToken: () => Promise<string | nul
   }
 
   const isEditingOrAdding = editingBank !== null || addingNew;
+
+  if (items === null && !listError) {
+    return <AdminLoading />;
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -159,9 +184,21 @@ export function BiasSection({ getToken }: { getToken: () => Promise<string | nul
           {listError && (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
               <span>{listError}</span>
-              <button onClick={() => setListError(null)} className="font-semibold hover:underline">
-                Dismiss
-              </button>
+              <div className="flex shrink-0 items-center gap-3">
+                <button
+                  onClick={() => {
+                    setListError(null);
+                    setItems(null);
+                    setRetryKey((k) => k + 1);
+                  }}
+                  className="font-semibold hover:underline"
+                >
+                  Retry
+                </button>
+                <button onClick={() => setListError(null)} className="font-semibold hover:underline">
+                  Dismiss
+                </button>
+              </div>
             </div>
           )}
         <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
