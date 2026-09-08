@@ -13,6 +13,7 @@
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   type User,
@@ -139,6 +140,21 @@ export function useAuth() {
     await signOut(auth);
   }
 
+  async function resetPassword(email: string) {
+    setError(null);
+    if (!auth) {
+      setError("Login isn't set up for this deployment yet.");
+      return false;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      return true;
+    } catch (err) {
+      setError(authErrorMessage(err));
+      return false;
+    }
+  }
+
   async function getToken(): Promise<string | null> {
     if (!auth?.currentUser) return null;
     return auth.currentUser.getIdToken();
@@ -163,6 +179,7 @@ export function useAuth() {
     logout,
     getToken,
     refreshStatus,
+    resetPassword,
   };
 }
 

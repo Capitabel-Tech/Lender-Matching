@@ -10,12 +10,13 @@ import { useAuth } from "@/lib/useAuth";
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export default function LoginPage() {
-  const { user, role, loading, error, signUp, login } = useAuth();
+  const { user, role, loading, error, signUp, login, resetPassword } = useAuth();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   // Any real, assigned role (business/admin/super_admin) means they're
   // already in — send them straight to the tool instead of the form.
@@ -29,6 +30,17 @@ export default function LoginPage() {
     const ok = mode === "signup" ? await signUp(email, password) : await login(email, password);
     setSubmitting(false);
     if (ok) router.push("/explore");
+  }
+
+  async function handleForgotPassword() {
+    if (!email) {
+      setResetSent(false);
+      return;
+    }
+    setSubmitting(true);
+    const ok = await resetPassword(email);
+    setSubmitting(false);
+    setResetSent(ok);
   }
 
   return (
@@ -63,7 +75,10 @@ export default function LoginPage() {
 
           <div className="flex w-full rounded-full border border-white/10 bg-white/[0.04] p-1">
             <button
-              onClick={() => setMode("login")}
+              onClick={() => {
+                setMode("login");
+                setResetSent(false);
+              }}
               className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
                 mode === "login" ? "bg-[#00D6C9] text-[#050B12]" : "text-[#91A0AE] hover:text-[#F5F7FA]"
               }`}
@@ -71,7 +86,10 @@ export default function LoginPage() {
               Log in
             </button>
             <button
-              onClick={() => setMode("signup")}
+              onClick={() => {
+                setMode("signup");
+                setResetSent(false);
+              }}
               className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
                 mode === "signup" ? "bg-[#00D6C9] text-[#050B12]" : "text-[#91A0AE] hover:text-[#F5F7FA]"
               }`}
@@ -83,6 +101,11 @@ export default function LoginPage() {
           {error && (
             <p className="w-full rounded-lg border border-red-900/50 bg-red-950/30 px-3 py-2 text-center text-sm text-red-300">
               {error}
+            </p>
+          )}
+          {resetSent && !error && (
+            <p className="w-full rounded-lg border border-teal-900/50 bg-teal-950/30 px-3 py-2 text-center text-sm text-teal-300">
+              If an account exists for that email, a reset link is on its way.
             </p>
           )}
 
@@ -101,9 +124,20 @@ export default function LoginPage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-sm font-medium text-[#91A0AE]">
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium text-[#91A0AE]">
+                  Password
+                </label>
+                {mode === "login" && (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-xs font-medium text-[#00D6C9] hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <input
                 id="password"
                 type="password"
