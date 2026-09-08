@@ -59,6 +59,8 @@ class LoggedInUser:
     uid: str
     email: str
     role: str | None  # None = a real account with no role assigned (shouldn't normally happen post-signup)
+    display_name: str | None = None
+    org_role: str | None = None  # their role/title within the org, e.g. "Loan Ops Manager" — set at signup
 
 
 async def _verify_token(
@@ -89,7 +91,13 @@ async def _verify_token(
 
     email = decoded.get("email", decoded["uid"])
     role = decoded.get("role")
-    return LoggedInUser(uid=decoded["uid"], email=email, role=role)
+    return LoggedInUser(
+        uid=decoded["uid"],
+        email=email,
+        role=role,
+        display_name=decoded.get("display_name"),
+        org_role=decoded.get("org_role"),
+    )
 
 
 async def require_any_role(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:

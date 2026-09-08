@@ -76,6 +76,9 @@ class AdminAccountOut(BaseModel):
     uid: str
     email: str
     role: str  # "business", "admin", or "super_admin"
+    display_name: str | None = None
+    org_role: str | None = None  # their role/title within the org, set at signup
+    admin_requested: bool = False  # a business account that's asked to be promoted to admin
 
 
 class ActivityLogEntryOut(BaseModel):

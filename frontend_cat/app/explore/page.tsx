@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { HeaderBell } from "@/features/auth/HeaderBell";
+import { HeaderActions } from "@/features/auth/HeaderActions";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { ExplorePage } from "@/features/explore/ExplorePage";
 
@@ -43,21 +43,7 @@ export default function Explore() {
               Browse the loaded bank data by employment type and property filters.
             </p>
           </div>
-          <div className="flex items-center gap-1">
-            <HeaderBell />
-            <Link
-              href="/admin"
-              aria-label="Admin login"
-              title="Admin login"
-              className="flex items-center gap-1.5 rounded-full px-3 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-teal-400"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <span className="text-xs font-semibold uppercase tracking-wide">Admin</span>
-            </Link>
-          </div>
+          <HeaderActions />
         </header>
 
         <div className="flex-1 sm:min-h-0">

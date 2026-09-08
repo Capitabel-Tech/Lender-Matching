@@ -9,11 +9,22 @@ import { BanksSection } from "@/features/admin/BanksSection";
 import { BiasSection } from "@/features/admin/BiasSection";
 import { CategoriesSection } from "@/features/admin/CategoriesSection";
 import { ManageAdminsSection } from "@/features/admin/ManageAdminsSection";
+import { ProfileMenu } from "@/features/auth/ProfileMenu";
 import { RoleChangeBell } from "@/features/auth/RoleChangeBell";
 import { useAuth } from "@/lib/useAuth";
 
 export default function AdminDashboardPage() {
-  const { user, role, loading, logout, getToken, roleChangeNotice, dismissRoleChangeNotice } = useAuth();
+  const {
+    user,
+    role,
+    displayName,
+    orgRole,
+    loading,
+    logout,
+    getToken,
+    roleChangeNotice,
+    dismissRoleChangeNotice,
+  } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<"banks" | "bias" | "categories" | "admins" | "log">("banks");
 
@@ -58,15 +69,16 @@ export default function AdminDashboardPage() {
           </div>
           <div className="flex items-center gap-2">
             <RoleChangeBell notice={roleChangeNotice} onDismiss={dismissRoleChangeNotice} />
-            <button
-              onClick={async () => {
+            <ProfileMenu
+              email={user.email ?? ""}
+              displayName={displayName}
+              orgRole={orgRole}
+              role={role ?? null}
+              onLogout={async () => {
                 await logout();
                 router.push("/login");
               }}
-              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
-            >
-              Log out
-            </button>
+            />
           </div>
         </div>
 

@@ -8,7 +8,9 @@
 // signUp below) creates the Firebase account and immediately grants the
 // "business" role server-side (backend_cat/app/business_api.py) — no
 // approval step. A super admin can promote an account to admin/super_admin,
-// or demote it back down, from Manage Admins whenever they choose.
+// or demote it back down, from Manage Admins whenever they choose. A
+// business account can also ask for that promotion itself via
+// requestAdminAccess — still the super admin's call whether to grant it.
 
 import {
   createUserWithEmailAndPassword,
@@ -16,11 +18,12 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  type IdTokenResult,
   type User,
 } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 
-import { completeSignup } from "./api/business";
+import { completeSignup, requestAdminAccess as requestAdminAccessApi } from "./api/business";
 import { errorMessage } from "./api/client";
 import { auth } from "./firebase";
 
@@ -32,10 +35,25 @@ export type Role = "business" | "admin" | "super_admin";
 // and the bell icon in the header for the other half of this).
 const ROLE_POLL_INTERVAL_MS = 30_000;
 
+interface Profile {
+  displayName: string | null;
+  orgRole: string | null;
+  adminRequested: boolean;
+}
+
+function readProfile(result: IdTokenResult): Profile {
+  return {
+    displayName: (result.claims.display_name as string | undefined) ?? null,
+    orgRole: (result.claims.org_role as string | undefined) ?? null,
+    adminRequested: (result.claims.admin_requested as boolean | undefined) ?? false,
+  };
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null | undefined>(undefined); // undefined = still checking
   // undefined = still checking, null = logged in but no role assigned (shouldn't normally happen post-signup)
   const [role, setRole] = useState<Role | null | undefined>(undefined);
+  const [profile, setProfile] = useState<Profile>({ displayName: null, orgRole: null, adminRequested: false });
   const [error, setError] = useState<string | null>(null);
   // Set the moment the 30s poll notices this account's role changed since
   // the last check — the bell icon reads this and clears it via
@@ -45,6 +63,7 @@ export function useAuth() {
   const readRole = useCallback(async (u: User, forceRefresh = false) => {
     const result = await u.getIdTokenResult(forceRefresh);
     setRole((result.claims.role as Role | undefined) ?? null);
+    setProfile(readProfile(result));
   }, []);
 
   useEffect(() => {
@@ -59,6 +78,7 @@ export function useAuth() {
         void readRole(u);
       } else {
         setRole(undefined);
+        setProfile({ displayName: null, orgRole: null, adminRequested: false });
       }
     });
   }, [readRole]);
@@ -71,12 +91,14 @@ export function useAuth() {
   const uid = user?.uid;
   useEffect(() => {
     if (!auth || !uid) return;
+    const authInstance = auth;
     const interval = window.setInterval(async () => {
-      const current = auth.currentUser;
+      const current = authInstance.currentUser;
       if (!current) return;
       try {
         const result = await current.getIdTokenResult(true);
         const nextRole = (result.claims.role as Role | undefined) ?? null;
+        setProfile(readProfile(result));
         setRole((prevRole) => {
           if (prevRole !== undefined && nextRole !== prevRole) {
             setRoleChangeNotice({ from: prevRole, to: nextRole });
@@ -101,8 +123,9 @@ export function useAuth() {
 
   // Plain email + password signup — self-service, immediate access (no
   // approval step). Firebase creates the account first; the role only
-  // exists once completeSignup grants it server-side.
-  async function signUp(email: string, password: string) {
+  // exists once completeSignup grants it server-side. displayName/orgRole
+  // are collected on the signup form and stored as claims alongside role.
+  async function signUp(email: string, password: string, displayName: string, orgRole: string) {
     setError(null);
     if (!auth) {
       setError("Login isn't set up for this deployment yet.");
@@ -111,8 +134,7 @@ export function useAuth() {
     try {
       const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       const token = await credential.user.getIdToken();
-      await completeSignup(token);
-      await readRole(credential.user, true);
+      await completeSignup(token, displayName, orgRole);
       return true;
     } catch (err) {
       setError(authErrorMessage(err));
@@ -167,9 +189,28 @@ export function useAuth() {
     await readRole(auth.currentUser, true);
   }
 
+  // Flags this business account as wanting admin access — a super admin
+  // sees it on Manage Admins and can approve (promote) or dismiss it.
+  async function requestAdminAccess() {
+    setError(null);
+    if (!auth?.currentUser) return false;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      await requestAdminAccessApi(token);
+      await refreshStatus();
+      return true;
+    } catch (err) {
+      setError(errorMessage(err));
+      return false;
+    }
+  }
+
   return {
     user,
     role,
+    displayName: profile.displayName,
+    orgRole: profile.orgRole,
+    adminRequested: profile.adminRequested,
     loading: user === undefined,
     error,
     roleChangeNotice,
@@ -180,6 +221,7 @@ export function useAuth() {
     getToken,
     refreshStatus,
     resetPassword,
+    requestAdminAccess,
   };
 }
 

@@ -70,6 +70,21 @@ export function ManageAdminsSection({
     }
   }
 
+  async function dismissRequest(uid: string) {
+    setActingOn(uid);
+    setListError(null);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await adminApi.dismissAdminRequest(token, uid);
+      await refresh();
+    } catch (err) {
+      setListError(errorMessage(err));
+    } finally {
+      setActingOn(null);
+    }
+  }
+
   // Promotes or demotes between business/admin/super_admin — e.g. turning
   // a business (Explore-only) account into a full admin. The person being
   // changed picks this up on their own within ~30s (see useAuth's role
@@ -127,8 +142,17 @@ export function ManageAdminsSection({
               return (
                 <tr key={admin.uid} className="border-t border-zinc-100 dark:border-zinc-800">
                   <td className="px-5 py-3.5 font-medium text-zinc-900 dark:text-zinc-50">
-                    {admin.email}
+                    {admin.display_name ?? admin.email}
                     {isSelf && <span className="ml-2 text-xs font-normal text-zinc-400">(you)</span>}
+                    <div className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+                      {admin.display_name ? admin.email : null}
+                      {admin.org_role && <span>{admin.display_name ? " · " : ""}{admin.org_role}</span>}
+                    </div>
+                    {admin.admin_requested && (
+                      <span className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
+                        Requested admin access
+                      </span>
+                    )}
                   </td>
                   <td className="px-5 py-3.5 text-zinc-500 dark:text-zinc-400">
                     {isSelf ? (
@@ -150,13 +174,33 @@ export function ManageAdminsSection({
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     {!isSelf && (
-                      <button
-                        onClick={() => revoke(admin.uid, admin.email)}
-                        disabled={actingOn === admin.uid}
-                        className="text-base font-medium text-red-600 hover:underline disabled:opacity-50"
-                      >
-                        Revoke access
-                      </button>
+                      <div className="flex flex-wrap items-center justify-end gap-3">
+                        {admin.admin_requested && (
+                          <>
+                            <button
+                              onClick={() => changeRole(admin.uid, admin.email, "admin")}
+                              disabled={actingOn === admin.uid}
+                              className="text-base font-medium text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
+                            >
+                              Approve as admin
+                            </button>
+                            <button
+                              onClick={() => dismissRequest(admin.uid)}
+                              disabled={actingOn === admin.uid}
+                              className="text-base font-medium text-zinc-500 hover:underline disabled:opacity-50 dark:text-zinc-400"
+                            >
+                              Dismiss
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => revoke(admin.uid, admin.email)}
+                          disabled={actingOn === admin.uid}
+                          className="text-base font-medium text-red-600 hover:underline disabled:opacity-50"
+                        >
+                          Revoke access
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

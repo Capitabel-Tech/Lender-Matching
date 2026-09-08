@@ -62,6 +62,9 @@ export interface AdminAccountOut {
   uid: string;
   email: string;
   role: "business" | "admin" | "super_admin";
+  display_name: string | null;
+  org_role: string | null;
+  admin_requested: boolean;
 }
 
 export interface ActivityLogEntryOut {
@@ -152,6 +155,11 @@ export const adminApi = {
 
   revokeAdminAccess: (token: string, uid: string) =>
     adminRequest<{ status: string }>(`/api/v1/admin/admins/${encodeURIComponent(uid)}/revoke`, token, {
+      method: "POST",
+    }),
+
+  dismissAdminRequest: (token: string, uid: string) =>
+    adminRequest<{ status: string }>(`/api/v1/admin/admins/${encodeURIComponent(uid)}/dismiss-request`, token, {
       method: "POST",
     }),
 

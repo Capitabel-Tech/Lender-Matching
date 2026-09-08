@@ -34,9 +34,19 @@ async def list_admins(_: Annotated[LoggedInUser, Depends(require_super_admin)]) 
     including the promote/demote controls."""
     admins: list[AdminAccountOut] = []
     for user_record in firebase_auth.list_users(app=_firebase_app).iterate_all():
-        role = (user_record.custom_claims or {}).get("role")
+        claims = user_record.custom_claims or {}
+        role = claims.get("role")
         if role in ALL_ROLES:
-            admins.append(AdminAccountOut(uid=user_record.uid, email=user_record.email or user_record.uid, role=role))
+            admins.append(
+                AdminAccountOut(
+                    uid=user_record.uid,
+                    email=user_record.email or user_record.uid,
+                    role=role,
+                    display_name=claims.get("display_name"),
+                    org_role=claims.get("org_role"),
+                    admin_requested=bool(claims.get("admin_requested", False)),
+                )
+            )
     return admins
 
 
@@ -56,7 +66,22 @@ async def set_account_role(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "You can't change your own role.")
     try:
         target = firebase_auth.get_user(uid, app=_firebase_app)
-        firebase_auth.set_custom_user_claims(uid, {"role": new_role}, app=_firebase_app)
+        existing_claims = target.custom_claims or {}
+        # Preserve display_name/org_role (set once at signup) across a role
+        # change — set_custom_user_claims replaces the whole claims dict, it
+        # doesn't merge. admin_requested is deliberately dropped: any
+        # explicit role change here resolves a pending request either way,
+        # whether that's approving it (promoted to admin) or dismissing it
+        # (left at business, or demoted from a role they already had).
+        firebase_auth.set_custom_user_claims(
+            uid,
+            {
+                "role": new_role,
+                "display_name": existing_claims.get("display_name"),
+                "org_role": existing_claims.get("org_role"),
+            },
+            app=_firebase_app,
+        )
         # Deliberately NOT revoking refresh tokens here (unlike
         # revoke_admin_access below) — this person should stay logged in and
         # just pick up the new role on their next poll (getIdTokenResult
@@ -68,6 +93,26 @@ async def set_account_role(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
     await log_activity(request, caller.email, f"Set {target.email or uid}'s role to {new_role}")
     return {"status": "updated", "role": new_role}
+
+
+@access_router.post("/admins/{uid}/dismiss-request")
+async def dismiss_admin_request(
+    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_super_admin)]
+) -> dict[str, str]:
+    """Clears a pending admin-access request without changing the account's
+    role — for when the super admin wants to say no rather than promote."""
+    try:
+        target = firebase_auth.get_user(uid, app=_firebase_app)
+        existing_claims = target.custom_claims or {}
+        if not existing_claims.get("admin_requested"):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "No pending request for this account.")
+        firebase_auth.set_custom_user_claims(
+            uid, {k: v for k, v in existing_claims.items() if k != "admin_requested"}, app=_firebase_app
+        )
+    except firebase_auth.UserNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
+    await log_activity(request, caller.email, f"Dismissed {target.email or uid}'s admin access request")
+    return {"status": "dismissed"}
 
 
 @access_router.post("/admins/{uid}/revoke")
