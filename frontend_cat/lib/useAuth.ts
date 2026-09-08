@@ -25,7 +25,11 @@ import {
 } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 
-import { completeSignup, requestAdminAccess as requestAdminAccessApi } from "./api/business";
+import {
+  acknowledgeAdminGrant as acknowledgeAdminGrantApi,
+  completeSignup,
+  requestAdminAccess as requestAdminAccessApi,
+} from "./api/business";
 import { errorMessage } from "./api/client";
 import { auth } from "./firebase";
 
@@ -42,13 +46,31 @@ interface Profile {
   displayName: string | null;
   orgRole: string | null;
   adminRequested: boolean;
+  // Was previously an admin and got revoked (dropped back to business) —
+  // distinct from a plain business account that's never had admin access,
+  // so the Admin button can say "your access was removed" instead of the
+  // generic "you need admin access" message.
+  revoked: boolean;
+  // Just got promoted to admin and hasn't seen the one-time "you've been
+  // granted access" screen on /admin yet — see acknowledgeAdminGrant.
+  adminGrantUnseen: boolean;
 }
+
+const EMPTY_PROFILE: Profile = {
+  displayName: null,
+  orgRole: null,
+  adminRequested: false,
+  revoked: false,
+  adminGrantUnseen: false,
+};
 
 function readProfile(result: IdTokenResult): Profile {
   return {
     displayName: (result.claims.display_name as string | undefined) ?? null,
     orgRole: (result.claims.org_role as string | undefined) ?? null,
     adminRequested: (result.claims.admin_requested as boolean | undefined) ?? false,
+    revoked: (result.claims.revoked as boolean | undefined) ?? false,
+    adminGrantUnseen: (result.claims.admin_grant_unseen as boolean | undefined) ?? false,
   };
 }
 
@@ -56,7 +78,7 @@ export function useAuth() {
   const [user, setUser] = useState<User | null | undefined>(undefined); // undefined = still checking
   // undefined = still checking, null = logged in but no role assigned (shouldn't normally happen post-signup)
   const [role, setRole] = useState<Role | null | undefined>(undefined);
-  const [profile, setProfile] = useState<Profile>({ displayName: null, orgRole: null, adminRequested: false });
+  const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [error, setError] = useState<string | null>(null);
   // Set the moment the 30s poll notices this account's role changed since
   // the last check — the bell icon reads this and clears it via
@@ -81,7 +103,7 @@ export function useAuth() {
         void readRole(u);
       } else {
         setRole(undefined);
-        setProfile({ displayName: null, orgRole: null, adminRequested: false });
+        setProfile(EMPTY_PROFILE);
       }
     });
   }, [readRole]);
@@ -219,12 +241,29 @@ export function useAuth() {
     }
   }
 
+  // Clears the one-time "you've been granted admin access" flag once the
+  // user has seen and dismissed that screen on /admin.
+  async function acknowledgeAdminGrant() {
+    if (!auth?.currentUser) return false;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      await acknowledgeAdminGrantApi(token);
+      await refreshStatus();
+      return true;
+    } catch (err) {
+      setError(errorMessage(err));
+      return false;
+    }
+  }
+
   return {
     user,
     role,
     displayName: profile.displayName,
     orgRole: profile.orgRole,
     adminRequested: profile.adminRequested,
+    revoked: profile.revoked,
+    adminGrantUnseen: profile.adminGrantUnseen,
     loading: user === undefined,
     error,
     roleChangeNotice,
@@ -236,6 +275,7 @@ export function useAuth() {
     refreshStatus,
     resetPassword,
     requestAdminAccess,
+    acknowledgeAdminGrant,
   };
 }
 

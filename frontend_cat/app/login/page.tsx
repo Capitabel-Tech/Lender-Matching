@@ -74,10 +74,12 @@ export default function LoginPage() {
   }
 
   async function handleForgotPassword() {
+    setResetSent(false);
     if (!email) {
-      setResetSent(false);
+      setFormError("Type your email above first, then click \"Forgot password?\".");
       return;
     }
+    setFormError(null);
     setSubmitting(true);
     const ok = await resetPassword(email);
     setSubmitting(false);

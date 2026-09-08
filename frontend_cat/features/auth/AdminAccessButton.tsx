@@ -1,101 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 
-// Shown in the Explore header. Admin accounts just get the usual link
-// straight into /admin. A business account gets a button that explains
-// why it can't get in and lets them ask an existing admin for admin
-// access instead of silently bouncing back and forth with /admin's own
-// redirect guard (that used to just "blink").
-export function AdminAccessButton({
-  role,
-  adminRequested,
-  requestAdminAccess,
-}: {
-  role: "business" | "admin" | null | undefined;
-  adminRequested: boolean;
-  requestAdminAccess: () => Promise<boolean>;
-}) {
-  const [open, setOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [justRequested, setJustRequested] = useState(false);
-
-  if (role === "admin") {
-    return (
-      <Link
-        href="/admin"
-        aria-label="Admin login"
-        title="Admin login"
-        className="flex items-center gap-1.5 rounded-full px-3 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-teal-400"
-      >
-        <AdminIcon />
-        <span className="text-xs font-semibold uppercase tracking-wide">Admin</span>
-      </Link>
-    );
-  }
-
-  async function handleRequest() {
-    setSubmitting(true);
-    const ok = await requestAdminAccess();
-    setSubmitting(false);
-    if (ok) setJustRequested(true);
-  }
-
-  const pending = adminRequested || justRequested;
-
+// Shown in the Explore header. Always just a link into /admin — that page
+// itself now handles every state (needs to request access, request
+// pending, access was revoked, just got promoted, or the real dashboard)
+// with a full, clearly-styled page instead of a small popover here. The
+// only thing this button still does is show a dot when there's something
+// new to see there (a fresh admin-access grant not yet acknowledged).
+export function AdminAccessButton({ adminGrantUnseen }: { adminGrantUnseen: boolean }) {
   return (
-    <div
-      className="relative"
-      tabIndex={-1}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
-      }}
+    <Link
+      href="/admin"
+      aria-label="Admin"
+      title="Admin"
+      className="relative flex items-center gap-2 rounded-full px-3.5 py-2.5 text-zinc-300 hover:bg-zinc-800 hover:text-teal-400"
     >
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Admin access"
-        title="Admin access"
-        className="flex items-center gap-1.5 rounded-full px-3 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-teal-400"
-      >
-        <AdminIcon />
-        <span className="text-xs font-semibold uppercase tracking-wide">Admin</span>
-      </button>
-      {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-white/10 bg-[#08141D] p-3.5 text-xs shadow-xl">
-          {pending ? (
-            <>
-              <p className="font-semibold text-[#F5F7FA]">Request pending</p>
-              <p className="mt-1 text-[#91A0AE]">
-                An existing admin still needs to review your request — you&rsquo;ll get a notice here the moment
-                they decide.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="font-semibold text-[#F5F7FA]">You need admin access for this</p>
-              <p className="mt-1 text-[#91A0AE]">
-                The admin dashboard is for editing lender data. Ask an existing admin to promote your account —
-                they&rsquo;ll see your name, role, and email on their end.
-              </p>
-              <button
-                onClick={handleRequest}
-                disabled={submitting}
-                className="mt-3 w-full rounded-md bg-[#00D6C9] py-1.5 text-center font-semibold text-[#050B12] disabled:opacity-50"
-              >
-                {submitting ? "Sending…" : "Request admin access"}
-              </button>
-            </>
-          )}
-        </div>
+      <AdminIcon />
+      <span className="text-sm font-bold uppercase tracking-wide">Admin</span>
+      {adminGrantUnseen && (
+        <span className="absolute right-2 top-1.5 h-2.5 w-2.5 rounded-full bg-teal-400 shadow-[0_0_6px_rgba(45,212,191,0.8)]" />
       )}
-    </div>
+    </Link>
   );
 }
 
 function AdminIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="11" width="18" height="11" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>

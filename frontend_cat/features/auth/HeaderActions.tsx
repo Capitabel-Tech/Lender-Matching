@@ -18,10 +18,9 @@ export function HeaderActions() {
     role,
     displayName,
     orgRole,
-    adminRequested,
+    adminGrantUnseen,
     roleChangeNotice,
     dismissRoleChangeNotice,
-    requestAdminAccess,
     logout,
   } = useAuth();
   const router = useRouter();
@@ -31,7 +30,7 @@ export function HeaderActions() {
   return (
     <div className="flex items-center gap-1">
       <RoleChangeBell notice={roleChangeNotice} onDismiss={dismissRoleChangeNotice} />
-      <AdminAccessButton role={role ?? null} adminRequested={adminRequested} requestAdminAccess={requestAdminAccess} />
+      <AdminAccessButton adminGrantUnseen={adminGrantUnseen} />
       <ProfileMenu
         email={user.email ?? ""}
         displayName={displayName}

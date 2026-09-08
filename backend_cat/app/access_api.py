@@ -28,7 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.activity_log import list_activity, log_activity
 from app.admin_schemas import ActivityLogEntryOut, AdminAccountOut
-from app.auth import ALL_ROLES, LoggedInUser, _firebase_app, require_admin_user
+from app.auth import ADMIN_ROLE, ALL_ROLES, BUSINESS_ROLE, LoggedInUser, _firebase_app, require_admin_user
 from app.database import get_db
 
 access_router = APIRouter(prefix="/api/v1/admin", tags=["admin-access"])
@@ -93,15 +93,17 @@ async def set_account_role(
         # explicit role change here resolves a pending request either way,
         # whether that's approving it (promoted to admin) or dismissing it
         # (left at business, or demoted from a role they already had).
-        firebase_auth.set_custom_user_claims(
-            uid,
-            {
-                "role": new_role,
-                "display_name": existing_claims.get("display_name"),
-                "org_role": existing_claims.get("org_role"),
-            },
-            app=_firebase_app,
-        )
+        # admin_grant_unseen flags a fresh promotion so /admin shows a
+        # one-time "you've been granted access" screen before the real
+        # dashboard — cleared by app/business_api.py's acknowledge-admin-grant.
+        new_claims = {
+            "role": new_role,
+            "display_name": existing_claims.get("display_name"),
+            "org_role": existing_claims.get("org_role"),
+        }
+        if new_role == ADMIN_ROLE:
+            new_claims["admin_grant_unseen"] = True
+        firebase_auth.set_custom_user_claims(uid, new_claims, app=_firebase_app)
         # Deliberately NOT revoking refresh tokens here (unlike
         # revoke_admin_access below) — this person should stay logged in and
         # just pick up the new role on their next poll (getIdTokenResult
@@ -139,14 +141,16 @@ async def dismiss_admin_request(
 async def revoke_admin_access(
     uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_admin_user)]
 ) -> dict[str, str]:
-    """Cuts off an account's access entirely and immediately — clears their
-    role AND invalidates any session they're currently using, so it takes
-    effect right away rather than the next time their login token would
-    naturally expire. Keeps their name/org role and a "revoked" marker
-    instead of wiping the claims blank, so they still show up on Manage
-    Admins (as Revoked) and can be granted access again with one click —
-    set_account_role's fresh claims payload drops that marker the moment
-    that happens."""
+    """Cuts off admin access immediately — drops the account back to
+    business (Explore-only, not a full lockout) and invalidates any session
+    they're currently using, so it takes effect right away rather than the
+    next time their login token would naturally expire. Keeps their
+    name/org role and a "revoked" marker instead of wiping the claims
+    blank, so Manage Admins still shows them (as Revoked, sorted last) and
+    the /explore Admin button tells them specifically that access was
+    removed rather than that they never had it. set_account_role's fresh
+    claims payload drops that marker the moment they're granted access
+    again."""
     if uid == caller.uid:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "You can't revoke your own access.")
     try:
@@ -155,6 +159,7 @@ async def revoke_admin_access(
         firebase_auth.set_custom_user_claims(
             uid,
             {
+                "role": BUSINESS_ROLE,
                 "revoked": True,
                 "display_name": existing_claims.get("display_name"),
                 "org_role": existing_claims.get("org_role"),
@@ -164,7 +169,7 @@ async def revoke_admin_access(
         firebase_auth.revoke_refresh_tokens(uid, app=_firebase_app)
     except firebase_auth.UserNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
-    await log_activity(request, caller.email, f"Revoked access for {target.email or uid}")
+    await log_activity(request, caller.email, f"Revoked admin access for {target.email or uid}")
     return {"status": "revoked"}
 
 

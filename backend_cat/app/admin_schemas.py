@@ -75,11 +75,11 @@ class AmbakBankOption(BaseModel):
 class AdminAccountOut(BaseModel):
     uid: str
     email: str
-    role: str  # "business" or "admin" — "" if revoked (see `revoked` below)
+    role: str  # "business" or "admin" — a revoked account lands back at "business"
     display_name: str | None = None
     org_role: str | None = None  # their role/title within the org, set at signup
     admin_requested: bool = False  # a business account that's asked to be promoted to admin
-    revoked: bool = False  # access was cut off, but the account stays listed so it can be granted again
+    revoked: bool = False  # was previously an admin whose access was removed
 
 
 class ActivityLogEntryOut(BaseModel):

@@ -19,7 +19,7 @@ from firebase_admin import auth as firebase_auth
 from pydantic import BaseModel, Field
 
 from app.activity_log import log_activity
-from app.auth import BUSINESS_ROLE, LoggedInUser, _firebase_app, _verify_token
+from app.auth import ADMIN_ROLE, BUSINESS_ROLE, LoggedInUser, _firebase_app, _verify_token
 
 business_router = APIRouter(prefix="/api/v1/business", tags=["business"])
 
@@ -67,3 +67,19 @@ async def request_admin_access(
     )
     await log_activity(request, user.email, "Requested admin access")
     return {"status": "requested"}
+
+
+@business_router.post("/acknowledge-admin-grant")
+async def acknowledge_admin_grant(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> dict[str, str]:
+    """Clears the "you just got promoted" one-time flag — called once the
+    user has seen and dismissed that screen on /admin (see
+    app/access_api.py's set_account_role, which sets the flag whenever it
+    promotes someone to admin)."""
+    if user.role != ADMIN_ROLE:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Only an admin account has this to acknowledge.")
+    firebase_auth.set_custom_user_claims(
+        user.uid,
+        {"role": user.role, "display_name": user.display_name, "org_role": user.org_role},
+        app=_firebase_app,
+    )
+    return {"status": "acknowledged"}

@@ -9,6 +9,8 @@ import { BanksSection } from "@/features/admin/BanksSection";
 import { BiasSection } from "@/features/admin/BiasSection";
 import { CategoriesSection } from "@/features/admin/CategoriesSection";
 import { ManageAdminsSection } from "@/features/admin/ManageAdminsSection";
+import { AdminAccessRequestScreen } from "@/features/auth/AdminAccessRequestScreen";
+import { AdminGrantWelcomeScreen } from "@/features/auth/AdminGrantWelcomeScreen";
 import { ProfileMenu } from "@/features/auth/ProfileMenu";
 import { RoleChangeBell } from "@/features/auth/RoleChangeBell";
 import { useAuth } from "@/lib/useAuth";
@@ -19,11 +21,16 @@ export default function AdminDashboardPage() {
     role,
     displayName,
     orgRole,
+    revoked,
+    adminRequested,
+    adminGrantUnseen,
     loading,
     logout,
     getToken,
     roleChangeNotice,
     dismissRoleChangeNotice,
+    requestAdminAccess,
+    acknowledgeAdminGrant,
   } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<"banks" | "bias" | "categories" | "admins" | "log">("banks");
@@ -37,20 +44,31 @@ export default function AdminDashboardPage() {
     // Every account gets a role (at minimum "business") the moment it signs
     // up — see business_api.py — so role ever being null here shouldn't
     // normally happen, but if it does, there's nowhere useful to send them
-    // except back to log in again.
+    // except back to log in again. A "business" role is NOT redirected
+    // away anymore — it renders AdminAccessRequestScreen below instead of
+    // silently bouncing to /explore.
     if (role === null) {
       router.push("/login");
-      return;
     }
-    // A business (Explore-only) account has a real, non-null role but no
-    // business being here at all — every route this page calls is
-    // require_admin-gated, so without this they'd land on a half-rendered
-    // dashboard full of 403 errors instead of a clean redirect.
-    if (role === "business") router.push("/explore");
   }, [loading, user, role, router]);
 
-  if (loading || !user || role === null || role === undefined || role === "business") {
+  if (loading || !user || role === null || role === undefined) {
     return <div className="flex flex-1 items-center justify-center text-sm text-zinc-500">Checking login…</div>;
+  }
+
+  if (role === "business") {
+    return (
+      <AdminAccessRequestScreen
+        displayName={displayName}
+        revoked={revoked}
+        adminRequested={adminRequested}
+        requestAdminAccess={requestAdminAccess}
+      />
+    );
+  }
+
+  if (adminGrantUnseen) {
+    return <AdminGrantWelcomeScreen displayName={displayName} onContinue={acknowledgeAdminGrant} />;
   }
 
   return (
