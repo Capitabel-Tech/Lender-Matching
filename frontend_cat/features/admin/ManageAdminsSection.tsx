@@ -156,6 +156,14 @@ export function ManageAdminsSection({
                     <div className="text-base font-bold text-zinc-900 dark:text-zinc-50">
                       {admin.display_name ?? admin.email}
                       {isSelf && <span className="ml-2 text-xs font-normal text-zinc-400">(you)</span>}
+                      {admin.protected && (
+                        <span
+                          title="This account's access can't be revoked by anyone"
+                          className="ml-2 text-xs font-normal text-zinc-400"
+                        >
+                          (protected)
+                        </span>
+                      )}
                     </div>
                     {admin.display_name && (
                       <div className="text-sm text-zinc-500 dark:text-zinc-400">{admin.email}</div>
@@ -210,7 +218,7 @@ export function ManageAdminsSection({
                             {admin.revoked ? "Add back as admin" : "Grant admin access"}
                           </button>
                         )}
-                        {!admin.revoked && (
+                        {!admin.revoked && !admin.protected && (
                           <button
                             onClick={() => revoke(admin.uid, admin.email)}
                             disabled={actingOn === admin.uid}

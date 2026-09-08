@@ -55,6 +55,13 @@ ADMIN_ROLE = "admin"
 BUSINESS_ROLE = "business"
 ALL_ROLES = frozenset({BUSINESS_ROLE, ADMIN_ROLE})
 
+# Accounts no admin — including another protected one — can revoke, since
+# the flat admin model otherwise lets any admin lock out any other admin.
+# A short, explicit allowlist rather than anything account-editable, so it
+# can't be changed except by editing code. See app/access_api.py's
+# revoke_admin_access, which checks this before doing anything.
+PROTECTED_EMAILS = frozenset({"harish.b@capitabel.com", "praveen@lventur.com"})
+
 
 @dataclass(frozen=True)
 class LoggedInUser:

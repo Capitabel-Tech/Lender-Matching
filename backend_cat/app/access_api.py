@@ -28,7 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.activity_log import list_activity, log_activity
 from app.admin_schemas import ActivityLogEntryOut, AdminAccountOut
-from app.auth import ADMIN_ROLE, ALL_ROLES, BUSINESS_ROLE, LoggedInUser, _firebase_app, require_admin_user
+from app.auth import ADMIN_ROLE, ALL_ROLES, BUSINESS_ROLE, PROTECTED_EMAILS, LoggedInUser, _firebase_app, require_admin_user
 from app.database import get_db
 
 access_router = APIRouter(prefix="/api/v1/admin", tags=["admin-access"])
@@ -60,6 +60,7 @@ async def list_admins(_: Annotated[LoggedInUser, Depends(require_admin_user)]) -
                     org_role=claims.get("org_role"),
                     admin_requested=bool(claims.get("admin_requested", False)),
                     revoked=revoked,
+                    protected=user_record.email in PROTECTED_EMAILS,
                 )
             )
     admins.sort(key=lambda a: (2 if a.revoked else _ROLE_SORT_ORDER.get(a.role, 1), a.email))
@@ -155,6 +156,8 @@ async def revoke_admin_access(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "You can't revoke your own access.")
     try:
         target = firebase_auth.get_user(uid, app=_firebase_app)
+        if target.email in PROTECTED_EMAILS:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This account's access can't be revoked.")
         existing_claims = target.custom_claims or {}
         firebase_auth.set_custom_user_claims(
             uid,

@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 
 import {
   EMPTY_FILTERS,
-  FILTER_CATEGORIES,
   exploreBanks,
   fetchCategories,
   fetchLiveRates,
@@ -74,6 +73,7 @@ export function LandingContent() {
 
   const bankNames = banksRes ? [...new Set(banksRes.results.map((p) => p.bank_name))] : rates.map((r) => r.bank_name);
   const bankCount = bankNames.length;
+  const productCount = banksRes?.results.length ?? 0;
   const topMatchName = rates[0]?.bank_name ?? null;
   const topMatchRate = rates[0]?.rate_pct ?? null;
   const networkNodeNames = bankNames.slice(0, 16);
@@ -96,7 +96,7 @@ export function LandingContent() {
   const metrics = [
     { value: String(bankCount), label: "Lenders" },
     { value: `${categoryValueCount}+`, label: "Eligibility Values" },
-    { value: String(FILTER_CATEGORIES.length), label: "Match Criteria" },
+    { value: `${productCount}+`, label: "Loan Products" },
     { value: "Seconds", label: "To Match" },
   ];
 

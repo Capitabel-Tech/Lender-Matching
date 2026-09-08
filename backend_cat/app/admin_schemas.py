@@ -80,6 +80,7 @@ class AdminAccountOut(BaseModel):
     org_role: str | None = None  # their role/title within the org, set at signup
     admin_requested: bool = False  # a business account that's asked to be promoted to admin
     revoked: bool = False  # was previously an admin whose access was removed
+    protected: bool = False  # cannot be revoked by anyone — see app/auth.py's PROTECTED_EMAILS
 
 
 class ActivityLogEntryOut(BaseModel):

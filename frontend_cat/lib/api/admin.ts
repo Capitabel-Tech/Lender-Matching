@@ -66,6 +66,7 @@ export interface AdminAccountOut {
   org_role: string | null;
   admin_requested: boolean;
   revoked: boolean;
+  protected: boolean;
 }
 
 export interface ActivityLogEntryOut {
