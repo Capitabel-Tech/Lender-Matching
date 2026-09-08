@@ -166,6 +166,9 @@ export function ManageAdminsSection({
                   <td className="px-5 py-4 align-top">
                     <div className="text-base font-bold text-zinc-900 dark:text-zinc-50">
                       {admin.display_name ?? admin.email}
+                      {admin.display_name && admin.org_role && (
+                        <span className="font-normal text-zinc-500 dark:text-zinc-400"> ({admin.org_role})</span>
+                      )}
                       {isSelf && <span className="ml-2 text-xs font-normal text-zinc-400">(you)</span>}
                       {admin.protected && (
                         <span
@@ -179,7 +182,6 @@ export function ManageAdminsSection({
                     {admin.display_name && (
                       <div className="text-sm text-zinc-500 dark:text-zinc-400">{admin.email}</div>
                     )}
-                    {admin.org_role && <div className="text-sm text-zinc-500 dark:text-zinc-400">{admin.org_role}</div>}
                   </td>
                   <td className="px-5 py-4 align-top">
                     <span
