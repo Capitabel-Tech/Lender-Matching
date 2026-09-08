@@ -69,13 +69,16 @@
 
 body {
   background-color: var(--background);
-  /* Dot grid — always visible behind every page. Top-level page wrappers
-     must not paint an opaque background over this (use bg-transparent, or a
-     translucent/semi-transparent surface) or it gets hidden; cards and
-     other elevated surfaces sit on top with a solid white/cream fill, which
-     is what gives them their separation from the page underneath. */
-  background-image: radial-gradient(rgba(16, 29, 61, 0.18) 1.2px, transparent 1.2px);
-  background-size: 28px 28px;
+  /* Thin graph-paper grid — always visible behind every page. Top-level page
+     wrappers must not paint an opaque background over this (use
+     bg-transparent, or a translucent/semi-transparent surface) or it gets
+     hidden; cards and other elevated surfaces sit on top with a solid
+     white/cream fill, which is what gives them their separation from the
+     page underneath. */
+  background-image:
+    linear-gradient(rgba(16, 29, 61, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 29, 61, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
