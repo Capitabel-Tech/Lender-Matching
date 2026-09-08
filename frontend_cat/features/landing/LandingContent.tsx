@@ -177,7 +177,7 @@ export function LandingContent() {
 
       {/* How the engine thinks — 3 feature cards */}
       <section id="how-it-works" className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-6xl flex-col gap-12">
+        <Reveal className="mx-auto flex max-w-7xl flex-col gap-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">How the Engine Thinks</h2>
           <FeatureCards />
         </Reveal>
@@ -185,7 +185,7 @@ export function LandingContent() {
 
       {/* Explore Mode preview */}
       <section className="px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-6xl flex-col gap-10">
+        <Reveal className="mx-auto flex max-w-7xl flex-col gap-10">
           <div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">Explore Mode</h2>
             <p className="mt-3 max-w-xl text-brand-500">
@@ -198,7 +198,7 @@ export function LandingContent() {
 
       {/* One engine, every lender's rules */}
       <section id="lenders" className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-6xl flex-col items-center gap-14 text-center">
+        <Reveal className="mx-auto flex max-w-7xl flex-col items-center gap-14 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
             One engine.
             <br />
