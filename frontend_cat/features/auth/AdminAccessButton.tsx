@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 
-// Shown in the Explore header. Admin/super_admin accounts just get the
-// usual link straight into /admin. A business account gets a button that
-// explains why it can't get in and lets them ask a super admin for admin
+// Shown in the Explore header. Admin accounts just get the usual link
+// straight into /admin. A business account gets a button that explains
+// why it can't get in and lets them ask an existing admin for admin
 // access instead of silently bouncing back and forth with /admin's own
 // redirect guard (that used to just "blink").
 export function AdminAccessButton({
@@ -13,7 +13,7 @@ export function AdminAccessButton({
   adminRequested,
   requestAdminAccess,
 }: {
-  role: "business" | "admin" | "super_admin" | null | undefined;
+  role: "business" | "admin" | null | undefined;
   adminRequested: boolean;
   requestAdminAccess: () => Promise<boolean>;
 }) {
@@ -21,7 +21,7 @@ export function AdminAccessButton({
   const [submitting, setSubmitting] = useState(false);
   const [justRequested, setJustRequested] = useState(false);
 
-  if (role === "admin" || role === "super_admin") {
+  if (role === "admin") {
     return (
       <Link
         href="/admin"
@@ -67,15 +67,15 @@ export function AdminAccessButton({
             <>
               <p className="font-semibold text-[#F5F7FA]">Request pending</p>
               <p className="mt-1 text-[#91A0AE]">
-                A super admin still needs to review your request — you&rsquo;ll get a notice here the moment they
-                decide.
+                An existing admin still needs to review your request — you&rsquo;ll get a notice here the moment
+                they decide.
               </p>
             </>
           ) : (
             <>
               <p className="font-semibold text-[#F5F7FA]">You need admin access for this</p>
               <p className="mt-1 text-[#91A0AE]">
-                The admin dashboard is for editing lender data. Ask a super admin to promote your account —
+                The admin dashboard is for editing lender data. Ask an existing admin to promote your account —
                 they&rsquo;ll see your name, role, and email on their end.
               </p>
               <button

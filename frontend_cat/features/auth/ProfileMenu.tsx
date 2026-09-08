@@ -5,7 +5,6 @@ import { useState } from "react";
 const ROLE_LABELS: Record<string, string> = {
   business: "Business",
   admin: "Admin",
-  super_admin: "Super Admin",
 };
 
 function initials(name: string | null, email: string): string {

@@ -8,17 +8,19 @@ proof can't be faked, and checks the role stored on that Firebase account (a
 hand-edit outside this flow.
 
 Every account gets the "business" role the moment it signs up (see
-app/business_api.py) — no approval step. A super admin can promote an
-account to admin/super_admin, or demote it back down, from the Manage
-Admins screen (app/access_api.py's set_account_role) whenever they choose.
+app/business_api.py) — no approval step. An existing admin can promote a
+business account to admin, or demote it back down, from the Manage Admins
+screen (app/access_api.py's set_account_role) whenever they choose.
 
-Three tiers:
-  - require_any_role: any real, assigned account (business, admin, or
-    super_admin). Gates the borrower-facing Explore routes.
-  - require_admin: role is "admin" or "super_admin". Everything that reads
-    or writes lender data.
-  - require_super_admin: role is "super_admin" only. Promoting/demoting/
-    revoking other accounts — a regular admin can't do this.
+Only two tiers — deliberately flat, not a hierarchy: an admin's admin-ness
+isn't split into "can edit data" vs "can also grant access to others."
+Anyone promoted to admin can do both, same as everyone else who already
+has it.
+  - require_any_role: any real, assigned account (business or admin).
+    Gates the borrower-facing Explore routes.
+  - require_admin: role is "admin". Everything that reads or writes lender
+    data, AND promoting/demoting/revoking other accounts — every admin can
+    do both, there's no separate higher tier for the latter.
 """
 
 from dataclasses import dataclass
@@ -47,11 +49,11 @@ _firebase_app: firebase_admin.App | None = None
 if _service_account_path.exists():
     _firebase_app = firebase_admin.initialize_app(credentials.Certificate(str(_service_account_path)))
 
-ADMIN_ROLES = frozenset({"admin", "super_admin"})
+ADMIN_ROLE = "admin"
 # The role every account starts at right after signup — Explore-only access,
 # no admin dashboard. See app/business_api.py.
 BUSINESS_ROLE = "business"
-ALL_ROLES = ADMIN_ROLES | {BUSINESS_ROLE}
+ALL_ROLES = frozenset({BUSINESS_ROLE, ADMIN_ROLE})
 
 
 @dataclass(frozen=True)
@@ -102,7 +104,7 @@ async def _verify_token(
 
 async def require_any_role(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:
     """Gates the borrower-facing Explore routes — any real, assigned role
-    (business, admin, or super_admin) is enough."""
+    (business or admin) is enough."""
     if user.role not in ALL_ROLES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Sign in to use this.")
     return user
@@ -112,14 +114,16 @@ async def require_admin(user: Annotated[LoggedInUser, Depends(_verify_token)]) -
     """FastAPI dependency — add to any admin-only route. Returns the logged-in
     admin's email on success; raises 403 for a real account that just isn't
     an admin (distinct from 401 "not logged in at all")."""
-    if user.role not in ADMIN_ROLES:
+    if user.role != ADMIN_ROLE:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have admin access.")
     return user.email
 
 
-async def require_super_admin(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:
-    """Stricter than require_admin — only the super admin(s) can promote,
-    demote, or revoke other accounts."""
-    if user.role != "super_admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required.")
+async def require_admin_user(user: Annotated[LoggedInUser, Depends(_verify_token)]) -> LoggedInUser:
+    """Same check as require_admin, but returns the full LoggedInUser (uid
+    included) instead of just the email — for routes that need to know who's
+    calling, like Manage Admins' self-protection checks and activity log
+    attribution."""
+    if user.role != ADMIN_ROLE:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have admin access.")
     return user

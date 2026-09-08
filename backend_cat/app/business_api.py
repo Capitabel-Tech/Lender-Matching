@@ -4,11 +4,12 @@ has no role claim until this runs once, right after. No domain
 restriction and no approval step: everyone starts at the same "business"
 (Explore-only) tier the moment they sign up.
 
-Only a super admin manually promoting someone (app/access_api.py's
+Only an existing admin manually promoting someone (app/access_api.py's
 set_account_role) grants anything beyond that — see app/auth.py's
 require_any_role for what "business" alone gets you. A business account
-can ask for that promotion itself via /request-admin below; it's still the
-super admin's call whether to grant it.
+can ask for that promotion itself via /request-admin below; it's still an
+admin's call whether to grant it. There's no separate higher tier above
+"admin" needed to grant it either — every admin can.
 """
 
 from typing import Annotated
@@ -33,8 +34,8 @@ async def complete_business_signup(
     payload: BusinessSignupIn, user: Annotated[LoggedInUser, Depends(_verify_token)]
 ) -> dict[str, str]:
     """Idempotent-safe: refuses to run if this account already has any role
-    (business, admin, or super_admin) — a self-service call can only ever
-    grant the one, lowest tier, never overwrite an existing assignment."""
+    (business or admin) — a self-service call can only ever grant the one,
+    lowest tier, never overwrite an existing assignment."""
     if user.role is not None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "This account already has access set up.")
     firebase_auth.set_custom_user_claims(
@@ -50,7 +51,7 @@ async def request_admin_access(
     request: Request, user: Annotated[LoggedInUser, Depends(_verify_token)]
 ) -> dict[str, str]:
     """Flags this business account as wanting admin access — shows up on the
-    super admin's Manage Admins screen so they can approve (promote to
+    Manage Admins screen so an existing admin can approve (promote to
     admin) or dismiss it. Doesn't grant anything by itself."""
     if user.role != BUSINESS_ROLE:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Only a business account can request admin access.")

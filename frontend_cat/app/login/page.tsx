@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
-  // Any real, assigned role (business/admin/super_admin) means they're
+  // Any real, assigned role (business or admin) means they're
   // already in — send them straight to the tool instead of the form. Never
   // fires right after a signup: signUp deliberately doesn't force a role
   // refresh, so role stays null until this same account logs in for real.

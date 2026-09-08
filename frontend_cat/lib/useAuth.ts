@@ -7,10 +7,12 @@
 // One login method for everyone: plain email + password. Signing up (see
 // signUp below) creates the Firebase account and immediately grants the
 // "business" role server-side (backend_cat/app/business_api.py) — no
-// approval step. A super admin can promote an account to admin/super_admin,
-// or demote it back down, from Manage Admins whenever they choose. A
-// business account can also ask for that promotion itself via
-// requestAdminAccess — still the super admin's call whether to grant it.
+// approval step. An existing admin can promote a business account to
+// admin, or demote it back down, from Manage Admins whenever they choose
+// — deliberately flat, not a hierarchy: every admin can do this, there's
+// no separate higher tier for it. A business account can also ask for
+// that promotion itself via requestAdminAccess — still an admin's call
+// whether to grant it.
 
 import {
   createUserWithEmailAndPassword,
@@ -27,12 +29,13 @@ import { completeSignup, requestAdminAccess as requestAdminAccessApi } from "./a
 import { errorMessage } from "./api/client";
 import { auth } from "./firebase";
 
-export type Role = "business" | "admin" | "super_admin";
+export type Role = "business" | "admin";
 
-// How often a logged-in session quietly re-checks its own role — catches a
-// super admin promoting/demoting this account while they're already using
-// the site, without needing a live push connection (see ManageAdminsSection
-// and the bell icon in the header for the other half of this).
+// How often a logged-in session quietly re-checks its own role — catches
+// another admin promoting/demoting this account while they're already
+// using the site, without needing a live push connection (see
+// ManageAdminsSection and the bell icon in the header for the other half
+// of this).
 const ROLE_POLL_INTERVAL_MS = 30_000;
 
 interface Profile {
@@ -200,8 +203,8 @@ export function useAuth() {
     await readRole(auth.currentUser, true);
   }
 
-  // Flags this business account as wanting admin access — a super admin
-  // sees it on Manage Admins and can approve (promote) or dismiss it.
+  // Flags this business account as wanting admin access — any existing
+  // admin sees it on Manage Admins and can approve (promote) or dismiss it.
   async function requestAdminAccess() {
     setError(null);
     if (!auth?.currentUser) return false;

@@ -1,16 +1,21 @@
-"""The super-admin-only Manage Admins + Activity Log views — separate from
-admin_api.py because these routes need require_super_admin rather than the
-require_admin gate admin_router applies to every lender-data route.
+"""The admin-only Manage Admins + Activity Log views — separate from
+admin_api.py's own routes just to keep this file focused on account
+management rather than lender data, but gated by the same require_admin
+dependency. There's no higher tier above "admin" that's needed to promote,
+demote, or revoke someone — every admin can manage every other admin,
+deliberately flat rather than hierarchical.
 
 Access itself lives entirely on the Firebase account as a custom claim
-(role: "business" | "admin" | "super_admin" | unset) — not a database row,
-so there's nothing here for anyone to hand-edit outside this flow. See
-app/auth.py for how the claim is read back out on every request.
+(role: "business" | "admin" | unset) — not a database row, so there's
+nothing here for anyone to hand-edit outside this flow. See app/auth.py
+for how the claim is read back out on every request.
 
 Every account starts at "business" the moment it signs up (see
-app/business_api.py) — no approval step, no pending state. A super admin
-promotes someone to admin/super_admin (or demotes them) straight from the
-Manage Admins list below, whenever they choose to.
+app/business_api.py) — no approval step, no pending state. An admin
+promotes someone to admin (or demotes them) straight from the Manage
+Admins list below, whenever they choose to — and every such change is
+attributed in the activity log below, so it's always clear who granted
+access to whom.
 """
 
 from typing import Annotated
@@ -21,17 +26,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.activity_log import list_activity, log_activity
 from app.admin_schemas import ActivityLogEntryOut, AdminAccountOut
-from app.auth import ALL_ROLES, LoggedInUser, _firebase_app, require_super_admin
+from app.auth import ALL_ROLES, LoggedInUser, _firebase_app, require_admin_user
 from app.database import get_db
 
 access_router = APIRouter(prefix="/api/v1/admin", tags=["admin-access"])
 
 
 @access_router.get("/admins")
-async def list_admins(_: Annotated[LoggedInUser, Depends(require_super_admin)]) -> list[AdminAccountOut]:
-    """Everyone who currently has an account — business, admin, and
-    super_admin alike. This is what the Manage Admins screen shows,
-    including the promote/demote controls."""
+async def list_admins(_: Annotated[LoggedInUser, Depends(require_admin_user)]) -> list[AdminAccountOut]:
+    """Everyone who currently has an account — business and admin alike.
+    This is what the Manage Admins screen shows, including the
+    promote/demote controls."""
     admins: list[AdminAccountOut] = []
     for user_record in firebase_auth.list_users(app=_firebase_app).iterate_all():
         claims = user_record.custom_claims or {}
@@ -55,11 +60,12 @@ async def set_account_role(
     uid: str,
     new_role: str,
     request: Request,
-    caller: Annotated[LoggedInUser, Depends(require_super_admin)],
+    caller: Annotated[LoggedInUser, Depends(require_admin_user)],
 ) -> dict[str, str]:
-    """Promotes or demotes an already-assigned account between business,
-    admin, and super_admin — e.g. turning a just-signed-up business account
-    into a full admin, or stepping someone back down to business."""
+    """Promotes or demotes an already-assigned account between business and
+    admin — e.g. turning a just-signed-up business account into a full
+    admin, or stepping someone back down to business. Logged with who did
+    it, so it's always clear who granted access to whom."""
     if new_role not in ALL_ROLES:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"role must be one of {sorted(ALL_ROLES)}.")
     if uid == caller.uid:
@@ -97,10 +103,10 @@ async def set_account_role(
 
 @access_router.post("/admins/{uid}/dismiss-request")
 async def dismiss_admin_request(
-    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_super_admin)]
+    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_admin_user)]
 ) -> dict[str, str]:
     """Clears a pending admin-access request without changing the account's
-    role — for when the super admin wants to say no rather than promote."""
+    role — for when an admin wants to say no rather than promote."""
     try:
         target = firebase_auth.get_user(uid, app=_firebase_app)
         existing_claims = target.custom_claims or {}
@@ -117,7 +123,7 @@ async def dismiss_admin_request(
 
 @access_router.post("/admins/{uid}/revoke")
 async def revoke_admin_access(
-    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_super_admin)]
+    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_admin_user)]
 ) -> dict[str, str]:
     """Cuts off an account's access entirely and immediately — removes their
     role AND invalidates any session they're currently using, so it takes
@@ -137,7 +143,7 @@ async def revoke_admin_access(
 
 @access_router.get("/activity-log")
 async def get_activity_log(
-    session: Annotated[AsyncSession, Depends(get_db)], _: Annotated[LoggedInUser, Depends(require_super_admin)]
+    session: Annotated[AsyncSession, Depends(get_db)], _: Annotated[LoggedInUser, Depends(require_admin_user)]
 ) -> list[ActivityLogEntryOut]:
     entries = await list_activity(session)
     return [

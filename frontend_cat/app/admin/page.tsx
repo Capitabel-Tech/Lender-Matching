@@ -113,30 +113,27 @@ export default function AdminDashboardPage() {
           >
             Categories
           </button>
-          {role === "super_admin" && (
-            <>
-              <button
-                onClick={() => setTab("admins")}
-                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                  tab === "admins"
-                    ? "bg-teal-600 text-white"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                }`}
-              >
-                Manage Admins
-              </button>
-              <button
-                onClick={() => setTab("log")}
-                className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                  tab === "log"
-                    ? "bg-teal-600 text-white"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                }`}
-              >
-                Activity Log
-              </button>
-            </>
-          )}
+          {/* No tier above admin — every admin can manage other admins, so these two tabs are always shown here. */}
+          <button
+            onClick={() => setTab("admins")}
+            className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+              tab === "admins"
+                ? "bg-teal-600 text-white"
+                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            }`}
+          >
+            Manage Admins
+          </button>
+          <button
+            onClick={() => setTab("log")}
+            className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+              tab === "log"
+                ? "bg-teal-600 text-white"
+                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            }`}
+          >
+            Activity Log
+          </button>
         </div>
 
         {tab === "banks" ? (

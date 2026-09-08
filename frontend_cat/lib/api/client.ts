@@ -25,8 +25,8 @@ export function errorMessage(err: unknown): string {
   return "Something went wrong. Check the backend is running and try again.";
 }
 
-// Explore Lenders now requires a logged-in account (business/admin/
-// super_admin) — see backend_cat/app/auth.py's require_any_role — so every
+// Explore Lenders now requires a logged-in account (business or admin) —
+// see backend_cat/app/auth.py's require_any_role — so every
 // caller of these two needs to pass the current Firebase ID token. Optional
 // only because a couple of call sites (e.g. a server component with no
 // browser session to read) may have no token to give; the backend will

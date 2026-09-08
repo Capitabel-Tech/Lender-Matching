@@ -1,14 +1,13 @@
 "use client";
 
 // A small bell that lights up when useAuth's 30s role poll notices this
-// account's role changed (a super admin promoted/demoted it) — see
+// account's role changed (another admin promoted/demoted it) — see
 // useAuth.ts's roleChangeNotice. Purely informational: the person's actual
 // access already updated the moment the poll ran; this just tells them so.
 
 const ROLE_LABELS: Record<string, string> = {
   business: "Business",
   admin: "Admin",
-  super_admin: "Super Admin",
 };
 
 function roleLabel(role: string | null): string {

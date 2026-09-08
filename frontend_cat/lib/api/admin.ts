@@ -61,7 +61,7 @@ export interface AmbakBankOption {
 export interface AdminAccountOut {
   uid: string;
   email: string;
-  role: "business" | "admin" | "super_admin";
+  role: "business" | "admin";
   display_name: string | null;
   org_role: string | null;
   admin_requested: boolean;
@@ -163,9 +163,9 @@ export const adminApi = {
       method: "POST",
     }),
 
-  // Promotes/demotes an already-assigned account between business, admin,
-  // and super_admin.
-  setAccountRole: (token: string, uid: string, newRole: "business" | "admin" | "super_admin") =>
+  // Promotes/demotes an already-assigned account between business and
+  // admin.
+  setAccountRole: (token: string, uid: string, newRole: "business" | "admin") =>
     adminRequest<{ status: string; role: string }>(
       `/api/v1/admin/admins/${encodeURIComponent(uid)}/set-role?new_role=${encodeURIComponent(newRole)}`,
       token,

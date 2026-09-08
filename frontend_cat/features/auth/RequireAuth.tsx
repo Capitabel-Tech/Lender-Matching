@@ -5,8 +5,8 @@ import { useEffect } from "react";
 
 import { useAuth } from "@/lib/useAuth";
 
-// Wraps any page that now requires a logged-in business/admin/super_admin
-// account (Explore Lenders and the landing page both do — see
+// Wraps any page that now requires a logged-in business/admin account
+// (Explore Lenders and the landing page both do — see
 // backend_cat/app/auth.py's require_any_role). Anyone without a real,
 // assigned role gets bounced to /login before seeing anything.
 export function RequireAuth({ children }: { children: React.ReactNode }) {

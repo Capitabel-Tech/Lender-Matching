@@ -5,10 +5,8 @@ import { useEffect, useState } from "react";
 import { errorMessage } from "@/lib/api/client";
 import { adminApi, type AdminAccountOut } from "@/lib/api/admin";
 
-function roleLabel(role: "business" | "admin" | "super_admin"): string {
+function roleLabel(role: "business" | "admin"): string {
   switch (role) {
-    case "super_admin":
-      return "Super Admin";
     case "admin":
       return "Admin";
     case "business":
@@ -85,12 +83,15 @@ export function ManageAdminsSection({
     }
   }
 
-  // Promotes or demotes between business/admin/super_admin — e.g. turning
-  // a business (Explore-only) account into a full admin. The person being
-  // changed picks this up on their own within ~30s (see useAuth's role
-  // polling) — no need to revoke/kick them out for it to take effect.
-  async function changeRole(uid: string, email: string, newRole: "business" | "admin" | "super_admin") {
-    if (newRole === "super_admin" && !confirm(`Make ${email} a super admin? They'll have full access, equal to you.`)) {
+  // Promotes or demotes between business and admin — e.g. turning a
+  // business (Explore-only) account into a full admin. There's no tier
+  // above admin: promoting someone gives them full, equal power, including
+  // editing lender data and managing (promoting/demoting/revoking) every
+  // other admin, you included. The person being changed picks this up on
+  // their own within ~30s (see useAuth's role polling) — no need to
+  // revoke/kick them out for it to take effect.
+  async function changeRole(uid: string, email: string, newRole: "business" | "admin") {
+    if (newRole === "admin" && !confirm(`Make ${email} an admin? They'll have full access, equal to you — including the power to manage other admins.`)) {
       return;
     }
     setActingOn(uid);
@@ -112,9 +113,9 @@ export function ManageAdminsSection({
       <div>
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Manage Admins</h2>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Everyone who currently has access — business (Explore-only), admin, and super admin. Change someone's role
-          with the dropdown, or revoke access entirely; revoking is immediate — it doesn't wait for their session to
-          expire.
+          Everyone who currently has access — business (Explore-only) and admin. There's no tier above admin: any
+          admin can edit lender data and manage every other admin, equally. Change someone's role with the dropdown,
+          or revoke access entirely; revoking is immediate — it doesn't wait for their session to expire.
         </p>
       </div>
 
@@ -161,14 +162,11 @@ export function ManageAdminsSection({
                       <select
                         value={admin.role}
                         disabled={actingOn === admin.uid}
-                        onChange={(e) =>
-                          changeRole(admin.uid, admin.email, e.target.value as "business" | "admin" | "super_admin")
-                        }
+                        onChange={(e) => changeRole(admin.uid, admin.email, e.target.value as "business" | "admin")}
                         className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm outline-none focus:border-teal-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-950"
                       >
                         <option value="business">{roleLabel("business")}</option>
                         <option value="admin">{roleLabel("admin")}</option>
-                        <option value="super_admin">{roleLabel("super_admin")}</option>
                       </select>
                     )}
                   </td>
