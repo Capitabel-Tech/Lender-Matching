@@ -26,7 +26,10 @@ business_router = APIRouter(prefix="/api/v1/business", tags=["business"])
 
 class BusinessSignupIn(BaseModel):
     display_name: str = Field(min_length=1, max_length=120)
-    org_role: str = Field(min_length=1, max_length=120)
+    # Optional — not everyone signing up has a clean title to give, and
+    # nothing else depends on it being set (Manage Admins/Activity Log just
+    # skip showing it when it's missing).
+    org_role: str | None = Field(default=None, max_length=120)
 
 
 class EmailCheckIn(BaseModel):
@@ -44,7 +47,11 @@ async def complete_business_signup(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "This account already has access set up.")
     firebase_auth.set_custom_user_claims(
         user.uid,
-        {"role": BUSINESS_ROLE, "display_name": payload.display_name, "org_role": payload.org_role},
+        {
+            "role": BUSINESS_ROLE,
+            "display_name": payload.display_name,
+            "org_role": payload.org_role.strip() if payload.org_role and payload.org_role.strip() else None,
+        },
         app=_firebase_app,
     )
     return {"status": "activated"}

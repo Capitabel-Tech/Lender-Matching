@@ -152,7 +152,8 @@ export function ManageAdminsSection({
         <table className="w-full text-base">
           <thead className="bg-zinc-100 text-left text-xs font-bold uppercase tracking-wide text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             <tr>
-              <th className="px-5 py-4">Person</th>
+              <th className="px-5 py-4">Name</th>
+              <th className="px-5 py-4">Email</th>
               <th className="px-5 py-4">Access</th>
               <th className="px-5 py-4" />
             </tr>
@@ -165,7 +166,7 @@ export function ManageAdminsSection({
                 <tr key={admin.uid} className="border-t border-zinc-100 dark:border-zinc-800">
                   <td className="px-5 py-4 align-top">
                     <div className="text-base font-bold text-zinc-900 dark:text-zinc-50">
-                      {admin.display_name ?? admin.email}
+                      {admin.display_name ?? "—"}
                       {admin.display_name && admin.org_role && (
                         <span className="font-normal text-zinc-500 dark:text-zinc-400"> ({admin.org_role})</span>
                       )}
@@ -179,10 +180,8 @@ export function ManageAdminsSection({
                         </span>
                       )}
                     </div>
-                    {admin.display_name && (
-                      <div className="text-sm text-zinc-500 dark:text-zinc-400">{admin.email}</div>
-                    )}
                   </td>
+                  <td className="px-5 py-4 align-top text-zinc-500 dark:text-zinc-400">{admin.email}</td>
                   <td className="px-5 py-4 align-top">
                     <span
                       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${
@@ -257,7 +256,7 @@ export function ManageAdminsSection({
             })}
             {items?.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-5 py-6 text-center text-zinc-400">
+                <td colSpan={4} className="px-5 py-6 text-center text-zinc-400">
                   No admins yet.
                 </td>
               </tr>

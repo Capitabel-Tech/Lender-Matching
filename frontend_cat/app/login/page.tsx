@@ -202,12 +202,11 @@ export default function LoginPage() {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="orgRole" className="text-sm font-medium text-[#91A0AE]">
-                    Your role in the organization
+                    Your role in the organization <span className="font-normal text-[#91A0AE]/60">(optional)</span>
                   </label>
                   <input
                     id="orgRole"
                     type="text"
-                    required
                     disabled={signupSuccess}
                     placeholder="e.g. Loan Ops Manager"
                     value={orgRole}
