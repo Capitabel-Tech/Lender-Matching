@@ -3,8 +3,12 @@ loaded in the database via checkbox-style category filters, instead of
 requiring a full borrower profile like /api/v1/lenders/match does. See
 app/explore.py for the matching/faceting logic.
 
-Every route here requires a logged-in business/admin/super_admin account
-(require_any_role) — Explore Lenders is no longer public; see app/auth.py.
+Deliberately public, no login required — this is read-only bank/rate data,
+the same info any public rate-comparison page would show, and the landing
+page's preview sections (bank names, ticker, ranked cards) need it to
+render for a logged-out visitor. The /explore *page* itself still sits
+behind a login wall at the frontend (see features/auth/RequireAuth.tsx) —
+this is just the data those pages call, same as it's always been.
 """
 
 from typing import Annotated
@@ -12,7 +16,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import require_any_role
 from app.database import get_db
 from app.domain import (
     HomeLoanProduct,
@@ -43,7 +46,7 @@ from app.explore_schemas import (
 )
 from app.repository import LenderRepository, SqlLenderRepository
 
-explore_router = APIRouter(prefix="/api/v1/explore", dependencies=[Depends(require_any_role)])
+explore_router = APIRouter(prefix="/api/v1/explore")
 
 
 def get_lender_repository(db: Annotated[AsyncSession, Depends(get_db)]) -> LenderRepository:
