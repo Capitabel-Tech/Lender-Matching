@@ -111,18 +111,18 @@ export function LandingContent() {
   return (
     // pb-14 leaves just enough room at the very bottom for the fixed ticker
     // below so it never sits on top of the final CTA's own buttons.
-    <div className={`${spaceGrotesk.className} flex flex-1 flex-col bg-[#050B12] pb-14 text-[#F5F7FA]`}>
+    <div className={`${spaceGrotesk.className} flex flex-1 flex-col bg-[#0F1A33] pb-14 text-[#FFFFFF]`}>
       {/* Header — minimal, floating, transparent + blur */}
-      <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#050B12]/70 px-6 py-4 backdrop-blur-md sm:px-10">
+      <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#0F1A33]/70 px-6 py-4 backdrop-blur-md sm:px-10">
         <span className="text-base font-bold tracking-tight">
-          Lender<span className="text-[#00D6C9]">Match</span>
+          Lender<span className="text-[#F58220]">Match</span>
         </span>
         <nav className="hidden items-center gap-2 text-sm md:flex">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.label}
               href={l.href}
-              className="rounded-full bg-white/[0.06] px-4 py-2 font-bold text-[#F5F7FA] transition-colors hover:bg-white/[0.12]"
+              className="rounded-full bg-white/[0.06] px-4 py-2 font-bold text-[#FFFFFF] transition-colors hover:bg-white/[0.12]"
             >
               {l.label}
             </Link>
@@ -131,7 +131,7 @@ export function LandingContent() {
         <div className="flex items-center gap-3">
           <Link
             href="/explore"
-            className="group inline-flex items-center gap-1.5 rounded-full bg-[#00D6C9] px-4 py-2 text-sm font-semibold text-[#050B12] shadow-[0_0_20px_rgba(0,214,201,0.35)] transition-transform hover:scale-[1.03]"
+            className="group inline-flex items-center gap-1.5 rounded-full bg-[#F58220] px-4 py-2 text-sm font-semibold text-[#0F1A33] shadow-[0_0_20px_rgba(245,130,32,0.35)] transition-transform hover:scale-[1.03]"
           >
             Check eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
@@ -150,17 +150,17 @@ export function LandingContent() {
         />
         <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
           <div className="flex flex-col gap-7">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#00D6C9]">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#F58220]">
               Rule-Based Lender Matching Engine
             </p>
             <h1 className="text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[48px] lg:text-[56px]">
               One Profile. Every Lender.
               <br />
-              <span className="text-[#00D6C9]">Your Best Match.</span>
+              <span className="text-[#F58220]">Your Best Match.</span>
             </h1>
-            <p className="max-w-lg text-lg text-[#91A0AE]">
-              The engine that calculates <strong className="font-semibold text-[#F5F7FA]">real eligibility</strong>{" "}
-              and <strong className="font-semibold text-[#F5F7FA]">true affordability</strong> across{" "}
+            <p className="max-w-lg text-lg text-[#A9B4C9]">
+              The engine that calculates <strong className="font-semibold text-[#FFFFFF]">real eligibility</strong>{" "}
+              and <strong className="font-semibold text-[#FFFFFF]">true affordability</strong> across{" "}
               {bankCount || "24"}+ lenders in seconds. Stop guessing. Start matching.
             </p>
             {/* Just this one hero CTA now, plus the nav's own "Check eligibility" —
@@ -169,12 +169,12 @@ export function LandingContent() {
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/explore"
-                className="group inline-flex items-center gap-2 rounded-full bg-[#00D6C9] px-7 py-3.5 text-base font-semibold text-[#050B12] shadow-[0_0_30px_rgba(0,214,201,0.35)] transition-transform hover:scale-[1.03]"
+                className="group inline-flex items-center gap-2 rounded-full bg-[#F58220] px-7 py-3.5 text-base font-semibold text-[#0F1A33] shadow-[0_0_30px_rgba(245,130,32,0.35)] transition-transform hover:scale-[1.03]"
               >
                 Check Your Eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
               </Link>
             </div>
-            <p className="text-xs uppercase tracking-wide text-[#91A0AE]">
+            <p className="text-xs uppercase tracking-wide text-[#A9B4C9]">
               No hard credit inquiry &nbsp;•&nbsp; Rule-based matching &nbsp;•&nbsp; Results in seconds
             </p>
           </div>
@@ -184,7 +184,7 @@ export function LandingContent() {
       </section>
 
       {/* How the engine thinks — 3 feature cards */}
-      <section id="how-it-works" className="border-t border-white/[0.06] bg-[#08141D] px-6 py-24 sm:px-10">
+      <section id="how-it-works" className="border-t border-white/[0.06] bg-[#101D3D] px-6 py-24 sm:px-10">
         <Reveal className="mx-auto flex max-w-6xl flex-col gap-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">How the Engine Thinks</h2>
           <FeatureCards />
@@ -196,7 +196,7 @@ export function LandingContent() {
         <Reveal className="mx-auto flex max-w-6xl flex-col gap-10">
           <div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">Explore Mode</h2>
-            <p className="mt-3 max-w-xl text-[#91A0AE]">
+            <p className="mt-3 max-w-xl text-[#A9B4C9]">
               Browse lenders by employment type and property filters before committing to a full profile.
             </p>
           </div>
@@ -205,7 +205,7 @@ export function LandingContent() {
       </section>
 
       {/* One engine, every lender's rules */}
-      <section id="lenders" className="border-t border-white/[0.06] bg-[#08141D] px-6 py-24 sm:px-10">
+      <section id="lenders" className="border-t border-white/[0.06] bg-[#101D3D] px-6 py-24 sm:px-10">
         <Reveal className="mx-auto flex max-w-6xl flex-col items-center gap-14 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
             One engine.
@@ -226,7 +226,7 @@ export function LandingContent() {
               <br />
               Ranked.
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-[#91A0AE]">
+            <p className="mx-auto mt-4 max-w-lg text-[#A9B4C9]">
               We evaluate lender-specific rules and rank the lenders that best fit the borrower.
             </p>
           </div>
@@ -235,7 +235,7 @@ export function LandingContent() {
       </section>
 
       {/* Before / after */}
-      <section className="border-t border-white/[0.06] bg-[#08141D] px-6 py-24 sm:px-10">
+      <section className="border-t border-white/[0.06] bg-[#101D3D] px-6 py-24 sm:px-10">
         <Reveal className="mx-auto flex max-w-4xl flex-col gap-12">
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl">Guessing vs. matching.</h2>
           <BeforeAfter />
@@ -250,10 +250,10 @@ export function LandingContent() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden border-t border-white/[0.06] bg-[#08141D] px-6 py-28 text-center sm:px-10">
+      <section className="relative overflow-hidden border-t border-white/[0.06] bg-[#101D3D] px-6 py-28 text-center sm:px-10">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
-          style={{ background: "radial-gradient(circle at 50% 40%, rgba(0,214,201,0.12) 0%, transparent 60%)" }}
+          style={{ background: "radial-gradient(circle at 50% 40%, rgba(245,130,32,0.12) 0%, transparent 60%)" }}
         />
         <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6">
           <h2 className="text-4xl font-bold leading-tight tracking-tight sm:text-6xl">
@@ -261,11 +261,11 @@ export function LandingContent() {
             <br />
             Start matching.
           </h2>
-          <p className="text-lg text-[#91A0AE]">Find lenders whose rules actually fit your profile.</p>
+          <p className="text-lg text-[#A9B4C9]">Find lenders whose rules actually fit your profile.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/explore"
-              className="group inline-flex items-center gap-2 rounded-full bg-[#00D6C9] px-8 py-4 text-lg font-semibold text-[#050B12] shadow-[0_0_30px_rgba(0,214,201,0.35)] transition-transform hover:scale-[1.03]"
+              className="group inline-flex items-center gap-2 rounded-full bg-[#F58220] px-8 py-4 text-lg font-semibold text-[#0F1A33] shadow-[0_0_30px_rgba(245,130,32,0.35)] transition-transform hover:scale-[1.03]"
             >
               Check your eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
             </Link>

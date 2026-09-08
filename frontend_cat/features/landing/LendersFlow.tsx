@@ -78,11 +78,11 @@ export function LendersFlow({ names }: { names: string[] }) {
           const path = `M ${INPUT_X} ${y} Q ${(INPUT_X + CORE.x) / 2} ${y}, ${CORE.x - 95} ${CORE.y}`;
           return (
             <g key={rule.label}>
-              <path d={path} fill="none" stroke="rgba(0,214,201,0.25)" strokeWidth="1.5" />
+              <path d={path} fill="none" stroke="rgba(245,130,32,0.25)" strokeWidth="1.5" />
               <motion.circle
                 r="3.5"
-                fill="#18E0FF"
-                style={{ offsetPath: `path("${path}")`, filter: "drop-shadow(0 0 4px #18E0FF)" }}
+                fill="#F7A755"
+                style={{ offsetPath: `path("${path}")`, filter: "drop-shadow(0 0 4px #F7A755)" }}
                 animate={{ offsetDistance: ["0%", "100%"] }}
                 transition={{ duration: 2.4, repeat: Infinity, ease: "linear", delay: i * 0.4 }}
               />
@@ -95,11 +95,11 @@ export function LendersFlow({ names }: { names: string[] }) {
             const path = `M ${CORE.x + 95} ${CORE.y} Q ${(CORE.x + COL_X[c]) / 2} ${y}, ${COL_X[c]} ${y}`;
             return (
               <g key={name}>
-                <path d={path} fill="none" stroke="rgba(0,214,201,0.18)" strokeWidth="1" strokeDasharray="3 6" />
+                <path d={path} fill="none" stroke="rgba(245,130,32,0.18)" strokeWidth="1" strokeDasharray="3 6" />
                 <motion.circle
                   r="2.5"
-                  fill="#00D6C9"
-                  style={{ offsetPath: `path("${path}")`, filter: "drop-shadow(0 0 3px #00D6C9)" }}
+                  fill="#F58220"
+                  style={{ offsetPath: `path("${path}")`, filter: "drop-shadow(0 0 3px #F58220)" }}
                   animate={{ offsetDistance: ["0%", "100%"] }}
                   transition={{ duration: 2.6, repeat: Infinity, ease: "linear", delay: (i % 6) * 0.3 }}
                 />
@@ -115,13 +115,13 @@ export function LendersFlow({ names }: { names: string[] }) {
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: i * 0.1 }}
-          className="absolute flex -translate-y-1/2 items-center gap-2 rounded-xl border border-[#00D6C9]/25 bg-white/[0.04] px-3 py-2 backdrop-blur-md"
+          className="absolute flex -translate-y-1/2 items-center gap-2 rounded-xl border border-[#F58220]/25 bg-white/[0.04] px-3 py-2 backdrop-blur-md"
           style={{ left: 0, top: pct(inputY(i), SIZE.h) }}
         >
-          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#00D6C9]/10 text-[#18E0FF]">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#F58220]/10 text-[#F7A755]">
             <rule.Icon />
           </span>
-          <span className="text-xs font-semibold text-[#F5F7FA]">{rule.label}</span>
+          <span className="text-xs font-semibold text-[#FFFFFF]">{rule.label}</span>
         </motion.div>
       ))}
 
@@ -133,7 +133,7 @@ export function LendersFlow({ names }: { names: string[] }) {
         col.map((name, i) => (
           <span
             key={name}
-            className="absolute max-w-[150px] -translate-y-1/2 truncate rounded-full border border-white/10 bg-[#08141D]/85 px-2.5 py-1 text-[11px] font-medium text-[#F5F7FA] backdrop-blur-sm"
+            className="absolute max-w-[150px] -translate-y-1/2 truncate rounded-full border border-white/10 bg-[#101D3D]/85 px-2.5 py-1 text-[11px] font-medium text-[#FFFFFF] backdrop-blur-sm"
             title={name}
             style={{ left: pct(COL_X[c], SIZE.w), top: pct(colY(c, i), SIZE.h) }}
           >
@@ -154,22 +154,22 @@ export function LendersFlowMobile({ names }: { names: string[] }) {
     <div className="flex flex-col items-center gap-4 sm:hidden">
       <div className="flex flex-wrap justify-center gap-2">
         {RULES.map((rule) => (
-          <div key={rule.label} className="flex items-center gap-1.5 rounded-xl border border-[#00D6C9]/25 bg-white/[0.04] px-2.5 py-1.5">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#00D6C9]/10 text-[#18E0FF]">
+          <div key={rule.label} className="flex items-center gap-1.5 rounded-xl border border-[#F58220]/25 bg-white/[0.04] px-2.5 py-1.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F58220]/10 text-[#F7A755]">
               <rule.Icon />
             </span>
-            <span className="text-xs font-semibold text-[#F5F7FA]">{rule.label}</span>
+            <span className="text-xs font-semibold text-[#FFFFFF]">{rule.label}</span>
           </div>
         ))}
       </div>
-      <span className="text-[#00D6C9]">↓</span>
+      <span className="text-[#F58220]">↓</span>
       <div className="relative h-[130px] w-[130px] shrink-0">
         <EngineCore />
       </div>
-      <span className="text-[#00D6C9]">↓</span>
+      <span className="text-[#F58220]">↓</span>
       <div className="flex flex-wrap justify-center gap-2">
         {names.map((name) => (
-          <span key={name} className="rounded-full border border-white/10 bg-[#08141D]/85 px-2.5 py-1 text-[11px] font-medium text-[#F5F7FA]">
+          <span key={name} className="rounded-full border border-white/10 bg-[#101D3D]/85 px-2.5 py-1 text-[11px] font-medium text-[#FFFFFF]">
             {name}
           </span>
         ))}

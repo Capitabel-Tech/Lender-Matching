@@ -84,15 +84,15 @@ export function AffordabilityForm({
   const total = rows.reduce((sum, r) => sum + (typeof r.amount === "number" ? r.amount : 0), 0);
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <h3 className="mb-3 border-l-4 border-teal-600 pl-2.5 text-base font-black uppercase tracking-wide text-zinc-900 dark:text-zinc-50">
+    <div className="rounded-xl border border-brand-100 bg-white p-4 shadow-sm dark:border-brand-600 dark:bg-brand-800">
+      <h3 className="mb-3 border-l-4 border-brand-700 pl-2.5 text-base font-black uppercase tracking-wide text-brand-800 dark:text-cream-100">
         Affordability
       </h3>
 
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col gap-1">
-            <label htmlFor="affordability-age" className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+            <label htmlFor="affordability-age" className="text-sm font-bold text-brand-600 dark:text-brand-200">
               Age
             </label>
             <input
@@ -102,11 +102,11 @@ export function AffordabilityForm({
               placeholder="e.g. 35"
               value={age ?? ""}
               onChange={(e) => onAgeChange(e.target.value === "" ? null : Number(e.target.value))}
-              className="rounded-lg border border-zinc-300 bg-zinc-50 px-2.5 py-2 text-sm font-semibold text-zinc-900 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className="rounded-lg border border-brand-200 bg-cream-100 px-2.5 py-2 text-sm font-semibold text-brand-800 outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/30 dark:border-brand-600 dark:bg-brand-950 dark:text-brand-50"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label htmlFor="affordability-income" className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+            <label htmlFor="affordability-income" className="text-sm font-bold text-brand-600 dark:text-brand-200">
               Monthly income (₹)
             </label>
             <RupeeInput
@@ -114,7 +114,7 @@ export function AffordabilityForm({
               placeholder="e.g. 80,000"
               value={monthlyIncome ?? ""}
               onChange={(v) => onMonthlyIncomeChange(v === "" ? null : v)}
-              className="rounded-lg border border-zinc-300 bg-zinc-50 px-2.5 py-2 text-sm font-semibold text-zinc-900 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className="rounded-lg border border-brand-200 bg-cream-100 px-2.5 py-2 text-sm font-semibold text-brand-800 outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/30 dark:border-brand-600 dark:bg-brand-950 dark:text-brand-50"
             />
           </div>
         </div>
@@ -122,7 +122,7 @@ export function AffordabilityForm({
         <div className="flex flex-col gap-1">
           <label
             htmlFor="affordability-requested-amount"
-            className="text-sm font-bold text-zinc-700 dark:text-zinc-300"
+            className="text-sm font-bold text-brand-600 dark:text-brand-200"
           >
             Loan amount you&apos;re requesting (₹)
           </label>
@@ -131,12 +131,12 @@ export function AffordabilityForm({
             placeholder="e.g. 50,00,000"
             value={requestedLoanAmount ?? ""}
             onChange={(v) => onRequestedLoanAmountChange(v === "" ? null : v)}
-            className="rounded-lg border border-zinc-300 bg-zinc-50 px-2.5 py-2 text-sm font-semibold text-zinc-900 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/30 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+            className="rounded-lg border border-brand-200 bg-cream-100 px-2.5 py-2 text-sm font-semibold text-brand-800 outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/30 dark:border-brand-600 dark:bg-brand-950 dark:text-brand-50"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+          <span className="text-sm font-bold text-brand-600 dark:text-brand-200">
             Existing obligations (home loan, education loan, etc.)
           </span>
           {rows.map((row) => (
@@ -146,19 +146,19 @@ export function AffordabilityForm({
                 placeholder="Loan type (optional)"
                 value={row.label}
                 onChange={(e) => updateRow(row.id, { label: e.target.value })}
-                className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-zinc-50 px-2.5 py-2 text-sm font-medium outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/30 dark:border-zinc-700 dark:bg-zinc-950"
+                className="min-w-0 flex-1 rounded-lg border border-brand-200 bg-cream-100 px-2.5 py-2 text-sm font-medium outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/30 dark:border-brand-600 dark:bg-brand-950"
               />
               <RupeeInput
                 placeholder="₹ amount"
                 value={row.amount}
                 onChange={(v) => updateRow(row.id, { amount: v })}
-                className="w-28 rounded-lg border border-zinc-300 bg-zinc-50 px-2.5 py-2 text-sm font-semibold outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/30 dark:border-zinc-700 dark:bg-zinc-950"
+                className="w-28 rounded-lg border border-brand-200 bg-cream-100 px-2.5 py-2 text-sm font-semibold outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/30 dark:border-brand-600 dark:bg-brand-950"
               />
               <button
                 type="button"
                 onClick={() => removeRow(row.id)}
                 aria-label="Remove obligation"
-                className="shrink-0 rounded-lg px-2 py-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-red-600 dark:hover:bg-zinc-800"
+                className="shrink-0 rounded-lg px-2 py-1.5 text-brand-300 hover:bg-brand-50 hover:text-red-600 dark:hover:bg-brand-600"
               >
                 ×
               </button>
@@ -167,15 +167,15 @@ export function AffordabilityForm({
           <button
             type="button"
             onClick={addRow}
-            className="w-fit text-sm font-bold text-teal-700 hover:text-teal-900 dark:text-teal-400"
+            className="w-fit text-sm font-bold text-brand-800 hover:text-brand-900 dark:text-brand-400"
           >
             + Add another obligation
           </button>
         </div>
 
         {total > 0 && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Total monthly obligations: <span className="font-bold text-zinc-900 dark:text-zinc-100">₹{total.toLocaleString("en-IN")}</span>
+          <p className="text-sm text-brand-500 dark:text-brand-300">
+            Total monthly obligations: <span className="font-bold text-brand-800 dark:text-brand-50">₹{total.toLocaleString("en-IN")}</span>
           </p>
         )}
       </div>

@@ -14,12 +14,12 @@ export function AdminAccessButton({ adminGrantUnseen }: { adminGrantUnseen: bool
       href="/admin"
       aria-label="Admin"
       title="Admin"
-      className="relative flex items-center gap-2 rounded-full px-3.5 py-2.5 text-zinc-300 hover:bg-zinc-800 hover:text-teal-400"
+      className="relative flex items-center gap-2 rounded-full px-3.5 py-2.5 text-brand-200 hover:bg-brand-600 hover:text-brand-400"
     >
       <AdminIcon />
       <span className="text-sm font-bold uppercase tracking-wide">Admin</span>
       {adminGrantUnseen && (
-        <span className="absolute right-2 top-1.5 h-2.5 w-2.5 rounded-full bg-teal-400 shadow-[0_0_6px_rgba(45,212,191,0.8)]" />
+        <span className="absolute right-2 top-1.5 h-2.5 w-2.5 rounded-full bg-brand-400 shadow-[0_0_6px_rgba(245,130,32,0.8)]" />
       )}
     </Link>
   );

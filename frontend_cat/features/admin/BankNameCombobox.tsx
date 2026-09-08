@@ -49,13 +49,13 @@ export function BankNameCombobox({
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
         placeholder="e.g. SBI, or search the lender list…"
-        className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+        className="w-full rounded-lg border border-brand-200 px-3 py-2 text-sm dark:border-brand-600 dark:bg-brand-950"
       />
-      <p className="mt-1 text-xs text-zinc-400">
+      <p className="mt-1 text-xs text-brand-300">
         Pick from the suggested list where you can, or choose &ldquo;Other&rdquo; to type any name.
       </p>
       {open && (
-        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-brand-100 bg-white py-1 shadow-lg dark:border-brand-600 dark:bg-brand-800">
           {suggestions.map((name) => (
             <li key={name}>
               <button
@@ -67,16 +67,16 @@ export function BankNameCombobox({
                   onChange(name);
                   setOpen(false);
                 }}
-                className="block w-full px-3 py-1.5 text-left text-sm hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                className="block w-full px-3 py-1.5 text-left text-sm hover:bg-brand-50 dark:hover:bg-brand-950/40"
               >
                 {name}
               </button>
             </li>
           ))}
           {suggestions.length === 0 && (
-            <li className="px-3 py-1.5 text-sm text-zinc-400">No matches — try &ldquo;Other&rdquo; below.</li>
+            <li className="px-3 py-1.5 text-sm text-brand-300">No matches — try &ldquo;Other&rdquo; below.</li>
           )}
-          <li className="border-t border-zinc-200 dark:border-zinc-700">
+          <li className="border-t border-brand-100 dark:border-brand-600">
             <button
               type="button"
               onMouseDown={(e) => {
@@ -84,7 +84,7 @@ export function BankNameCombobox({
                 setOpen(false);
                 inputRef.current?.focus();
               }}
-              className="block w-full px-3 py-1.5 text-left text-sm font-medium text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+              className="block w-full px-3 py-1.5 text-left text-sm font-medium text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950/40"
             >
               Other — type the bank&rsquo;s name
             </button>

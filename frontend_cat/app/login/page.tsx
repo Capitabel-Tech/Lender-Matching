@@ -106,7 +106,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`${spaceGrotesk.className} relative flex flex-1 flex-col items-center overflow-hidden bg-[#050B12] px-6 py-16 text-[#F5F7FA] sm:px-10`}>
+    <div className={`${spaceGrotesk.className} relative flex flex-1 flex-col items-center overflow-hidden bg-[#0F1A33] px-6 py-16 text-[#FFFFFF] sm:px-10`}>
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.05]"
         style={{
@@ -117,19 +117,19 @@ export default function LoginPage() {
       />
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: "radial-gradient(circle at 50% 0%, rgba(0,214,201,0.16) 0%, transparent 55%)" }}
+        style={{ background: "radial-gradient(circle at 50% 0%, rgba(245,130,32,0.16) 0%, transparent 55%)" }}
       />
 
       <div className="relative flex w-full max-w-lg flex-col items-center">
         <Link
           href="/"
-          className="mb-8 self-start text-sm font-semibold text-[#91A0AE] transition-colors hover:text-[#F5F7FA]"
+          className="mb-8 self-start text-sm font-semibold text-[#A9B4C9] transition-colors hover:text-[#FFFFFF]"
         >
           ← Back to home
         </Link>
         <div className="mb-10 flex flex-col items-center gap-3 text-center">
           <span className="text-base font-bold tracking-tight">
-            Lender<span className="text-[#00D6C9]">Match</span>
+            Lender<span className="text-[#F58220]">Match</span>
           </span>
           <h1 className="text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[40px]">
             {mode === "signup" ? "Create your account" : "Sign in to explore"}
@@ -147,7 +147,7 @@ export default function LoginPage() {
               onClick={() => switchMode("login")}
               disabled={signupSuccess}
               className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors disabled:opacity-40 ${
-                mode === "login" ? "bg-[#00D6C9] text-[#050B12]" : "text-[#91A0AE] hover:text-[#F5F7FA]"
+                mode === "login" ? "bg-[#F58220] text-[#0F1A33]" : "text-[#A9B4C9] hover:text-[#FFFFFF]"
               }`}
             >
               Log in
@@ -157,7 +157,7 @@ export default function LoginPage() {
               onClick={() => switchMode("signup")}
               disabled={signupSuccess}
               className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors disabled:opacity-40 ${
-                mode === "signup" ? "bg-[#00D6C9] text-[#050B12]" : "text-[#91A0AE] hover:text-[#F5F7FA]"
+                mode === "signup" ? "bg-[#F58220] text-[#0F1A33]" : "text-[#A9B4C9] hover:text-[#FFFFFF]"
               }`}
             >
               Sign up
@@ -165,7 +165,7 @@ export default function LoginPage() {
           </div>
 
           {signupSuccess ? (
-            <p className="w-full rounded-lg border border-teal-900/50 bg-teal-950/30 px-3 py-2 text-center text-sm text-teal-300">
+            <p className="w-full rounded-lg border border-brand-900/50 bg-brand-950/30 px-3 py-2 text-center text-sm text-brand-300">
               Signed up successfully! Taking you to log in…
             </p>
           ) : (
@@ -176,7 +176,7 @@ export default function LoginPage() {
                 </p>
               )}
               {resetSent && !error && (
-                <p className="w-full rounded-lg border border-teal-900/50 bg-teal-950/30 px-3 py-2 text-center text-sm text-teal-300">
+                <p className="w-full rounded-lg border border-brand-900/50 bg-brand-950/30 px-3 py-2 text-center text-sm text-brand-300">
                   Reset link sent — check your email.
                 </p>
               )}
@@ -187,7 +187,7 @@ export default function LoginPage() {
             {mode === "signup" && (
               <>
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="displayName" className="text-sm font-medium text-[#91A0AE]">
+                  <label htmlFor="displayName" className="text-sm font-medium text-[#A9B4C9]">
                     Full name
                   </label>
                   <input
@@ -197,12 +197,12 @@ export default function LoginPage() {
                     disabled={signupSuccess}
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#F5F7FA] outline-none focus:border-[#00D6C9] disabled:opacity-50"
+                    className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none focus:border-[#F58220] disabled:opacity-50"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="orgRole" className="text-sm font-medium text-[#91A0AE]">
-                    Your role in the organization <span className="font-normal text-[#91A0AE]/60">(optional)</span>
+                  <label htmlFor="orgRole" className="text-sm font-medium text-[#A9B4C9]">
+                    Your role in the organization <span className="font-normal text-[#A9B4C9]/60">(optional)</span>
                   </label>
                   <input
                     id="orgRole"
@@ -211,13 +211,13 @@ export default function LoginPage() {
                     placeholder="e.g. Loan Ops Manager"
                     value={orgRole}
                     onChange={(e) => setOrgRole(e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#F5F7FA] outline-none placeholder:text-[#91A0AE]/50 focus:border-[#00D6C9] disabled:opacity-50"
+                    className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none placeholder:text-[#A9B4C9]/50 focus:border-[#F58220] disabled:opacity-50"
                   />
                 </div>
               </>
             )}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium text-[#91A0AE]">
+              <label htmlFor="email" className="text-sm font-medium text-[#A9B4C9]">
                 Email
               </label>
               <input
@@ -228,19 +228,19 @@ export default function LoginPage() {
                 placeholder="you@capitabel.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#F5F7FA] outline-none placeholder:text-[#91A0AE]/50 focus:border-[#00D6C9] disabled:opacity-50"
+                className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none placeholder:text-[#A9B4C9]/50 focus:border-[#F58220] disabled:opacity-50"
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-[#91A0AE]">
+                <label htmlFor="password" className="text-sm font-medium text-[#A9B4C9]">
                   Password
                 </label>
                 {mode === "login" && (
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-xs font-medium text-[#00D6C9] hover:underline"
+                    className="text-xs font-medium text-[#F58220] hover:underline"
                   >
                     Forgot password?
                   </button>
@@ -254,12 +254,12 @@ export default function LoginPage() {
                 disabled={signupSuccess}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#F5F7FA] outline-none focus:border-[#00D6C9] disabled:opacity-50"
+                className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none focus:border-[#F58220] disabled:opacity-50"
               />
             </div>
             {mode === "signup" && (
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="confirmPassword" className="text-sm font-medium text-[#91A0AE]">
+                <label htmlFor="confirmPassword" className="text-sm font-medium text-[#A9B4C9]">
                   Confirm password
                 </label>
                 <input
@@ -270,14 +270,14 @@ export default function LoginPage() {
                   disabled={signupSuccess}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#F5F7FA] outline-none focus:border-[#00D6C9] disabled:opacity-50"
+                  className="w-full rounded-lg border border-white/15 bg-white/[0.04] px-3.5 py-3 text-sm text-[#FFFFFF] outline-none focus:border-[#F58220] disabled:opacity-50"
                 />
               </div>
             )}
             <button
               type="submit"
               disabled={submitting || signupSuccess}
-              className="mt-2 w-full rounded-lg bg-[#00D6C9] px-5 py-3.5 text-sm font-semibold text-[#050B12] shadow-[0_0_28px_rgba(0,214,201,0.25)] transition-transform hover:scale-[1.02] disabled:opacity-50"
+              className="mt-2 w-full rounded-lg bg-[#F58220] px-5 py-3.5 text-sm font-semibold text-[#0F1A33] shadow-[0_0_28px_rgba(245,130,32,0.25)] transition-transform hover:scale-[1.02] disabled:opacity-50"
             >
               {submitting ? "One moment…" : mode === "signup" ? "Create account" : "Log in"}
             </button>

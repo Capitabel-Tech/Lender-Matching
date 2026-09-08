@@ -17,13 +17,13 @@ export function VerifiedRatesTicker({ rates }: { rates: TickerRate[] }) {
   const doubled = [...rates, ...rates];
 
   return (
-    <div className="flex shrink-0 items-center gap-3 overflow-hidden border-b border-white/[0.06] bg-[#08141D] py-2.5">
+    <div className="flex shrink-0 items-center gap-3 overflow-hidden border-b border-white/[0.06] bg-[#101D3D] py-2.5">
       <div className="flex shrink-0 items-center gap-1.5 pl-6 pr-3 sm:pl-10">
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00D6C9] opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00D6C9]" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#F58220] opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#F58220]" />
         </span>
-        <span className="text-xs font-black uppercase tracking-widest text-[#00D6C9]">Live rates</span>
+        <span className="text-xs font-black uppercase tracking-widest text-[#F58220]">Live rates</span>
       </div>
       <div className="group relative flex-1 overflow-hidden">
         <div
@@ -33,9 +33,9 @@ export function VerifiedRatesTicker({ rates }: { rates: TickerRate[] }) {
           {doubled.map((r, i) => (
             <span key={`${r.bankName}-${i}`} className="mx-3 inline-flex shrink-0 items-center gap-2 text-sm">
               <BankLogo bankName={r.bankName} size={22} />
-              <span className="font-semibold text-[#F5F7FA]">{r.bankName}</span>
-              <span className="font-bold text-[#00D6C9]">{r.ratePct.toFixed(2)}%</span>
-              <span className={r.isEstimated ? "text-[#91A0AE]" : "text-[#7CFF8A]"}>
+              <span className="font-semibold text-[#FFFFFF]">{r.bankName}</span>
+              <span className="font-bold text-[#F58220]">{r.ratePct.toFixed(2)}%</span>
+              <span className={r.isEstimated ? "text-[#A9B4C9]" : "text-[#34D399]"}>
                 ({r.isEstimated ? "Estimated" : "Verified"})
               </span>
             </span>

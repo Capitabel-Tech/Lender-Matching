@@ -76,7 +76,7 @@ export function EngineCore() {
         animate={{ rotate: 360 }}
         transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
       >
-        <circle cx="85" cy="85" r="82" fill="none" stroke="rgba(0,214,201,0.15)" strokeWidth="1" strokeDasharray="1 5" />
+        <circle cx="85" cy="85" r="82" fill="none" stroke="rgba(245,130,32,0.15)" strokeWidth="1" strokeDasharray="1 5" />
       </motion.svg>
       <motion.svg
         width="170"
@@ -90,9 +90,9 @@ export function EngineCore() {
           const angle = (360 / spokes.length) * i;
           const x2 = Math.round((85 + 64 * Math.cos((angle * Math.PI) / 180)) * 100) / 100;
           const y2 = Math.round((85 + 64 * Math.sin((angle * Math.PI) / 180)) * 100) / 100;
-          return <line key={i} x1="85" y1="85" x2={x2} y2={y2} stroke="rgba(24,224,255,0.2)" strokeWidth="1" />;
+          return <line key={i} x1="85" y1="85" x2={x2} y2={y2} stroke="rgba(247,167,85,0.2)" strokeWidth="1" />;
         })}
-        <circle cx="85" cy="85" r="64" fill="none" stroke="rgba(24,224,255,0.35)" strokeWidth="1.5" />
+        <circle cx="85" cy="85" r="64" fill="none" stroke="rgba(247,167,85,0.35)" strokeWidth="1.5" />
       </motion.svg>
       <motion.svg
         width="170"
@@ -102,19 +102,19 @@ export function EngineCore() {
         animate={{ rotate: 360 }}
         transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
       >
-        <circle cx="85" cy="85" r="46" fill="none" stroke="rgba(0,214,201,0.4)" strokeWidth="1.5" strokeDasharray="2 7" />
+        <circle cx="85" cy="85" r="46" fill="none" stroke="rgba(245,130,32,0.4)" strokeWidth="1.5" strokeDasharray="2 7" />
       </motion.svg>
       <motion.div
         className="pointer-events-none absolute inset-0 m-auto flex h-[76px] w-[76px] flex-col items-center justify-center rounded-full text-center"
         animate={{ scale: [1, 1.07, 1] }}
         transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
         style={{
-          background: "radial-gradient(circle at 35% 30%, #18E0FF 0%, #00D6C9 55%, #08141D 100%)",
-          boxShadow: "0 0 55px rgba(0,214,201,0.55)",
+          background: "radial-gradient(circle at 35% 30%, #F7A755 0%, #F58220 55%, #101D3D 100%)",
+          boxShadow: "0 0 55px rgba(245,130,32,0.55)",
         }}
       >
-        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#050B12]">The</span>
-        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#050B12]">Engine</span>
+        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F1A33]">The</span>
+        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#0F1A33]">Engine</span>
       </motion.div>
     </>
   );
@@ -122,7 +122,7 @@ export function EngineCore() {
 
 function RankBadge({ rank }: { rank: number }) {
   return (
-    <span className="rounded-full bg-[#7CFF8A]/15 px-2 py-0.5 text-[10px] font-bold text-[#7CFF8A]">
+    <span className="rounded-full bg-[#34D399]/15 px-2 py-0.5 text-[10px] font-bold text-[#34D399]">
       Ranked #{rank}
     </span>
   );
@@ -131,26 +131,26 @@ function RankBadge({ rank }: { rank: number }) {
 function RankedCard({ rank, rate, compact }: { rank: number; rate: LiveRate; compact?: boolean }) {
   if (compact) {
     return (
-      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#08141D]/85 px-3 py-2 backdrop-blur-md">
+      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#101D3D]/85 px-3 py-2 backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-[#91A0AE]">#{rank}</span>
-          <span className="text-xs font-semibold text-[#F5F7FA]">{rate.bank_name}</span>
+          <span className="text-[10px] font-bold text-[#A9B4C9]">#{rank}</span>
+          <span className="text-xs font-semibold text-[#FFFFFF]">{rate.bank_name}</span>
         </div>
-        <span className="text-xs font-bold text-[#18E0FF]">{rate.rate_pct.toFixed(2)}%</span>
+        <span className="text-xs font-bold text-[#F7A755]">{rate.rate_pct.toFixed(2)}%</span>
       </div>
     );
   }
   return (
     <div
-      className="rounded-2xl border border-[#7CFF8A]/30 bg-[#08141D]/90 p-3.5 backdrop-blur-md relative"
-      style={{ boxShadow: "0 0 30px rgba(124,255,138,0.15)" }}
+      className="rounded-2xl border border-[#34D399]/30 bg-[#101D3D]/90 p-3.5 backdrop-blur-md relative"
+      style={{ boxShadow: "0 0 30px rgba(52,211,153,0.15)" }}
     >
       <div className="mb-1.5 flex items-center justify-between">
         <RankBadge rank={rank} />
-        <span className="text-[9px] text-[#18E0FF]/70">BEST MATCH</span>
+        <span className="text-[9px] text-[#F7A755]/70">BEST MATCH</span>
       </div>
-      <p className="text-sm font-bold text-[#F5F7FA]">{rate.bank_name}</p>
-      <ul className="mt-1.5 flex flex-col gap-1 text-[10px] text-[#91A0AE]">
+      <p className="text-sm font-bold text-[#FFFFFF]">{rate.bank_name}</p>
+      <ul className="mt-1.5 flex flex-col gap-1 text-[10px] text-[#A9B4C9]">
         <li>• Lowest live rate: {rate.rate_pct.toFixed(2)}%</li>
         <li>• Max loan estimated from your FOIR</li>
         <li>• High approval tier</li>
@@ -174,11 +174,11 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
             const path = `M ${INPUT_X} ${y} Q ${(INPUT_X + CORE.x) / 2} ${y}, ${CORE.x - 110} ${CORE.y}`;
             return (
               <g key={input.label}>
-                <path d={path} fill="none" stroke="rgba(0,214,201,0.25)" strokeWidth="1.5" />
+                <path d={path} fill="none" stroke="rgba(245,130,32,0.25)" strokeWidth="1.5" />
                 <motion.circle
                   r="3.5"
-                  fill="#18E0FF"
-                  style={{ offsetPath: `path("${path}")`, filter: "drop-shadow(0 0 4px #18E0FF)" }}
+                  fill="#F7A755"
+                  style={{ offsetPath: `path("${path}")`, filter: "drop-shadow(0 0 4px #F7A755)" }}
                   animate={{ offsetDistance: ["0%", "100%"] }}
                   transition={{ duration: 2.4, repeat: Infinity, ease: "linear", delay: i * 0.4 }}
                 />
@@ -190,11 +190,11 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
             const path = `M ${CORE.x + 110} ${CORE.y} Q ${(CORE.x + OUTPUT_X) / 2} ${y}, ${OUTPUT_X} ${y}`;
             return (
               <g key={rate.bank_name}>
-                <path d={path} fill="none" stroke="rgba(124,255,138,0.28)" strokeWidth="1.5" />
+                <path d={path} fill="none" stroke="rgba(52,211,153,0.28)" strokeWidth="1.5" />
                 <motion.circle
                   r="4"
-                  fill="#7CFF8A"
-                  style={{ offsetPath: `path("${path}")`, filter: "drop-shadow(0 0 5px #7CFF8A)" }}
+                  fill="#34D399"
+                  style={{ offsetPath: `path("${path}")`, filter: "drop-shadow(0 0 5px #34D399)" }}
                   animate={{ offsetDistance: ["0%", "100%"] }}
                   transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut", delay: 0.3 + i * 0.25 }}
                 />
@@ -209,13 +209,13 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: i * 0.1 }}
-            className="absolute flex -translate-y-1/2 items-center gap-2 rounded-xl border border-[#00D6C9]/25 bg-white/[0.04] px-3 py-2 backdrop-blur-md"
+            className="absolute flex -translate-y-1/2 items-center gap-2 rounded-xl border border-[#F58220]/25 bg-white/[0.04] px-3 py-2 backdrop-blur-md"
             style={{ left: 0, top: pct(inputY(i), SIZE.h) }}
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00D6C9]/10 text-[#18E0FF]">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F58220]/10 text-[#F7A755]">
               <input.Icon />
             </span>
-            <span className="text-xs font-semibold text-[#F5F7FA]">{input.label}</span>
+            <span className="text-xs font-semibold text-[#FFFFFF]">{input.label}</span>
           </motion.div>
         ))}
 
@@ -252,16 +252,16 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
           {INPUTS.map((input) => (
             <div
               key={input.label}
-              className="flex items-center gap-1.5 rounded-xl border border-[#00D6C9]/25 bg-white/[0.04] px-2.5 py-1.5"
+              className="flex items-center gap-1.5 rounded-xl border border-[#F58220]/25 bg-white/[0.04] px-2.5 py-1.5"
             >
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#00D6C9]/10 text-[#18E0FF]">
+              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F58220]/10 text-[#F7A755]">
                 <input.Icon />
               </span>
-              <span className="text-xs font-semibold text-[#F5F7FA]">{input.label}</span>
+              <span className="text-xs font-semibold text-[#FFFFFF]">{input.label}</span>
             </div>
           ))}
         </div>
-        <span className="text-[#00D6C9]">↓</span>
+        <span className="text-[#F58220]">↓</span>
         <div className="relative h-[200px] w-[200px] shrink-0 mix-blend-screen">
           <Image
             src="/engine-core.jpg"
@@ -271,7 +271,7 @@ export function EngineFlow({ topRates }: { topRates: LiveRate[] }) {
             unoptimized
           />
         </div>
-        <span className="text-[#7CFF8A]">↓</span>
+        <span className="text-[#34D399]">↓</span>
         <div className="flex w-full max-w-xs flex-col gap-2">
           {cards.map((rate, i) => (
             <RankedCard key={rate.bank_name} rank={i + 1} rate={rate} compact={i > 0} />

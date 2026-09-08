@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
   }, [loading, user, role, router]);
 
   if (loading || !user || role === null || role === undefined) {
-    return <div className="flex flex-1 items-center justify-center text-sm text-zinc-500">Checking login…</div>;
+    return <div className="flex flex-1 items-center justify-center text-sm text-brand-500">Checking login…</div>;
   }
 
   if (role === "business") {
@@ -72,18 +72,18 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-zinc-50 px-4 py-10 dark:bg-zinc-950 sm:px-8">
+    <div className="flex flex-1 flex-col bg-cream-100 px-4 py-10 dark:bg-brand-950 sm:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <div className="flex items-center justify-between">
           <div>
             <Link
               href="/explore"
-              className="text-sm font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              className="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-brand-300 dark:hover:text-brand-100"
             >
               ← Back to the lender finder
             </Link>
-            <h1 className="mt-1 text-xl font-bold text-zinc-900 dark:text-zinc-50">Admin</h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Logged in as {user.email}</p>
+            <h1 className="mt-1 text-xl font-bold text-brand-800 dark:text-cream-100">Admin</h1>
+            <p className="text-sm text-brand-500 dark:text-brand-300">Logged in as {user.email}</p>
           </div>
           <div className="flex items-center gap-2">
             <RoleChangeBell notice={roleChangeNotice} onDismiss={dismissRoleChangeNotice} />
@@ -100,13 +100,13 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+        <div className="flex flex-wrap gap-2 border-b border-brand-100 pb-4 dark:border-brand-600">
           <button
             onClick={() => setTab("banks")}
             className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
               tab === "banks"
-                ? "bg-teal-600 text-white"
-                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                ? "bg-brand-700 text-white"
+                : "text-brand-500 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-600"
             }`}
           >
             Banks
@@ -115,8 +115,8 @@ export default function AdminDashboardPage() {
             onClick={() => setTab("bias")}
             className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
               tab === "bias"
-                ? "bg-teal-600 text-white"
-                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                ? "bg-brand-700 text-white"
+                : "text-brand-500 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-600"
             }`}
           >
             Relationships
@@ -125,8 +125,8 @@ export default function AdminDashboardPage() {
             onClick={() => setTab("categories")}
             className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
               tab === "categories"
-                ? "bg-teal-600 text-white"
-                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                ? "bg-brand-700 text-white"
+                : "text-brand-500 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-600"
             }`}
           >
             Categories
@@ -136,8 +136,8 @@ export default function AdminDashboardPage() {
             onClick={() => setTab("admins")}
             className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
               tab === "admins"
-                ? "bg-teal-600 text-white"
-                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                ? "bg-brand-700 text-white"
+                : "text-brand-500 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-600"
             }`}
           >
             Manage Admins
@@ -146,8 +146,8 @@ export default function AdminDashboardPage() {
             onClick={() => setTab("log")}
             className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
               tab === "log"
-                ? "bg-teal-600 text-white"
-                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                ? "bg-brand-700 text-white"
+                : "text-brand-500 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-600"
             }`}
           >
             Activity Log

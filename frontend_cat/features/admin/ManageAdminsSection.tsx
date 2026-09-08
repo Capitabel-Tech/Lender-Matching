@@ -118,7 +118,7 @@ export function ManageAdminsSection({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Manage Admins</h2>
+        <h2 className="text-2xl font-bold text-brand-800 dark:text-cream-100">Manage Admins</h2>
         <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
           <p className="text-sm font-bold text-amber-900 dark:text-amber-300">
             ⚠ Granting admin access gives full power over the database
@@ -129,7 +129,7 @@ export function ManageAdminsSection({
             included. Only approve access for people you'd trust with that.
           </p>
         </div>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-brand-500 dark:text-brand-300">
           Revoking someone is instant but reversible — grant them access again anytime. Delete a revoked account
           permanently once it's not coming back.
         </p>
@@ -156,9 +156,9 @@ export function ManageAdminsSection({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
+      <div className="overflow-x-auto rounded-2xl border border-brand-100 dark:border-brand-600">
         <table className="w-full text-base">
-          <thead className="bg-zinc-100 text-left text-xs font-bold uppercase tracking-wide text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+          <thead className="bg-brand-50 text-left text-xs font-bold uppercase tracking-wide text-brand-600 dark:bg-brand-800 dark:text-brand-200">
             <tr>
               <th className="px-5 py-4">Name</th>
               <th className="px-5 py-4">Email</th>
@@ -171,33 +171,33 @@ export function ManageAdminsSection({
               const isSelf = admin.email === currentUserEmail;
               const isAdmin = admin.role === "admin";
               return (
-                <tr key={admin.uid} className="border-t border-zinc-100 dark:border-zinc-800">
+                <tr key={admin.uid} className="border-t border-brand-50 dark:border-brand-600">
                   <td className="px-5 py-4 align-top">
-                    <div className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+                    <div className="text-base font-bold text-brand-800 dark:text-cream-100">
                       {admin.display_name ?? "—"}
                       {admin.display_name && admin.org_role && (
-                        <span className="font-normal text-zinc-500 dark:text-zinc-400"> ({admin.org_role})</span>
+                        <span className="font-normal text-brand-500 dark:text-brand-300"> ({admin.org_role})</span>
                       )}
-                      {isSelf && <span className="ml-2 text-xs font-normal text-zinc-400">(you)</span>}
+                      {isSelf && <span className="ml-2 text-xs font-normal text-brand-300">(you)</span>}
                       {admin.protected && (
                         <span
                           title="This account's access can't be revoked by anyone"
-                          className="ml-2 text-xs font-normal text-zinc-400"
+                          className="ml-2 text-xs font-normal text-brand-300"
                         >
                           (protected)
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-5 py-4 align-top text-zinc-500 dark:text-zinc-400">{admin.email}</td>
+                  <td className="px-5 py-4 align-top text-brand-500 dark:text-brand-300">{admin.email}</td>
                   <td className="px-5 py-4 align-top">
                     <span
                       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${
                         admin.revoked
                           ? "bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400"
                           : isAdmin
-                            ? "bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300"
-                            : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                            ? "bg-brand-100 text-brand-800 dark:bg-brand-950/60 dark:text-brand-300"
+                            : "bg-brand-50 text-brand-500 dark:bg-brand-600 dark:text-brand-300"
                       }`}
                     >
                       {admin.revoked ? "Revoked" : isAdmin ? "Admin" : "Business"}
@@ -215,7 +215,7 @@ export function ManageAdminsSection({
                           <button
                             onClick={() => promote(admin.uid)}
                             disabled={actingOn === admin.uid}
-                            className="text-base font-bold text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
+                            className="text-base font-bold text-brand-700 hover:underline disabled:opacity-50 dark:text-brand-400"
                           >
                             Approve as admin
                           </button>
@@ -224,7 +224,7 @@ export function ManageAdminsSection({
                           <button
                             onClick={() => dismissRequest(admin.uid)}
                             disabled={actingOn === admin.uid}
-                            className="text-base font-medium text-zinc-500 hover:underline disabled:opacity-50 dark:text-zinc-400"
+                            className="text-base font-medium text-brand-500 hover:underline disabled:opacity-50 dark:text-brand-300"
                           >
                             Dismiss
                           </button>
@@ -233,7 +233,7 @@ export function ManageAdminsSection({
                           <button
                             onClick={() => promote(admin.uid)}
                             disabled={actingOn === admin.uid}
-                            className="text-base font-bold text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
+                            className="text-base font-bold text-brand-700 hover:underline disabled:opacity-50 dark:text-brand-400"
                           >
                             {admin.revoked ? "Add back as admin" : "Grant admin access"}
                           </button>
@@ -264,7 +264,7 @@ export function ManageAdminsSection({
             })}
             {items?.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-6 text-center text-zinc-400">
+                <td colSpan={4} className="px-5 py-6 text-center text-brand-300">
                   No admins yet.
                 </td>
               </tr>

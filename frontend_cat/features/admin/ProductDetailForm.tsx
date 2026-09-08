@@ -40,8 +40,8 @@ function PillGroup({
           onClick={() => onToggle(value)}
           className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
             selected.includes(value)
-              ? "border-emerald-600 bg-emerald-600 text-white"
-              : "border-zinc-300 bg-white text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+              ? "border-brand-700 bg-brand-700 text-white"
+              : "border-brand-200 bg-white text-brand-600 dark:border-brand-600 dark:bg-brand-800 dark:text-brand-100"
           }`}
         >
           {label}
@@ -135,15 +135,15 @@ export function ProductDetailForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-5 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+      className="flex flex-col gap-5 rounded-2xl border border-brand-100 bg-white p-6 shadow-sm dark:border-brand-600 dark:bg-brand-800"
     >
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Loan type</label>
+        <label className="text-sm font-medium text-brand-600 dark:text-brand-200">Loan type</label>
         <select
           disabled={lockLoanType}
           value={detail.loan_type}
           onChange={(e) => setDetail({ ...detail, loan_type: e.target.value })}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm disabled:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-950 dark:disabled:bg-zinc-800"
+          className="rounded-lg border border-brand-200 px-3 py-2 text-sm disabled:bg-brand-50 dark:border-brand-600 dark:bg-brand-950 dark:disabled:bg-brand-600"
         >
           {loanOptions.map((o) => (
             <option key={o.value} value={o.value}>
@@ -154,12 +154,12 @@ export function ProductDetailForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Employment type</label>
+        <label className="text-sm font-medium text-brand-600 dark:text-brand-200">Employment type</label>
         <select
           disabled={lockEmploymentType}
           value={detail.employment_type}
           onChange={(e) => setDetail({ ...detail, employment_type: e.target.value })}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm disabled:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-950 dark:disabled:bg-zinc-800"
+          className="rounded-lg border border-brand-200 px-3 py-2 text-sm disabled:bg-brand-50 dark:border-brand-600 dark:bg-brand-950 dark:disabled:bg-brand-600"
         >
           {employmentOptions.map((o) => (
             <option key={o.value} value={o.value}>
@@ -171,7 +171,7 @@ export function ProductDetailForm({
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Interest rate (%)</label>
+          <label className="text-sm font-medium text-brand-600 dark:text-brand-200">Interest rate (%)</label>
           <input
             type="number"
             step="0.01"
@@ -179,11 +179,11 @@ export function ProductDetailForm({
             placeholder="e.g. 7.25"
             value={detail.interest_rate_pct || ""}
             onChange={(e) => setDetail({ ...detail, interest_rate_pct: Number(e.target.value) })}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+            className="rounded-lg border border-brand-200 px-3 py-2 text-sm dark:border-brand-600 dark:bg-brand-950"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Upper rate (%)</label>
+          <label className="text-sm font-medium text-brand-600 dark:text-brand-200">Upper rate (%)</label>
           <input
             type="number"
             step="0.01"
@@ -192,22 +192,22 @@ export function ProductDetailForm({
             onChange={(e) =>
               setDetail({ ...detail, interest_rate_upper_pct: e.target.value === "" ? null : Number(e.target.value) })
             }
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+            className="rounded-lg border border-brand-200 px-3 py-2 text-sm dark:border-brand-600 dark:bg-brand-950"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">FOIR (%)</label>
+          <label className="text-sm font-medium text-brand-600 dark:text-brand-200">FOIR (%)</label>
           <input
             type="number"
             step="0.01"
             placeholder="e.g. 58"
             value={detail.foir_pct ?? ""}
             onChange={(e) => setDetail({ ...detail, foir_pct: e.target.value === "" ? null : Number(e.target.value) })}
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+            className="rounded-lg border border-brand-200 px-3 py-2 text-sm dark:border-brand-600 dark:bg-brand-950"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Max tenure (yrs)</label>
+          <label className="text-sm font-medium text-brand-600 dark:text-brand-200">Max tenure (yrs)</label>
           <input
             type="number"
             step="0.5"
@@ -216,12 +216,12 @@ export function ProductDetailForm({
             onChange={(e) =>
               setDetail({ ...detail, max_tenure_years: e.target.value === "" ? null : Number(e.target.value) })
             }
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+            className="rounded-lg border border-brand-200 px-3 py-2 text-sm dark:border-brand-600 dark:bg-brand-950"
           />
         </div>
       </div>
 
-      <label className="flex w-fit items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+      <label className="flex w-fit items-center gap-2 text-sm text-brand-600 dark:text-brand-200">
         <input
           type="checkbox"
           checked={detail.interest_rate_is_estimated}
@@ -231,10 +231,10 @@ export function ProductDetailForm({
       </label>
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Property type accepted</span>
+        <span className="text-sm font-medium text-brand-600 dark:text-brand-200">Property type accepted</span>
         {categories.property_type_groups.map((g) => (
           <div key={g.heading} className="flex flex-col gap-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">{g.heading}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-300">{g.heading}</p>
             <PillGroup
               options={g.values.map((value) => ({
                 value,
@@ -248,17 +248,17 @@ export function ProductDetailForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Property usage accepted</span>
+        <span className="text-sm font-medium text-brand-600 dark:text-brand-200">Property usage accepted</span>
         <PillGroup options={categories.property_usage} selected={detail.property_usage} onToggle={(v) => toggle("property_usage", v)} />
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Property stage accepted</span>
+        <span className="text-sm font-medium text-brand-600 dark:text-brand-200">Property stage accepted</span>
         <PillGroup options={categories.property_stage} selected={detail.property_stage} onToggle={(v) => toggle("property_stage", v)} />
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Property location accepted</span>
+        <span className="text-sm font-medium text-brand-600 dark:text-brand-200">Property location accepted</span>
         <PillGroup
           options={categories.property_location}
           selected={detail.property_location}
@@ -272,14 +272,14 @@ export function ProductDetailForm({
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="rounded-lg bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-50"
         >
           {saving ? "Saving…" : submitLabel}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
+          className="rounded-lg border border-brand-200 px-5 py-2.5 text-sm font-semibold text-brand-600 dark:border-brand-600 dark:text-brand-100"
         >
           Cancel
         </button>

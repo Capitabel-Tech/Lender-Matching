@@ -20,7 +20,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (loading || !user || !role) {
     return (
-      <div className="flex flex-1 items-center justify-center bg-[#050B12] text-sm text-[#91A0AE]">Checking…</div>
+      <div className="flex flex-1 items-center justify-center bg-[#0F1A33] text-sm text-[#A9B4C9]">Checking…</div>
     );
   }
 

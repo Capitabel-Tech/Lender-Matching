@@ -238,11 +238,11 @@ export function ExplorePage() {
           role="separator"
           aria-orientation="vertical"
           aria-label="Resize filters and results"
-          className={`hidden w-1.5 shrink-0 cursor-col-resize items-stretch justify-center bg-zinc-200 hover:bg-teal-400 sm:flex ${
-            dragging ? "bg-teal-500" : ""
+          className={`hidden w-1.5 shrink-0 cursor-col-resize items-stretch justify-center bg-brand-100 hover:bg-brand-400 sm:flex ${
+            dragging ? "bg-brand-500" : ""
           }`}
         >
-          <div className="m-auto h-10 w-0.5 rounded-full bg-zinc-400" />
+          <div className="m-auto h-10 w-0.5 rounded-full bg-brand-300" />
         </div>
 
         <div className="w-full px-6 py-6 sm:min-h-0 sm:flex-1 sm:overflow-y-auto">

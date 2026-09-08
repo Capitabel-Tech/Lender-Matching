@@ -77,8 +77,8 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Activity Log</h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <h2 className="text-lg font-semibold text-brand-800 dark:text-cream-100">Activity Log</h2>
+          <p className="text-sm text-brand-500 dark:text-brand-300">
             Every change any admin made, most recent first. Only you can see this.
           </p>
         </div>
@@ -86,7 +86,7 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, email, or date…"
-          className="w-64 shrink-0 rounded-lg border border-zinc-300 px-3.5 py-2 text-sm outline-none focus:border-teal-500 dark:border-zinc-700 dark:bg-zinc-950"
+          className="w-64 shrink-0 rounded-lg border border-brand-200 px-3.5 py-2 text-sm outline-none focus:border-brand-500 dark:border-brand-600 dark:bg-brand-950"
         />
       </div>
 
@@ -111,9 +111,9 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
+      <div className="overflow-x-auto rounded-2xl border border-brand-100 dark:border-brand-600">
         <table className="w-full text-base">
-          <thead className="bg-zinc-50 text-left text-sm uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+          <thead className="bg-cream-100 text-left text-sm uppercase tracking-wide text-brand-500 dark:bg-brand-800 dark:text-brand-300">
             <tr>
               <th className="px-5 py-3.5">When</th>
               <th className="px-5 py-3.5">Name</th>
@@ -124,28 +124,28 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
           </thead>
           <tbody>
             {filteredItems?.map((entry, i) => (
-              <tr key={i} className="border-t border-zinc-100 dark:border-zinc-800">
-                <td className="whitespace-nowrap px-5 py-3.5 text-zinc-500 dark:text-zinc-400">
+              <tr key={i} className="border-t border-brand-50 dark:border-brand-600">
+                <td className="whitespace-nowrap px-5 py-3.5 text-brand-500 dark:text-brand-300">
                   {new Date(entry.created_at).toLocaleString()}
                 </td>
-                <td className="px-5 py-3.5 font-medium text-zinc-900 dark:text-zinc-50">
+                <td className="px-5 py-3.5 font-medium text-brand-800 dark:text-cream-100">
                   {entry.actor_name ?? "—"}
                 </td>
-                <td className="px-5 py-3.5 text-zinc-500 dark:text-zinc-400">{entry.actor_email}</td>
-                <td className="px-5 py-3.5 text-zinc-700 dark:text-zinc-300">{entry.action}</td>
-                <td className="px-5 py-3.5 text-zinc-400">{entry.ip_address ?? "—"}</td>
+                <td className="px-5 py-3.5 text-brand-500 dark:text-brand-300">{entry.actor_email}</td>
+                <td className="px-5 py-3.5 text-brand-600 dark:text-brand-200">{entry.action}</td>
+                <td className="px-5 py-3.5 text-brand-300">{entry.ip_address ?? "—"}</td>
               </tr>
             ))}
             {items?.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-6 text-center text-zinc-400">
+                <td colSpan={5} className="px-5 py-6 text-center text-brand-300">
                   No activity recorded yet.
                 </td>
               </tr>
             )}
             {items && items.length > 0 && filteredItems?.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-6 text-center text-zinc-400">
+                <td colSpan={5} className="px-5 py-6 text-center text-brand-300">
                   No activity matches &ldquo;{search.trim()}&rdquo;.
                 </td>
               </tr>

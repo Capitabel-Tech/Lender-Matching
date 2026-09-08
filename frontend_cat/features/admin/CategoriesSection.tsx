@@ -124,8 +124,8 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Manage categories</h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <h2 className="text-2xl font-bold text-brand-800 dark:text-cream-100">Manage categories</h2>
+        <p className="mt-1 text-sm text-brand-500 dark:text-brand-300">
           Add or remove the values a bank product can be tagged with — new ones show up in every bank's edit form and
           the borrower-facing filters immediately, no code change needed.
         </p>
@@ -144,13 +144,13 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
         {CATEGORY_ORDER.map((category) => (
           <div
             key={category}
-            className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
+            className="flex flex-col gap-3 rounded-2xl border border-brand-100 bg-white p-5 dark:border-brand-600 dark:bg-brand-800"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">{CATEGORY_TITLES[category]}</h3>
+              <h3 className="text-lg font-bold text-brand-800 dark:text-cream-100">{CATEGORY_TITLES[category]}</h3>
               <button
                 onClick={() => startAdd(category)}
-                className="text-sm font-bold text-emerald-600 hover:underline"
+                className="text-sm font-bold text-brand-700 hover:underline"
               >
                 + Add value
               </button>
@@ -160,7 +160,7 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
               {categories[category].map((option) => (
                 <span
                   key={option.value}
-                  className="flex items-center gap-2 rounded-full border border-zinc-300 bg-zinc-50 px-3.5 py-2 text-sm font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200"
+                  className="flex items-center gap-2 rounded-full border border-brand-200 bg-cream-100 px-3.5 py-2 text-sm font-bold text-brand-600 dark:border-brand-600 dark:bg-brand-950 dark:text-brand-100"
                 >
                   {option.label}
                   <button
@@ -172,28 +172,28 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
                   </button>
                 </span>
               ))}
-              {categories[category].length === 0 && <span className="text-sm text-zinc-400">No values yet.</span>}
+              {categories[category].length === 0 && <span className="text-sm text-brand-300">No values yet.</span>}
             </div>
 
             {addingTo === category && (
-              <div className="flex flex-wrap items-end gap-3 rounded-xl border border-dashed border-zinc-300 p-3 dark:border-zinc-700">
+              <div className="flex flex-wrap items-end gap-3 rounded-xl border border-dashed border-brand-200 p-3 dark:border-brand-600">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Name</label>
+                  <label className="text-xs font-medium text-brand-500 dark:text-brand-200">Name</label>
                   <input
                     autoFocus
                     value={labelInput}
                     onChange={(e) => setLabelInput(e.target.value)}
                     placeholder="e.g. Business Owner"
-                    className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                    className="rounded-lg border border-brand-200 px-3 py-1.5 text-sm dark:border-brand-600 dark:bg-brand-950"
                   />
                 </div>
                 {category === "property_type" && (
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Group</label>
+                    <label className="text-xs font-medium text-brand-500 dark:text-brand-200">Group</label>
                     <select
                       value={groupInput}
                       onChange={(e) => setGroupInput(e.target.value)}
-                      className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                      className="rounded-lg border border-brand-200 px-3 py-1.5 text-sm dark:border-brand-600 dark:bg-brand-950"
                     >
                       {groupHeadings.map((h) => (
                         <option key={h} value={h}>
@@ -206,13 +206,13 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
                 <button
                   onClick={submitAdd}
                   disabled={busy}
-                  className="rounded-lg bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                  className="rounded-lg bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-50"
                 >
                   {busy ? "Adding…" : "Add"}
                 </button>
                 <button
                   onClick={() => setAddingTo(null)}
-                  className="rounded-lg border border-zinc-300 px-4 py-1.5 text-sm font-semibold text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
+                  className="rounded-lg border border-brand-200 px-4 py-1.5 text-sm font-semibold text-brand-600 dark:border-brand-600 dark:text-brand-100"
                 >
                   Cancel
                 </button>

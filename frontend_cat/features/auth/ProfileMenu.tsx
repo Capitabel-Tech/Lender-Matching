@@ -46,16 +46,16 @@ export function ProfileMenu({
         onClick={() => setOpen((o) => !o)}
         aria-label="Account menu"
         title={displayName ?? email}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-500/20 text-xs font-bold text-teal-300 hover:bg-teal-500/30"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500/20 text-xs font-bold text-brand-300 hover:bg-brand-500/30"
       >
         {initials(displayName, email)}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-white/10 bg-[#08141D] p-3 text-xs shadow-xl">
-          <p className="truncate font-semibold text-[#F5F7FA]">{displayName ?? "—"}</p>
-          {orgRole && <p className="mt-0.5 truncate text-[#91A0AE]">{orgRole}</p>}
-          <p className="mt-1 truncate text-[#91A0AE]">{email}</p>
-          <p className="mt-2 inline-flex rounded-full border border-teal-800 bg-teal-950/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-400">
+        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-white/10 bg-[#101D3D] p-3 text-xs shadow-xl">
+          <p className="truncate font-semibold text-[#FFFFFF]">{displayName ?? "—"}</p>
+          {orgRole && <p className="mt-0.5 truncate text-[#A9B4C9]">{orgRole}</p>}
+          <p className="mt-1 truncate text-[#A9B4C9]">{email}</p>
+          <p className="mt-2 inline-flex rounded-full border border-brand-800 bg-brand-950/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-400">
             {role ? ROLE_LABELS[role] ?? role : "No access"}
           </p>
           <button

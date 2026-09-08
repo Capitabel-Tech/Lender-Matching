@@ -127,7 +127,7 @@ function AffordabilityPanel({
     hasTenure && bankMaxTenure !== null && maxTenure !== null && maxTenure < bankMaxTenure;
 
   const pass = product.foir_pass;
-  const statColor = pass === false ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400";
+  const statColor = pass === false ? "text-red-700 dark:text-red-400" : "text-brand-800 dark:text-brand-400";
   const loanAmountForSelection =
     product.max_emi !== null
       ? calculateLoanAmountForTenure(product.max_emi, selectedTenure, selectedRate)
@@ -181,12 +181,12 @@ function AffordabilityPanel({
       className={`flex flex-col gap-3 rounded-xl border-2 p-4 ${
         pass === false
           ? "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/30"
-          : "border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"
+          : "border-brand-300 bg-brand-50 dark:border-brand-900 dark:bg-brand-950/30"
       }`}
     >
       {headlineAmount !== null && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brand-500 dark:text-brand-300">
             {headlineLabel}
           </p>
           <p className={`text-2xl font-black leading-tight ${statColor}`}>
@@ -200,10 +200,10 @@ function AffordabilityPanel({
       <div className="flex flex-wrap items-start gap-x-8 gap-y-3">
         {hasMaxEmi && (
           <div className="flex min-w-[110px] flex-col gap-0.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-brand-500 dark:text-brand-300">
               Max Allowed EMI / month
             </p>
-            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Bank&apos;s ceiling, from FOIR</p>
+            <p className="text-xs font-semibold text-brand-500 dark:text-brand-300">Bank&apos;s ceiling, from FOIR</p>
             <p className={`text-xl font-black leading-tight ${statColor}`}>
               {product.max_emi! > 0 ? `₹${Math.round(product.max_emi!).toLocaleString("en-IN")}` : "—"}
             </p>
@@ -211,14 +211,14 @@ function AffordabilityPanel({
         )}
         {proposedEmi !== null && (
           <div className="flex min-w-[130px] flex-col gap-0.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-brand-500 dark:text-brand-300">
               Proposed EMI ({selectedRate.toFixed(2)}%{product.interest_rate_is_estimated ? ", unverified" : ""})
             </p>
-            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">For your requested amount</p>
+            <p className="text-xs font-semibold text-brand-500 dark:text-brand-300">For your requested amount</p>
             <p
               className={`text-xl font-black leading-tight ${
                 proposedEmiWithinBudget
-                  ? "text-emerald-700 dark:text-emerald-400"
+                  ? "text-brand-800 dark:text-brand-400"
                   : "text-red-700 dark:text-red-400"
               }`}
             >
@@ -228,12 +228,12 @@ function AffordabilityPanel({
         )}
         {hasFoir && (
           <div className="flex min-w-[110px] flex-col gap-0.5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">FOIR</p>
-            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Share of income already committed</p>
-            <p className="text-xl font-black leading-tight text-zinc-800 dark:text-zinc-100">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-brand-500 dark:text-brand-300">FOIR</p>
+            <p className="text-xs font-semibold text-brand-500 dark:text-brand-300">Share of income already committed</p>
+            <p className="text-xl font-black leading-tight text-brand-600 dark:text-brand-50">
               {product.customer_foir_pct?.toFixed(1)}%{" "}
               <span className={statColor}>{pass ? "✓" : "✗"}</span>{" "}
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs font-semibold text-brand-500 dark:text-brand-300">
                 of {product.bank_foir_pct}% limit
               </span>
             </p>
@@ -245,10 +245,10 @@ function AffordabilityPanel({
           read-only figures above, so it's clear these two are the ones you
           can change. */}
       {((hasTenure && maxTenure! > 0) || hasMaxEmi) && (
-        <div className="flex flex-wrap items-end gap-x-8 gap-y-3 rounded-lg border border-zinc-900/10 bg-white/60 px-3 py-2.5 dark:border-zinc-100/10 dark:bg-black/15">
+        <div className="flex flex-wrap items-end gap-x-8 gap-y-3 rounded-lg border border-brand-800/10 bg-white/60 px-3 py-2.5 dark:border-brand-50/10 dark:bg-black/15">
           {hasTenure && maxTenure! > 0 && (
             <div className="flex min-w-[110px] flex-col gap-1">
-              <div className="flex items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center justify-between gap-2 text-[10px] font-bold uppercase tracking-wider text-brand-500 dark:text-brand-300">
                 <span>Tenure</span>
                 <span>
                   {selectedTenure}/{maxTenure} yrs
@@ -261,13 +261,13 @@ function AffordabilityPanel({
                 step={1}
                 value={selectedTenure}
                 onChange={(e) => setSelectedTenure(Number(e.target.value))}
-                className="h-1 w-24 cursor-pointer accent-teal-600"
+                className="h-1 w-24 cursor-pointer accent-brand-700"
               />
             </div>
           )}
           {hasMaxEmi && (
             <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-brand-500 dark:text-brand-300">
                 Interest rate
               </p>
               <div className="flex items-center gap-1.5">
@@ -285,17 +285,17 @@ function AffordabilityPanel({
                       : Math.max(selectedRate, floor);
                     setRateInputText(clamped.toFixed(2));
                   }}
-                  className={`w-16 rounded-md border px-1.5 py-0.5 text-xs font-semibold outline-none focus:border-teal-500 ${
+                  className={`w-16 rounded-md border px-1.5 py-0.5 text-xs font-semibold outline-none focus:border-brand-500 ${
                     product.interest_rate_is_estimated
                       ? "border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-200"
-                      : "border-zinc-300 dark:border-zinc-700 dark:bg-zinc-950"
+                      : "border-brand-200 dark:border-brand-600 dark:bg-brand-950"
                   }`}
                 />
                 <span
                   className={`text-xs font-semibold ${
                     product.interest_rate_is_estimated
                       ? "text-amber-700 dark:text-amber-400"
-                      : "text-zinc-500 dark:text-zinc-400"
+                      : "text-brand-500 dark:text-brand-300"
                   }`}
                 >
                   {product.interest_rate_is_estimated
@@ -318,7 +318,7 @@ function AffordabilityPanel({
       )}
 
       {meetsRequestedAmount && (
-        <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+        <p className="text-xs font-semibold text-brand-800 dark:text-brand-400">
           ✓ You&apos;re eligible for your full requested ₹{requestedLoanAmount!.toLocaleString("en-IN")}.
         </p>
       )}
@@ -347,13 +347,13 @@ function BankCard({
   filters: ExploreFilters;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border-l-4 border-teal-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:bg-zinc-900">
+    <div className="flex flex-col gap-3 rounded-xl border-l-4 border-brand-700 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:bg-brand-800">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <BankLogo bankName={product.bank_name} size={36} />
-          <h3 className="text-lg font-bold leading-tight text-zinc-900 dark:text-zinc-50">{product.bank_name}</h3>
+          <h3 className="text-lg font-bold leading-tight text-brand-800 dark:text-cream-100">{product.bank_name}</h3>
         </div>
-        <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1 text-xs font-bold text-white">
+        <span className="shrink-0 rounded-full bg-brand-700 px-3 py-1 text-xs font-bold text-white">
           {product.product_name}
         </span>
       </div>
@@ -362,26 +362,26 @@ function BankCard({
 
       <dl className="grid grid-cols-1 gap-x-4 gap-y-2.5 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Usage</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">
+          <dt className="text-xs font-bold uppercase tracking-wide text-brand-800 dark:text-brand-400">Usage</dt>
+          <dd className="text-brand-600 dark:text-brand-200">
             {displayValues(product.property_usage, filters.property_usage).map(labelFor).join(", ") || "—"}
           </dd>
         </div>
         <div>
-          <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Stage</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">
+          <dt className="text-xs font-bold uppercase tracking-wide text-brand-800 dark:text-brand-400">Stage</dt>
+          <dd className="text-brand-600 dark:text-brand-200">
             {displayValues(product.property_stage, filters.property_stage).map(labelFor).join(", ") || "—"}
           </dd>
         </div>
         <div>
-          <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Location</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">
+          <dt className="text-xs font-bold uppercase tracking-wide text-brand-800 dark:text-brand-400">Location</dt>
+          <dd className="text-brand-600 dark:text-brand-200">
             {displayValues(product.property_location, filters.property_location).map(labelFor).join(", ") || "—"}
           </dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-xs font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Property type</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">
+          <dt className="text-xs font-bold uppercase tracking-wide text-brand-800 dark:text-brand-400">Property type</dt>
+          <dd className="text-brand-600 dark:text-brand-200">
             {formatPropertyTypes(displayValues(product.property_type, filters.property_type)) || "—"}
           </dd>
         </div>
@@ -405,15 +405,15 @@ export function ResultsList({
 }) {
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="flex items-baseline gap-2 border-b-2 border-zinc-900 pb-3 dark:border-zinc-100">
-        <span className="text-2xl font-black text-zinc-900 dark:text-zinc-50">{loading ? "…" : total}</span>
-        <span className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-baseline gap-2 border-b-2 border-brand-800 pb-3 dark:border-brand-50">
+        <span className="text-2xl font-black text-brand-800 dark:text-cream-100">{loading ? "…" : total}</span>
+        <span className="text-sm font-semibold uppercase tracking-wide text-brand-500 dark:text-brand-300">
           {loading ? "Loading" : `Result${total === 1 ? "" : "s"}`}
         </span>
       </div>
 
       {!loading && results.length === 0 && (
-        <div className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-400 dark:border-zinc-700">
+        <div className="rounded-xl border border-dashed border-brand-200 p-8 text-center text-sm text-brand-300 dark:border-brand-600">
           No banks match this combination of filters.
         </div>
       )}
@@ -421,9 +421,9 @@ export function ResultsList({
       <div className="flex flex-col gap-6">
         {groupByEmploymentType(results).map(({ employmentType, products }) => (
           <div key={employmentType} className="flex flex-col gap-3">
-            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-brand-500 dark:text-brand-300">
               {labelFor(employmentType)}
-              <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+              <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-500 dark:bg-brand-600 dark:text-brand-200">
                 {products.length}
               </span>
             </h3>

@@ -32,38 +32,38 @@ export function AdminAccessRequestScreen({
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center bg-zinc-50 px-4 py-14 dark:bg-zinc-950 sm:px-8">
+    <div className="flex flex-1 flex-col items-center bg-cream-100 px-4 py-14 dark:bg-brand-950 sm:px-8">
       <div className="w-full max-w-xl">
         <Link
           href="/explore"
-          className="text-sm font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+          className="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-brand-300 dark:hover:text-brand-100"
         >
           ← Back to the lender finder
         </Link>
 
-        <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="mt-4 rounded-2xl border border-brand-100 bg-white p-8 shadow-sm dark:border-brand-600 dark:bg-brand-800">
           {revoked ? (
             <>
               <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700 dark:bg-red-950/50 dark:text-red-400">
                 Access removed
               </span>
-              <h1 className="mt-4 text-2xl font-extrabold text-zinc-900 dark:text-zinc-50">
+              <h1 className="mt-4 text-2xl font-extrabold text-brand-800 dark:text-cream-100">
                 Your admin access was removed
               </h1>
-              <p className="mt-2 text-base text-zinc-600 dark:text-zinc-300">
+              <p className="mt-2 text-base text-brand-500 dark:text-brand-200">
                 {displayName ?? "Your account"}&rsquo;s admin access was taken away by another admin, so you
                 can&rsquo;t open this dashboard right now. You can still use Explore Lenders as normal.
               </p>
             </>
           ) : (
             <>
-              <span className="inline-flex rounded-full bg-teal-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
+              <span className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand-800 dark:bg-brand-950/60 dark:text-brand-300">
                 Admin access
               </span>
-              <h1 className="mt-4 text-2xl font-extrabold text-zinc-900 dark:text-zinc-50">
+              <h1 className="mt-4 text-2xl font-extrabold text-brand-800 dark:text-cream-100">
                 You need admin access for this
               </h1>
-              <p className="mt-2 text-base text-zinc-600 dark:text-zinc-300">
+              <p className="mt-2 text-base text-brand-500 dark:text-brand-200">
                 The admin dashboard is where lender data actually gets maintained — banks, interest rates,
                 eligibility rules, property types, and who else has admin access.
               </p>
@@ -80,7 +80,7 @@ export function AdminAccessRequestScreen({
             </p>
           </div>
 
-          <ul className="mt-6 flex flex-col gap-2 text-sm text-zinc-600 dark:text-zinc-300">
+          <ul className="mt-6 flex flex-col gap-2 text-sm text-brand-500 dark:text-brand-200">
             <li>• Only request this if maintaining lender data is actually part of your role.</li>
             <li>• An existing admin has to approve your request before you get in.</li>
             <li>• Once approved, you'll have full access — including promoting or revoking other admins.</li>
@@ -88,7 +88,7 @@ export function AdminAccessRequestScreen({
 
           <div className="mt-7">
             {pending ? (
-              <div className="rounded-lg border border-teal-300 bg-teal-50 px-4 py-3 text-sm font-bold text-teal-800 dark:border-teal-900/60 dark:bg-teal-950/40 dark:text-teal-300">
+              <div className="rounded-lg border border-brand-300 bg-brand-50 px-4 py-3 text-sm font-bold text-brand-800 dark:border-brand-900/60 dark:bg-brand-950/40 dark:text-brand-300">
                 Request sent — an existing admin still needs to review it. You&rsquo;ll get a notice here the moment
                 they decide.
               </div>
@@ -96,7 +96,7 @@ export function AdminAccessRequestScreen({
               <button
                 onClick={handleRequest}
                 disabled={submitting}
-                className="w-full rounded-lg bg-teal-600 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-50"
+                className="w-full rounded-lg bg-brand-700 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-50"
               >
                 {submitting ? "Sending…" : revoked ? "Request admin access again" : "Request admin access"}
               </button>
@@ -105,7 +105,7 @@ export function AdminAccessRequestScreen({
 
           <Link
             href="/explore"
-            className="mt-3 flex w-full items-center justify-center rounded-lg bg-zinc-900 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition-transform hover:scale-[1.01] dark:bg-zinc-100 dark:text-zinc-900"
+            className="mt-3 flex w-full items-center justify-center rounded-lg bg-brand-800 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition-transform hover:scale-[1.01] dark:bg-brand-50 dark:text-brand-800"
           >
             Return to Lenders Page
           </Link>

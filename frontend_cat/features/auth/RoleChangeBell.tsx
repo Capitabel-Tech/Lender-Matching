@@ -38,10 +38,10 @@ export function RoleChangeBell({
         </svg>
         <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-amber-400" />
       </button>
-      <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-white/10 bg-[#08141D] p-3 text-xs shadow-xl">
-        <p className="font-semibold text-[#F5F7FA]">Your access changed</p>
-        <p className="mt-1 text-[#91A0AE]">
-          You&rsquo;re now <span className="font-semibold text-[#00D6C9]">{roleLabel(notice.to)}</span>
+      <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-white/10 bg-[#101D3D] p-3 text-xs shadow-xl">
+        <p className="font-semibold text-[#FFFFFF]">Your access changed</p>
+        <p className="mt-1 text-[#A9B4C9]">
+          You&rsquo;re now <span className="font-semibold text-[#F58220]">{roleLabel(notice.to)}</span>
           {notice.from ? (
             <>
               {" "}
@@ -50,7 +50,7 @@ export function RoleChangeBell({
           ) : null}
           .
         </p>
-        <button onClick={onDismiss} className="mt-2 text-[#00D6C9] hover:underline">
+        <button onClick={onDismiss} className="mt-2 text-[#F58220] hover:underline">
           Dismiss
         </button>
       </div>

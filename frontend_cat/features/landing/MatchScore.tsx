@@ -17,25 +17,25 @@ export function MatchScore({ rates }: { rates: LiveRate[] }) {
         const isTop = i === 0;
         return (
           <div key={r.bank_name} className="flex items-center gap-4">
-            <span className="w-6 shrink-0 font-mono text-sm text-[#91A0AE]">{String(i + 1).padStart(2, "0")}</span>
+            <span className="w-6 shrink-0 font-mono text-sm text-[#A9B4C9]">{String(i + 1).padStart(2, "0")}</span>
             <div className="flex-1">
               <div
-                className={`flex min-w-0 items-center justify-between gap-3 rounded-lg px-4 py-3 ${isTop ? "border border-[#7CFF8A]/40" : "border border-white/10"}`}
+                className={`flex min-w-0 items-center justify-between gap-3 rounded-lg px-4 py-3 ${isTop ? "border border-[#34D399]/40" : "border border-white/10"}`}
                 style={{
                   width: `${widthPct}%`,
                   background: isTop
-                    ? "linear-gradient(90deg, rgba(124,255,138,0.14), rgba(124,255,138,0.03))"
+                    ? "linear-gradient(90deg, rgba(52,211,153,0.14), rgba(52,211,153,0.03))"
                     : "rgba(255,255,255,0.03)",
-                  boxShadow: isTop ? "0 0 30px rgba(124,255,138,0.15)" : undefined,
+                  boxShadow: isTop ? "0 0 30px rgba(52,211,153,0.15)" : undefined,
                 }}
               >
                 <span
                   title={r.bank_name}
-                  className={`min-w-0 truncate text-sm font-semibold ${isTop ? "text-[#7CFF8A]" : "text-[#F5F7FA]"}`}
+                  className={`min-w-0 truncate text-sm font-semibold ${isTop ? "text-[#34D399]" : "text-[#FFFFFF]"}`}
                 >
                   {r.bank_name}
                 </span>
-                <span className={`shrink-0 text-sm font-bold ${isTop ? "text-[#7CFF8A]" : "text-[#18E0FF]"}`}>
+                <span className={`shrink-0 text-sm font-bold ${isTop ? "text-[#34D399]" : "text-[#F7A755]"}`}>
                   {r.rate_pct.toFixed(2)}%
                 </span>
               </div>
@@ -43,7 +43,7 @@ export function MatchScore({ rates }: { rates: LiveRate[] }) {
           </div>
         );
       })}
-      <p className="mt-2 text-xs text-[#91A0AE]">Ranked by published interest rate — not a personalized result.</p>
+      <p className="mt-2 text-xs text-[#A9B4C9]">Ranked by published interest rate — not a personalized result.</p>
     </div>
   );
 }
