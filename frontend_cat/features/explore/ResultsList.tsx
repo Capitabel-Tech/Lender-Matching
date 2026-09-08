@@ -189,7 +189,7 @@ function AffordabilityPanel({
           <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             {headlineLabel}
           </p>
-          <p className={`text-4xl font-black leading-tight ${statColor}`}>
+          <p className={`text-2xl font-black leading-tight ${statColor}`}>
             {headlineAmount > 0 ? `₹${Math.round(headlineAmount).toLocaleString("en-IN")}` : "—"}
           </p>
         </div>
@@ -349,9 +349,9 @@ function BankCard({
   return (
     <div className="flex flex-col gap-3 rounded-xl border-l-4 border-teal-600 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:bg-zinc-900">
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-3.5">
-          <BankLogo bankName={product.bank_name} size={56} />
-          <h3 className="text-4xl font-bold leading-tight text-zinc-900 dark:text-zinc-50">{product.bank_name}</h3>
+        <div className="flex items-center gap-2.5">
+          <BankLogo bankName={product.bank_name} size={36} />
+          <h3 className="text-lg font-bold leading-tight text-zinc-900 dark:text-zinc-50">{product.bank_name}</h3>
         </div>
         <span className="shrink-0 rounded-full bg-teal-600 px-3 py-1 text-xs font-bold text-white">
           {product.product_name}

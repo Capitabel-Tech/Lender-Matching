@@ -141,7 +141,7 @@ export function LandingContent() {
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#00D6C9]">
               Rule-Based Lender Matching Engine
             </p>
-            <h1 className="text-[40px] font-bold leading-[1.1] tracking-tight sm:text-[56px] lg:text-[64px]">
+            <h1 className="text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[48px] lg:text-[56px]">
               One Profile. Every Lender.
               <br />
               <span className="text-[#00D6C9]">Your Best Match.</span>
