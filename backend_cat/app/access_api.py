@@ -34,17 +34,26 @@ from app.database import get_db
 access_router = APIRouter(prefix="/api/v1/admin", tags=["admin-access"])
 
 
-_ROLE_SORT_ORDER = {"admin": 0, "business": 1}
-
-
 @access_router.get("/admins")
-async def list_admins(_: Annotated[LoggedInUser, Depends(require_admin_user)]) -> list[AdminAccountOut]:
+async def list_admins(caller: Annotated[LoggedInUser, Depends(require_admin_user)]) -> list[AdminAccountOut]:
     """Everyone who currently has an account, plus anyone previously revoked
     — revoking cuts off access but deliberately doesn't erase the person
     from this list, so they can be granted access again with one click
-    instead of needing to sign up from scratch. Admins are listed first,
-    then business, then revoked, since that's the order you'd act on them
-    in."""
+    instead of needing to sign up from scratch. Sorted: whoever's viewing
+    this first, then the protected accounts, then every other admin, then
+    business, then revoked last."""
+
+    def sort_tier(a: AdminAccountOut) -> int:
+        if a.email == caller.email:
+            return 0
+        if a.protected:
+            return 1
+        if a.revoked:
+            return 4
+        if a.role == ADMIN_ROLE:
+            return 2
+        return 3
+
     admins: list[AdminAccountOut] = []
     for user_record in firebase_auth.list_users(app=_firebase_app).iterate_all():
         claims = user_record.custom_claims or {}
@@ -63,7 +72,7 @@ async def list_admins(_: Annotated[LoggedInUser, Depends(require_admin_user)]) -
                     protected=user_record.email in PROTECTED_EMAILS,
                 )
             )
-    admins.sort(key=lambda a: (2 if a.revoked else _ROLE_SORT_ORDER.get(a.role, 1), a.email))
+    admins.sort(key=lambda a: (sort_tier(a), a.email))
     return admins
 
 
@@ -174,6 +183,35 @@ async def revoke_admin_access(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
     await log_activity(request, caller.email, f"Revoked admin access for {target.email or uid}")
     return {"status": "revoked"}
+
+
+@access_router.delete("/admins/{uid}")
+async def delete_account(
+    uid: str, request: Request, caller: Annotated[LoggedInUser, Depends(require_admin_user)]
+) -> dict[str, str]:
+    """Permanently deletes a revoked account's Firebase login — distinct
+    from revoke (which just cuts admin power and keeps the account around,
+    listed as Revoked, so it can be granted access again with one click).
+    This is for cleaning up revoked accounts once there are enough of them
+    sitting around that they're not coming back; only ever allowed on an
+    already-revoked account, never one with active access — revoke it
+    first. There's no undo: the person would need to sign up completely
+    fresh afterward."""
+    if uid == caller.uid:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "You can't delete your own account.")
+    try:
+        target = firebase_auth.get_user(uid, app=_firebase_app)
+        if target.email in PROTECTED_EMAILS:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This account can't be deleted.")
+        if not (target.custom_claims or {}).get("revoked"):
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Only a revoked account can be deleted — revoke it first."
+            )
+        firebase_auth.delete_user(uid, app=_firebase_app)
+    except firebase_auth.UserNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such account.") from exc
+    await log_activity(request, caller.email, f"Deleted account for {target.email or uid}")
+    return {"status": "deleted"}
 
 
 @access_router.get("/activity-log")

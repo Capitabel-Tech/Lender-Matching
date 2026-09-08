@@ -160,6 +160,15 @@ export const adminApi = {
       method: "POST",
     }),
 
+  // Permanently deletes a revoked account's Firebase login — only allowed
+  // on an already-revoked account, for cleaning those up once there are
+  // too many sitting around. Distinct from revokeAdminAccess, which keeps
+  // the account around so it can be granted access again.
+  deleteAccount: (token: string, uid: string) =>
+    adminRequest<{ status: string }>(`/api/v1/admin/admins/${encodeURIComponent(uid)}`, token, {
+      method: "DELETE",
+    }),
+
   dismissAdminRequest: (token: string, uid: string) =>
     adminRequest<{ status: string }>(`/api/v1/admin/admins/${encodeURIComponent(uid)}/dismiss-request`, token, {
       method: "POST",

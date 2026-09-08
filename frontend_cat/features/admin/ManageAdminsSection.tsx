@@ -85,6 +85,16 @@ export function ManageAdminsSection({
     void runAction(uid, (token) => adminApi.revokeAdminAccess(token, uid));
   }
 
+  function deleteAccount(uid: string, email: string) {
+    if (
+      !confirm(
+        `Permanently delete ${email}'s account? This can't be undone — they'd need to sign up completely fresh to get back in.`,
+      )
+    )
+      return;
+    void runAction(uid, (token) => adminApi.deleteAccount(token, uid));
+  }
+
   function dismissRequest(uid: string) {
     void runAction(uid, (token) => adminApi.dismissAdminRequest(token, uid));
   }
@@ -110,9 +120,10 @@ export function ManageAdminsSection({
       <div>
         <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Manage Admins</h2>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Admins first, then business, then anyone revoked. There's no tier above admin — any admin can edit lender
-          data and manage every other admin, equally. Revoking is immediate; it doesn't wait for their session to
-          expire, and a revoked account can always be granted access again.
+          You first, then the protected accounts, then every other admin, then business, then anyone revoked.
+          There's no tier above admin — any admin can edit lender data and manage every other admin, equally.
+          Revoking is immediate and can always be undone by granting access again; a revoked account can also be
+          deleted permanently if it's not coming back.
         </p>
       </div>
 
@@ -225,6 +236,15 @@ export function ManageAdminsSection({
                             className="text-base font-bold text-red-600 hover:underline disabled:opacity-50"
                           >
                             Revoke access
+                          </button>
+                        )}
+                        {admin.revoked && (
+                          <button
+                            onClick={() => deleteAccount(admin.uid, admin.email)}
+                            disabled={actingOn === admin.uid}
+                            className="text-base font-bold text-red-800 hover:underline disabled:opacity-50 dark:text-red-500"
+                          >
+                            Delete permanently
                           </button>
                         )}
                       </div>

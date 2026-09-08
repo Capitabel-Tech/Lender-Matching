@@ -85,10 +85,26 @@ export function useAuth() {
   // dismissRoleChangeNotice.
   const [roleChangeNotice, setRoleChangeNotice] = useState<{ from: Role | null; to: Role | null } | null>(null);
 
-  const readRole = useCallback(async (u: User, forceRefresh = false) => {
-    const result = await u.getIdTokenResult(forceRefresh);
-    setRole((result.claims.role as Role | undefined) ?? null);
-    setProfile(readProfile(result));
+  const readRole = useCallback(async (u: User, forceRefresh = false, attempt = 0) => {
+    try {
+      const result = await u.getIdTokenResult(forceRefresh);
+      setRole((result.claims.role as Role | undefined) ?? null);
+      setProfile(readProfile(result));
+    } catch {
+      // Transient Firebase hiccup (e.g. "Database is closing" from its
+      // IndexedDB layer if the tab was backgrounded) — this runs on every
+      // login/page-load via a fire-and-forget call below, so left
+      // unguarded it's an unhandled rejection on essentially every page.
+      // One retry handles the common transient case; if it's still
+      // failing, this session's token genuinely isn't good anymore, so
+      // sign out rather than leaving role stuck at undefined ("still
+      // checking...") forever.
+      if (attempt === 0) {
+        window.setTimeout(() => void readRole(u, forceRefresh, 1), 500);
+        return;
+      }
+      if (auth) void signOut(auth);
+    }
   }, []);
 
   useEffect(() => {
