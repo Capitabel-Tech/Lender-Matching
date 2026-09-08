@@ -57,11 +57,20 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
     return <AdminLoading />;
   }
 
+  // Deliberately only email, name, and date — not the free-text action
+  // column, which pulled in unrelated rows any time the search term
+  // happened to appear somewhere in that sentence (e.g. searching "admin"
+  // matched nearly every row regardless of who was involved).
   const query = search.trim().toLowerCase();
   const filteredItems = query
-    ? items?.filter(
-        (entry) => entry.actor_email.toLowerCase().includes(query) || entry.action.toLowerCase().includes(query),
-      )
+    ? items?.filter((entry) => {
+        const dateText = new Date(entry.created_at).toLocaleString().toLowerCase();
+        return (
+          entry.actor_email.toLowerCase().includes(query) ||
+          (entry.actor_name?.toLowerCase().includes(query) ?? false) ||
+          dateText.includes(query)
+        );
+      })
     : items;
 
   return (
@@ -76,7 +85,7 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name or email…"
+          placeholder="Search by name, email, or date…"
           className="w-64 shrink-0 rounded-lg border border-zinc-300 px-3.5 py-2 text-sm outline-none focus:border-teal-500 dark:border-zinc-700 dark:bg-zinc-950"
         />
       </div>
@@ -107,6 +116,7 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
           <thead className="bg-zinc-50 text-left text-sm uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
             <tr>
               <th className="px-5 py-3.5">When</th>
+              <th className="px-5 py-3.5">Name</th>
               <th className="px-5 py-3.5">Who</th>
               <th className="px-5 py-3.5">What</th>
               <th className="px-5 py-3.5">From</th>
@@ -118,21 +128,24 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
                 <td className="whitespace-nowrap px-5 py-3.5 text-zinc-500 dark:text-zinc-400">
                   {new Date(entry.created_at).toLocaleString()}
                 </td>
-                <td className="px-5 py-3.5 font-medium text-zinc-900 dark:text-zinc-50">{entry.actor_email}</td>
+                <td className="px-5 py-3.5 font-medium text-zinc-900 dark:text-zinc-50">
+                  {entry.actor_name ?? "—"}
+                </td>
+                <td className="px-5 py-3.5 text-zinc-500 dark:text-zinc-400">{entry.actor_email}</td>
                 <td className="px-5 py-3.5 text-zinc-700 dark:text-zinc-300">{entry.action}</td>
                 <td className="px-5 py-3.5 text-zinc-400">{entry.ip_address ?? "—"}</td>
               </tr>
             ))}
             {items?.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-6 text-center text-zinc-400">
+                <td colSpan={5} className="px-5 py-6 text-center text-zinc-400">
                   No activity recorded yet.
                 </td>
               </tr>
             )}
             {items && items.length > 0 && filteredItems?.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-6 text-center text-zinc-400">
+                <td colSpan={5} className="px-5 py-6 text-center text-zinc-400">
                   No activity matches &ldquo;{search.trim()}&rdquo;.
                 </td>
               </tr>

@@ -218,10 +218,24 @@ async def delete_account(
 async def get_activity_log(
     session: Annotated[AsyncSession, Depends(get_db)], _: Annotated[LoggedInUser, Depends(require_admin_user)]
 ) -> list[ActivityLogEntryOut]:
+    """The log itself only ever stored the actor's email (see
+    app/activity_log.py) — no name, since there's no persistent link to
+    account data. Names shown here are resolved live against Firebase by
+    email, so an entry from an account that's since been deleted just
+    shows no name rather than a stale or wrong one."""
     entries = await list_activity(session)
+    names_by_email = {
+        u.email: (u.custom_claims or {}).get("display_name")
+        for u in firebase_auth.list_users(app=_firebase_app).iterate_all()
+        if u.email
+    }
     return [
         ActivityLogEntryOut(
-            actor_email=e.actor_email, action=e.action, ip_address=e.ip_address, created_at=e.created_at.isoformat()
+            actor_email=e.actor_email,
+            actor_name=names_by_email.get(e.actor_email),
+            action=e.action,
+            ip_address=e.ip_address,
+            created_at=e.created_at.isoformat(),
         )
         for e in entries
     ]

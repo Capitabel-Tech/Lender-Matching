@@ -85,6 +85,10 @@ class AdminAccountOut(BaseModel):
 
 class ActivityLogEntryOut(BaseModel):
     actor_email: str
+    # The actor's current display_name, looked up live from Firebase at
+    # request time — the log itself only ever stored the email, so this is
+    # None if that account has since been deleted or never had a name set.
+    actor_name: str | None = None
     action: str
     ip_address: str | None
     created_at: str

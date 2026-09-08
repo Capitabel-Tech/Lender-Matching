@@ -71,6 +71,7 @@ export interface AdminAccountOut {
 
 export interface ActivityLogEntryOut {
   actor_email: string;
+  actor_name: string | null;
   action: string;
   ip_address: string | null;
   created_at: string;
