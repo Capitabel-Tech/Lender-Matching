@@ -5,15 +5,6 @@ import { useEffect, useState } from "react";
 import { errorMessage } from "@/lib/api/client";
 import { adminApi, type AdminAccountOut } from "@/lib/api/admin";
 
-function roleLabel(role: "business" | "admin"): string {
-  switch (role) {
-    case "admin":
-      return "Admin";
-    case "business":
-      return "Business";
-  }
-}
-
 export function ManageAdminsSection({
   getToken,
   currentUserEmail,
@@ -52,70 +43,56 @@ export function ManageAdminsSection({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders, run once on mount
   }, []);
 
-  async function revoke(uid: string, email: string) {
+  async function runAction(uid: string, action: (token: string) => Promise<unknown>) {
+    setActingOn(uid);
+    setListError(null);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      await action(token);
+      await refresh();
+    } catch (err) {
+      setListError(errorMessage(err));
+    } finally {
+      setActingOn(null);
+    }
+  }
+
+  function revoke(uid: string, email: string) {
     if (!confirm(`Revoke access for ${email}? They'll be locked out immediately, even if they're using the panel right now.`)) return;
-    setActingOn(uid);
-    setListError(null);
-    try {
-      const token = await getToken();
-      if (!token) return;
-      await adminApi.revokeAdminAccess(token, uid);
-      await refresh();
-    } catch (err) {
-      setListError(errorMessage(err));
-    } finally {
-      setActingOn(null);
-    }
+    void runAction(uid, (token) => adminApi.revokeAdminAccess(token, uid));
   }
 
-  async function dismissRequest(uid: string) {
-    setActingOn(uid);
-    setListError(null);
-    try {
-      const token = await getToken();
-      if (!token) return;
-      await adminApi.dismissAdminRequest(token, uid);
-      await refresh();
-    } catch (err) {
-      setListError(errorMessage(err));
-    } finally {
-      setActingOn(null);
-    }
+  function dismissRequest(uid: string) {
+    void runAction(uid, (token) => adminApi.dismissAdminRequest(token, uid));
   }
 
-  // Promotes or demotes between business and admin — e.g. turning a
-  // business (Explore-only) account into a full admin. There's no tier
-  // above admin: promoting someone gives them full, equal power, including
-  // editing lender data and managing (promoting/demoting/revoking) every
-  // other admin, you included. The person being changed picks this up on
-  // their own within ~30s (see useAuth's role polling) — no need to
-  // revoke/kick them out for it to take effect.
-  async function changeRole(uid: string, email: string, newRole: "business" | "admin") {
-    if (newRole === "admin" && !confirm(`Make ${email} an admin? They'll have full access, equal to you — including the power to manage other admins.`)) {
+  // There's no tier above admin: promoting someone gives them full, equal
+  // power, including editing lender data and managing (promoting/demoting/
+  // revoking) every other admin, you included. The person being changed
+  // picks this up on their own within ~30s (see useAuth's role polling) —
+  // no need to revoke/kick them out for it to take effect.
+  function promote(uid: string, email: string) {
+    if (!confirm(`Make ${email} an admin? They'll have full access, equal to you — including the power to manage other admins.`)) {
       return;
     }
-    setActingOn(uid);
-    setListError(null);
-    try {
-      const token = await getToken();
-      if (!token) return;
-      await adminApi.setAccountRole(token, uid, newRole);
-      await refresh();
-    } catch (err) {
-      setListError(errorMessage(err));
-    } finally {
-      setActingOn(null);
+    void runAction(uid, (token) => adminApi.setAccountRole(token, uid, "admin"));
+  }
+
+  function demote(uid: string, email: string) {
+    if (!confirm(`Move ${email} back to business (Explore-only)? They'll lose the ability to edit lender data or manage admins.`)) {
+      return;
     }
+    void runAction(uid, (token) => adminApi.setAccountRole(token, uid, "business"));
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Manage Admins</h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Everyone who currently has access — business (Explore-only) and admin. There's no tier above admin: any
-          admin can edit lender data and manage every other admin, equally. Change someone's role with the dropdown,
-          or revoke access entirely; revoking is immediate — it doesn't wait for their session to expire.
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Manage Admins</h2>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          Everyone who currently has access. There's no tier above admin — any admin can edit lender data and manage
+          every other admin, equally. Revoking is immediate; it doesn't wait for their session to expire.
         </p>
       </div>
 
@@ -130,71 +107,88 @@ export function ManageAdminsSection({
 
       <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
         <table className="w-full text-base">
-          <thead className="bg-zinc-50 text-left text-sm uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+          <thead className="bg-zinc-100 text-left text-xs font-bold uppercase tracking-wide text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             <tr>
-              <th className="px-5 py-3.5">Email</th>
-              <th className="px-5 py-3.5">Role</th>
-              <th className="px-5 py-3.5" />
+              <th className="px-5 py-4">Person</th>
+              <th className="px-5 py-4">Access</th>
+              <th className="px-5 py-4" />
             </tr>
           </thead>
           <tbody>
             {items?.map((admin) => {
               const isSelf = admin.email === currentUserEmail;
+              const isAdmin = admin.role === "admin";
               return (
                 <tr key={admin.uid} className="border-t border-zinc-100 dark:border-zinc-800">
-                  <td className="px-5 py-3.5 font-medium text-zinc-900 dark:text-zinc-50">
-                    {admin.display_name ?? admin.email}
-                    {isSelf && <span className="ml-2 text-xs font-normal text-zinc-400">(you)</span>}
-                    <div className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
-                      {admin.display_name ? admin.email : null}
-                      {admin.org_role && <span>{admin.display_name ? " · " : ""}{admin.org_role}</span>}
+                  <td className="px-5 py-4 align-top">
+                    <div className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+                      {admin.display_name ?? admin.email}
+                      {isSelf && <span className="ml-2 text-xs font-normal text-zinc-400">(you)</span>}
                     </div>
+                    {admin.display_name && (
+                      <div className="text-sm text-zinc-500 dark:text-zinc-400">{admin.email}</div>
+                    )}
+                    {admin.org_role && <div className="text-sm text-zinc-500 dark:text-zinc-400">{admin.org_role}</div>}
+                  </td>
+                  <td className="px-5 py-4 align-top">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${
+                        isAdmin
+                          ? "bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300"
+                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                      }`}
+                    >
+                      {isAdmin ? "Admin" : "Business"}
+                    </span>
                     {admin.admin_requested && (
-                      <span className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
+                      <span className="ml-2 inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
                         Requested admin access
                       </span>
                     )}
                   </td>
-                  <td className="px-5 py-3.5 text-zinc-500 dark:text-zinc-400">
-                    {isSelf ? (
-                      roleLabel(admin.role)
-                    ) : (
-                      <select
-                        value={admin.role}
-                        disabled={actingOn === admin.uid}
-                        onChange={(e) => changeRole(admin.uid, admin.email, e.target.value as "business" | "admin")}
-                        className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm outline-none focus:border-teal-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-950"
-                      >
-                        <option value="business">{roleLabel("business")}</option>
-                        <option value="admin">{roleLabel("admin")}</option>
-                      </select>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
+                  <td className="px-5 py-4 align-top text-right">
                     {!isSelf && (
-                      <div className="flex flex-wrap items-center justify-end gap-3">
+                      <div className="flex flex-wrap items-center justify-end gap-4">
                         {admin.admin_requested && (
-                          <>
-                            <button
-                              onClick={() => changeRole(admin.uid, admin.email, "admin")}
-                              disabled={actingOn === admin.uid}
-                              className="text-base font-medium text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
-                            >
-                              Approve as admin
-                            </button>
-                            <button
-                              onClick={() => dismissRequest(admin.uid)}
-                              disabled={actingOn === admin.uid}
-                              className="text-base font-medium text-zinc-500 hover:underline disabled:opacity-50 dark:text-zinc-400"
-                            >
-                              Dismiss
-                            </button>
-                          </>
+                          <button
+                            onClick={() => promote(admin.uid, admin.email)}
+                            disabled={actingOn === admin.uid}
+                            className="text-base font-bold text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
+                          >
+                            Approve as admin
+                          </button>
+                        )}
+                        {admin.admin_requested && (
+                          <button
+                            onClick={() => dismissRequest(admin.uid)}
+                            disabled={actingOn === admin.uid}
+                            className="text-base font-medium text-zinc-500 hover:underline disabled:opacity-50 dark:text-zinc-400"
+                          >
+                            Dismiss
+                          </button>
+                        )}
+                        {!admin.admin_requested && !isAdmin && (
+                          <button
+                            onClick={() => promote(admin.uid, admin.email)}
+                            disabled={actingOn === admin.uid}
+                            className="text-base font-bold text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
+                          >
+                            Grant admin access
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
+                            onClick={() => demote(admin.uid, admin.email)}
+                            disabled={actingOn === admin.uid}
+                            className="text-base font-medium text-zinc-500 hover:underline disabled:opacity-50 dark:text-zinc-400"
+                          >
+                            Move to business
+                          </button>
                         )}
                         <button
                           onClick={() => revoke(admin.uid, admin.email)}
                           disabled={actingOn === admin.uid}
-                          className="text-base font-medium text-red-600 hover:underline disabled:opacity-50"
+                          className="text-base font-bold text-red-600 hover:underline disabled:opacity-50"
                         >
                           Revoke access
                         </button>
