@@ -102,6 +102,13 @@ export function AdminAccessRequestScreen({
               </button>
             )}
           </div>
+
+          <Link
+            href="/explore"
+            className="mt-3 flex w-full items-center justify-center rounded-lg bg-zinc-900 px-5 py-3.5 text-sm font-bold text-white shadow-sm transition-transform hover:scale-[1.01] dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            Return to Lenders Page
+          </Link>
         </div>
       </div>
     </div>
