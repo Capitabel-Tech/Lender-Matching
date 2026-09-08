@@ -1,6 +1,6 @@
 "use client";
 
-import { Instrument_Serif, Space_Grotesk } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -24,37 +24,6 @@ import { Reveal } from "./Reveal";
 import { VerifiedRatesTicker, type TickerRate } from "./VerifiedRatesTicker";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
-// Matches capitabel.com/loans' own accent-line treatment exactly — same
-// family, italic, weight 400, same orange (their --orange-500 is our
-// accent-400 hex).
-const instrumentSerif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: "italic" });
-
-// Same decorative flourish as capitabel.com/loans' own hero (a scattered
-// dot spray sitting above the headline) — theirs is canvas-drawn, this is a
-// plain hand-placed SVG since the effect is purely visual, not interactive.
-const HERO_DOTS = [
-  [150, 20, 3, 0.4], [170, 35, 2, 0.25], [130, 15, 4, 0.55], [185, 55, 2.5, 0.3],
-  [140, 45, 5, 0.65], [160, 60, 3, 0.45], [195, 80, 2, 0.2], [120, 70, 4.5, 0.7],
-  [145, 85, 3.5, 0.5], [175, 95, 2.5, 0.35], [105, 40, 2, 0.3], [155, 110, 4, 0.6],
-  [190, 115, 2, 0.25], [130, 100, 3, 0.4], [165, 130, 3.5, 0.55], [110, 90, 2.5, 0.3],
-  [200, 100, 1.5, 0.2], [95, 60, 3, 0.35], [140, 130, 2, 0.25], [180, 140, 3, 0.4],
-  [115, 120, 4, 0.5], [85, 80, 2, 0.2], [150, 145, 2.5, 0.3], [75, 50, 1.5, 0.15],
-  [205, 60, 1.5, 0.15], [90, 110, 2, 0.2],
-] as const;
-
-function HeroDotCluster() {
-  return (
-    <svg
-      viewBox="0 0 220 170"
-      className="pointer-events-none absolute -right-4 -top-8 hidden h-40 w-52 sm:block sm:h-44 sm:w-56 lg:-right-10"
-      aria-hidden="true"
-    >
-      {HERO_DOTS.map(([cx, cy, r, o], i) => (
-        <circle key={i} cx={cx} cy={cy} r={r} fill="#F58220" opacity={o} />
-      ))}
-    </svg>
-  );
-}
 
 // "Product" used to be a 3rd nav link straight to /explore — dropped since
 // the "Check eligibility" button right next to this nav already goes
@@ -170,15 +139,14 @@ export function LandingContent() {
 
       {/* Hero */}
       <section className="relative overflow-hidden px-6 pb-24 pt-20 sm:px-10 sm:pt-28">
-        <div className="relative mx-auto flex max-w-2xl flex-col items-start gap-7 text-left">
-          <HeroDotCluster />
+        <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-7 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#F58220]">
             Rule-Based Lender Matching Engine
           </p>
           <h1 className="text-[36px] font-bold leading-[1.1] tracking-tight sm:text-[52px] lg:text-[60px]">
             One Profile. Every Lender.
             <br />
-            <span className={`${instrumentSerif.className} text-[1.15em] italic text-[#F58220]`}>Your Best Match.</span>
+            <span className="text-[#F58220]">Your Best Match.</span>
           </h1>
           <p className="max-w-lg text-lg text-brand-500">
             The engine that calculates <strong className="font-semibold text-[#16264D]">real eligibility</strong> and{" "}
@@ -188,7 +156,7 @@ export function LandingContent() {
           {/* Just this one hero CTA now, plus the nav's own "Check eligibility" —
               both went to /explore, and a 3rd/4th button here ("Explore Live
               Rates", a "Product" nav link) said the same thing again. */}
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/explore"
               className="group inline-flex items-center gap-2 rounded-full bg-[#F58220] px-7 py-3.5 text-base font-semibold text-[#0F1A33] shadow-[0_0_30px_rgba(245,130,32,0.35)] transition-transform hover:scale-[1.03]"
