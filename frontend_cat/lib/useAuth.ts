@@ -157,9 +157,20 @@ export function useAuth() {
     }
   }
 
+  // Never throws — every caller just wants "get me out" and to move on
+  // (e.g. to /login) regardless of whether the underlying signOut call
+  // succeeds. It can fail transiently (Firebase's IndexedDB persistence
+  // layer throwing "Database is closing" if the tab was backgrounded at
+  // the wrong moment); onAuthStateChanged still resets user/role to null
+  // either way once the tab is active again, so swallowing this here
+  // beats leaving every call site to catch the same unhandled rejection.
   async function logout() {
     if (!auth) return;
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch {
+      // intentionally ignored — see comment above
+    }
   }
 
   async function resetPassword(email: string) {
