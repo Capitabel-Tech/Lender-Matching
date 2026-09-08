@@ -1,10 +1,13 @@
 "use client";
 
 import { Space_Grotesk } from "next/font/google";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { EngineCore } from "@/features/landing/EngineFlow";
+import { checkEmailExists } from "@/lib/api/business";
+import { errorMessage } from "@/lib/api/client";
 import { useAuth } from "@/lib/useAuth";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
@@ -81,9 +84,25 @@ export default function LoginPage() {
     }
     setFormError(null);
     setSubmitting(true);
-    const ok = await resetPassword(email);
-    setSubmitting(false);
-    setResetSent(ok);
+    try {
+      // Checked explicitly first — Firebase's own sendPasswordResetEmail
+      // refuses to say whether an email is registered (its "email
+      // enumeration protection"), so it can't tell a mistyped email apart
+      // from "check your inbox" on its own. See business_api.py's
+      // check-email-exists for the accepted tradeoff on an internal tool.
+      const { exists } = await checkEmailExists(email.trim());
+      if (!exists) {
+        setFormError("No account found with that email — check for typos, or sign up instead.");
+        setSubmitting(false);
+        return;
+      }
+      const ok = await resetPassword(email);
+      setSubmitting(false);
+      setResetSent(ok);
+    } catch (err) {
+      setSubmitting(false);
+      setFormError(errorMessage(err));
+    }
   }
 
   return (
@@ -102,6 +121,12 @@ export default function LoginPage() {
       />
 
       <div className="relative flex w-full max-w-lg flex-col items-center">
+        <Link
+          href="/"
+          className="mb-8 self-start text-sm font-semibold text-[#91A0AE] transition-colors hover:text-[#F5F7FA]"
+        >
+          ← Back to home
+        </Link>
         <div className="mb-10 flex flex-col items-center gap-3 text-center">
           <span className="text-base font-bold tracking-tight">
             Lender<span className="text-[#00D6C9]">Match</span>
@@ -152,7 +177,7 @@ export default function LoginPage() {
               )}
               {resetSent && !error && (
                 <p className="w-full rounded-lg border border-teal-900/50 bg-teal-950/30 px-3 py-2 text-center text-sm text-teal-300">
-                  If an account exists for that email, a reset link is on its way.
+                  Reset link sent — check your email.
                 </p>
               )}
             </>

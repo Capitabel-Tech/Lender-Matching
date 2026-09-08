@@ -1,5 +1,14 @@
 import { apiPost } from "./client";
 
+// Deliberately unauthenticated — called before login, from the login
+// page's "Forgot password?". See backend_cat/app/business_api.py's
+// check-email-exists for why: Firebase's own password-reset call refuses
+// to say whether an email is registered, so this exists specifically so
+// the login page can tell a mistyped email apart from "check your inbox".
+export function checkEmailExists(email: string): Promise<{ exists: boolean }> {
+  return apiPost<{ exists: boolean }, { email: string }>("/api/v1/business/check-email-exists", { email });
+}
+
 // Called once, right after createUserWithEmailAndPassword succeeds — a
 // brand new Firebase account has no role at all until this runs, which is
 // what actually grants "business" (Explore-only) access, the starting tier

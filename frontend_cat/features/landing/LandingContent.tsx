@@ -26,8 +26,11 @@ import { VerifiedRatesTicker, type TickerRate } from "./VerifiedRatesTicker";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
+// "Product" used to be a 3rd nav link straight to /explore — dropped since
+// the "Check eligibility" button right next to this nav already goes
+// there; having both said the same thing twice. These three are same-page
+// anchors, a genuinely different kind of link.
 const NAV_LINKS = [
-  { label: "Product", href: "/explore" },
   { label: "How it works", href: "#how-it-works" },
   { label: "Lenders", href: "#lenders" },
   { label: "About", href: "#" },
@@ -47,7 +50,12 @@ export function LandingContent() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const token = await getToken();
+      // getToken can throw (e.g. a transient "Database is closing" from
+      // Firebase's IndexedDB layer) — this page is public, so a logged-out
+      // or token-less visitor is completely normal, not an error to
+      // surface; either way, fall back to no token rather than letting the
+      // rejection escape unhandled.
+      const token = await getToken().catch(() => null);
       const [ratesResult, banksResult, categoriesResult] = await Promise.all([
         fetchLiveRates(token).catch(() => []),
         exploreBanks(EMPTY_FILTERS, token).catch(() => null),
@@ -109,9 +117,13 @@ export function LandingContent() {
         <span className="text-base font-bold tracking-tight">
           Lender<span className="text-[#00D6C9]">Match</span>
         </span>
-        <nav className="hidden items-center gap-8 text-sm text-[#91A0AE] md:flex">
+        <nav className="hidden items-center gap-2 text-sm md:flex">
           {NAV_LINKS.map((l) => (
-            <Link key={l.label} href={l.href} className="transition-colors hover:text-[#F5F7FA]">
+            <Link
+              key={l.label}
+              href={l.href}
+              className="rounded-full bg-white/[0.06] px-4 py-2 font-bold text-[#F5F7FA] transition-colors hover:bg-white/[0.12]"
+            >
               {l.label}
             </Link>
           ))}
@@ -151,18 +163,15 @@ export function LandingContent() {
               and <strong className="font-semibold text-[#F5F7FA]">true affordability</strong> across{" "}
               {bankCount || "24"}+ lenders in seconds. Stop guessing. Start matching.
             </p>
+            {/* Just this one hero CTA now, plus the nav's own "Check eligibility" —
+                both went to /explore, and a 3rd/4th button here ("Explore Live
+                Rates", a "Product" nav link) said the same thing again. */}
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/explore"
                 className="group inline-flex items-center gap-2 rounded-full bg-[#00D6C9] px-7 py-3.5 text-base font-semibold text-[#050B12] shadow-[0_0_30px_rgba(0,214,201,0.35)] transition-transform hover:scale-[1.03]"
               >
                 Check Your Eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
-              </Link>
-              <Link
-                href="/explore"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-7 py-3.5 text-base font-semibold text-[#F5F7FA] transition-colors hover:border-white/30"
-              >
-                Explore Live Rates (Explore Mode)
               </Link>
             </div>
             <p className="text-xs uppercase tracking-wide text-[#91A0AE]">

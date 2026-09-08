@@ -96,7 +96,11 @@ export function ExplorePage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const token = await getToken();
+      // getToken can throw (e.g. a transient "Database is closing" from
+      // Firebase's IndexedDB layer) — fall back to no token rather than an
+      // unhandled rejection; the .catch below already treats a failed
+      // fetch as non-fatal either way.
+      const token = await getToken().catch(() => null);
       fetchCategories(token)
         .then((categories) => {
           if (!cancelled) setPropertyTypeGroups(categories.property_type_groups);
@@ -115,7 +119,7 @@ export function ExplorePage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const token = await getToken();
+      const token = await getToken().catch(() => null);
       exploreBanks(filters, token)
         .then((response) => {
           if (cancelled) return;

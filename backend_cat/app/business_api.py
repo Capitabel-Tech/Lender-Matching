@@ -29,6 +29,10 @@ class BusinessSignupIn(BaseModel):
     org_role: str = Field(min_length=1, max_length=120)
 
 
+class EmailCheckIn(BaseModel):
+    email: str = Field(min_length=1, max_length=254)
+
+
 @business_router.post("/signup-complete")
 async def complete_business_signup(
     payload: BusinessSignupIn, user: Annotated[LoggedInUser, Depends(_verify_token)]
@@ -44,6 +48,24 @@ async def complete_business_signup(
         app=_firebase_app,
     )
     return {"status": "activated"}
+
+
+@business_router.post("/check-email-exists")
+async def check_email_exists(payload: EmailCheckIn) -> dict[str, bool]:
+    """Deliberately unauthenticated — called from the login page's "Forgot
+    password?" before the visitor has logged in. Firebase's own
+    sendPasswordResetEmail refuses to say whether an email is registered
+    (Google's "email enumeration protection", on by default) so it can't
+    tell a mistyped email apart from "check your inbox" on its own; this
+    exists specifically so the login page can. This does mean anyone who
+    can reach this URL can probe which staff emails have accounts — an
+    accepted tradeoff for an internal, staff-only tool with a small, known
+    set of users, not something to expose on a public signup flow."""
+    try:
+        firebase_auth.get_user_by_email(payload.email.strip(), app=_firebase_app)
+        return {"exists": True}
+    except firebase_auth.UserNotFoundError:
+        return {"exists": False}
 
 
 @business_router.post("/request-admin")
