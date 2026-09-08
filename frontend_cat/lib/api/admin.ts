@@ -61,10 +61,11 @@ export interface AmbakBankOption {
 export interface AdminAccountOut {
   uid: string;
   email: string;
-  role: "business" | "admin";
+  role: "business" | "admin" | ""; // "" when revoked — see `revoked` below
   display_name: string | null;
   org_role: string | null;
   admin_requested: boolean;
+  revoked: boolean;
 }
 
 export interface ActivityLogEntryOut {

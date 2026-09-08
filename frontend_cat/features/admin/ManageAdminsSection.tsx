@@ -84,8 +84,9 @@ export function ManageAdminsSection({
       <div>
         <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Manage Admins</h2>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Everyone who currently has access. There's no tier above admin — any admin can edit lender data and manage
-          every other admin, equally. Revoking is immediate; it doesn't wait for their session to expire.
+          Admins first, then business, then anyone revoked. There's no tier above admin — any admin can edit lender
+          data and manage every other admin, equally. Revoking is immediate; it doesn't wait for their session to
+          expire, and a revoked account can always be granted access again.
         </p>
       </div>
 
@@ -126,12 +127,14 @@ export function ManageAdminsSection({
                   <td className="px-5 py-4 align-top">
                     <span
                       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${
-                        isAdmin
-                          ? "bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300"
-                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                        admin.revoked
+                          ? "bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400"
+                          : isAdmin
+                            ? "bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300"
+                            : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
                       }`}
                     >
-                      {isAdmin ? "Admin" : "Business"}
+                      {admin.revoked ? "Revoked" : isAdmin ? "Admin" : "Business"}
                     </span>
                     {admin.admin_requested && (
                       <span className="ml-2 inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
@@ -166,16 +169,18 @@ export function ManageAdminsSection({
                             disabled={actingOn === admin.uid}
                             className="text-base font-bold text-teal-600 hover:underline disabled:opacity-50 dark:text-teal-400"
                           >
-                            Grant admin access
+                            {admin.revoked ? "Add back as admin" : "Grant admin access"}
                           </button>
                         )}
-                        <button
-                          onClick={() => revoke(admin.uid, admin.email)}
-                          disabled={actingOn === admin.uid}
-                          className="text-base font-bold text-red-600 hover:underline disabled:opacity-50"
-                        >
-                          Revoke access
-                        </button>
+                        {!admin.revoked && (
+                          <button
+                            onClick={() => revoke(admin.uid, admin.email)}
+                            disabled={actingOn === admin.uid}
+                            className="text-base font-bold text-red-600 hover:underline disabled:opacity-50"
+                          >
+                            Revoke access
+                          </button>
+                        )}
                       </div>
                     )}
                   </td>
