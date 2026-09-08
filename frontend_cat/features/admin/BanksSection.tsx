@@ -42,20 +42,23 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   // don't exist yet (mid-creation), so fetching products for them here
   // would 404 and crash for the "doesn't exist yet" case, which is a
   // completely normal state, not an error.
+  const [retryKey, setRetryKey] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
     let retryTimer: number | undefined;
-    async function load() {
-      const token = await getToken();
-      // getToken only returns null in the moment right after login before
-      // Firebase's own state has settled — retry shortly instead of
-      // silently leaving the view stuck with no feedback at all.
-      if (!token) {
-        if (!cancelled) retryTimer = window.setTimeout(load, 300);
-        return;
-      }
-      if (cancelled) return;
+    async function load(attempt = 0) {
       try {
+        // getToken can return null in the moment right after login before
+        // Firebase's own state has settled, or throw (e.g. a transient
+        // "Database is closing" from Firebase's IndexedDB layer if the tab
+        // was backgrounded) — either way, retry shortly instead of
+        // silently leaving the view stuck on the spinner forever.
+        const token = await getToken();
+        if (!token) {
+          if (!cancelled) retryTimer = window.setTimeout(() => load(attempt), 300);
+          return;
+        }
         if (view.name === "list") {
           const data = await adminApi.listBanks(token);
           if (!cancelled) setBanks(data);
@@ -78,6 +81,13 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
         }
         if (!cancelled) setError(null);
       } catch (err) {
+        // A transient Firebase hiccup (e.g. "Database is closing" if the
+        // tab was backgrounded) is common enough to deserve one silent
+        // retry before bothering the user with an error banner.
+        if (attempt === 0) {
+          if (!cancelled) retryTimer = window.setTimeout(() => load(1), 500);
+          return;
+        }
         if (!cancelled) setError(errorMessage(err));
       }
     }
@@ -87,7 +97,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
       window.clearTimeout(retryTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders
-  }, [view]);
+  }, [view, retryKey]);
 
   async function handleCreate(bankName: string, loanType: string, detail: AdminProductDetail) {
     const token = await getToken();
@@ -162,9 +172,21 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   const errorBanner = error && (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
       <span>{error}</span>
-      <button onClick={() => setError(null)} className="font-semibold hover:underline">
-        Dismiss
-      </button>
+      <div className="flex shrink-0 items-center gap-3">
+        <button
+          onClick={() => {
+            setError(null);
+            setBanks(null);
+            setRetryKey((k) => k + 1);
+          }}
+          className="font-semibold hover:underline"
+        >
+          Retry
+        </button>
+        <button onClick={() => setError(null)} className="font-semibold hover:underline">
+          Dismiss
+        </button>
+      </div>
     </div>
   );
 

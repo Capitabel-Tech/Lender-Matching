@@ -113,8 +113,8 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Manage categories</h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Manage categories</h2>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
           Add or remove the values a bank product can be tagged with — new ones show up in every bank's edit form and
           the borrower-facing filters immediately, no code change needed.
         </p>
@@ -136,10 +136,10 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
             className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{CATEGORY_TITLES[category]}</h3>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">{CATEGORY_TITLES[category]}</h3>
               <button
                 onClick={() => startAdd(category)}
-                className="text-sm font-medium text-emerald-600 hover:underline"
+                className="text-sm font-bold text-emerald-600 hover:underline"
               >
                 + Add value
               </button>
@@ -149,7 +149,7 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
               {categories[category].map((option) => (
                 <span
                   key={option.value}
-                  className="flex items-center gap-2 rounded-full border border-zinc-300 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200"
+                  className="flex items-center gap-2 rounded-full border border-zinc-300 bg-zinc-50 px-3.5 py-2 text-sm font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200"
                 >
                   {option.label}
                   <button
@@ -161,7 +161,7 @@ export function CategoriesSection({ getToken }: { getToken: () => Promise<string
                   </button>
                 </span>
               ))}
-              {categories[category].length === 0 && <span className="text-xs text-zinc-400">No values yet.</span>}
+              {categories[category].length === 0 && <span className="text-sm text-zinc-400">No values yet.</span>}
             </div>
 
             {addingTo === category && (

@@ -11,18 +11,20 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
   const [items, setItems] = useState<ActivityLogEntryOut[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
 
+  const [retryKey, setRetryKey] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
     let retryTimer: number | undefined;
 
-    async function load() {
+    async function load(attempt = 0) {
       try {
         const token = await getToken();
         // getToken only returns null in the moment right after login before
         // Firebase's own state has settled — retry shortly instead of
         // silently leaving `items` at null forever with no feedback at all.
         if (!token) {
-          if (!cancelled) retryTimer = window.setTimeout(load, 300);
+          if (!cancelled) retryTimer = window.setTimeout(() => load(attempt), 300);
           return;
         }
         const data = await adminApi.getActivityLog(token);
@@ -31,6 +33,13 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
           setListError(null);
         }
       } catch (err) {
+        // A transient Firebase hiccup (e.g. "Database is closing" if the
+        // tab was backgrounded) is common enough to deserve one silent
+        // retry before bothering the user with an error banner.
+        if (attempt === 0) {
+          if (!cancelled) retryTimer = window.setTimeout(() => load(1), 500);
+          return;
+        }
         if (!cancelled) setListError(errorMessage(err));
       }
     }
@@ -41,7 +50,7 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
       window.clearTimeout(retryTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders, run once on mount
-  }, []);
+  }, [retryKey]);
 
   if (items === null && !listError) {
     return <AdminLoading />;
@@ -59,9 +68,21 @@ export function ActivityLogSection({ getToken }: { getToken: () => Promise<strin
       {listError && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
           <span>{listError}</span>
-          <button onClick={() => setListError(null)} className="font-semibold hover:underline">
-            Dismiss
-          </button>
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              onClick={() => {
+                setListError(null);
+                setItems(null);
+                setRetryKey((k) => k + 1);
+              }}
+              className="font-semibold hover:underline"
+            >
+              Retry
+            </button>
+            <button onClick={() => setListError(null)} className="font-semibold hover:underline">
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
