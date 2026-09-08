@@ -73,14 +73,23 @@ export function useAuth() {
     const interval = window.setInterval(async () => {
       const current = auth.currentUser;
       if (!current) return;
-      const result = await current.getIdTokenResult(true);
-      const nextRole = (result.claims.role as Role | undefined) ?? null;
-      setRole((prevRole) => {
-        if (prevRole !== undefined && nextRole !== prevRole) {
-          setRoleChangeNotice({ from: prevRole, to: nextRole });
-        }
-        return nextRole;
-      });
+      try {
+        const result = await current.getIdTokenResult(true);
+        const nextRole = (result.claims.role as Role | undefined) ?? null;
+        setRole((prevRole) => {
+          if (prevRole !== undefined && nextRole !== prevRole) {
+            setRoleChangeNotice({ from: prevRole, to: nextRole });
+          }
+          return nextRole;
+        });
+      } catch {
+        // The session itself is no longer valid (token expired, account
+        // deleted/revoked, etc.) — not a "role changed" case, just a dead
+        // session. Sign out so onAuthStateChanged resets user/role to null
+        // and RequireAuth sends them back to /login, instead of leaving
+        // this an unhandled rejection every 30s forever.
+        if (auth) void signOut(auth);
+      }
     }, ROLE_POLL_INTERVAL_MS);
     return () => window.clearInterval(interval);
   }, [uid]);
