@@ -15,10 +15,10 @@ const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 function RateChip({ rate }: { rate: LiveRate }) {
   return (
-    <span className="mx-3 inline-flex shrink-0 items-center gap-2 rounded-full bg-white/10 py-1.5 pl-1.5 pr-4 text-sm font-semibold text-white">
+    <span className="mx-3 inline-flex shrink-0 items-center gap-2 rounded-full bg-[#223760]/80 py-1.5 pl-1.5 pr-4 text-sm font-semibold text-white border border-[#334971]">
       <BankLogo bankName={rate.bank_name} size={22} />
       {rate.bank_name}
-      <span className="font-black text-brand-300">{rate.rate_pct.toFixed(2)}%</span>
+      <span className="font-black text-[#F58220] ml-1">{rate.rate_pct.toFixed(2)}%</span>
     </span>
   );
 }
@@ -56,13 +56,13 @@ export function LiveRatesTicker() {
   if (!rates || rates.length === 0 || error) return null;
 
   return (
-    <div className="flex shrink-0 items-center gap-3 overflow-hidden border-t-2 border-brand-800 bg-brand-800 py-2.5 dark:border-brand-500">
-      <div className="flex shrink-0 items-center gap-1.5 pl-4 pr-3">
+    <div className="flex shrink-0 items-center gap-3 overflow-hidden border-t-2 border-[#16264D] bg-[#16264D] py-3 relative z-20">
+      <div className="flex shrink-0 items-center gap-2 pl-6 pr-4 border-r border-[#223760]">
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#EF4444] opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#EF4444] shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
         </span>
-        <span className="text-xs font-black uppercase tracking-widest text-white">Live rates</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Live rates</span>
       </div>
       <div className="group relative flex-1 overflow-hidden">
         <div
