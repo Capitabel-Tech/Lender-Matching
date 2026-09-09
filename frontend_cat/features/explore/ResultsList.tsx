@@ -355,14 +355,14 @@ function BankCard({
         isTopRank ? "border-success-500" : "border-brand-700"
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
           <BankLogo bankName={product.bank_name} size={36} />
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-lg font-bold leading-tight text-brand-800 dark:text-cream-100">{product.bank_name}</h3>
               <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
                   isTopRank ? "bg-success-50 text-success-700" : "bg-brand-100 text-brand-500 dark:bg-brand-600 dark:text-brand-200"
                 }`}
               >
