@@ -341,17 +341,38 @@ function BankCard({
   product,
   requestedLoanAmount,
   filters,
+  rank,
 }: {
   product: ExploreProduct;
   requestedLoanAmount: number | null;
   filters: ExploreFilters;
+  rank: number;
 }) {
+  const isTopRank = rank === 1;
   return (
-    <div className="flex flex-col gap-3 rounded-xl border-l-4 border-brand-700 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:bg-brand-800">
+    <div
+      className={`flex flex-col gap-3 rounded-xl border-l-4 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:bg-brand-800 ${
+        isTopRank ? "border-success-500" : "border-brand-700"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <BankLogo bankName={product.bank_name} size={36} />
-          <h3 className="text-lg font-bold leading-tight text-brand-800 dark:text-cream-100">{product.bank_name}</h3>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold leading-tight text-brand-800 dark:text-cream-100">{product.bank_name}</h3>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  isTopRank ? "bg-success-50 text-success-700" : "bg-brand-100 text-brand-500 dark:bg-brand-600 dark:text-brand-200"
+                }`}
+              >
+                {isTopRank ? "Best rate" : `#${rank}`}
+              </span>
+            </div>
+            <p className="text-xs font-semibold text-brand-500 dark:text-brand-300">
+              {product.interest_rate_pct.toFixed(2)}%{product.interest_rate_is_estimated ? " (est.)" : ""} interest
+            </p>
+          </div>
         </div>
         <span className="shrink-0 rounded-full bg-brand-700 px-3 py-1 text-xs font-bold text-white">
           {product.product_name}
@@ -427,12 +448,13 @@ export function ResultsList({
                 {products.length}
               </span>
             </h3>
-            {products.map((product) => (
+            {products.map((product, i) => (
               <BankCard
                 key={`${product.bank_name}-${product.product_name}`}
                 product={product}
                 requestedLoanAmount={requestedLoanAmount}
                 filters={filters}
+                rank={i + 1}
               />
             ))}
           </div>

@@ -171,7 +171,13 @@ async def explore_banks(
     filter_map = {category: getattr(filters, category) for category in FILTERABLE_CATEGORIES}
     category_values = await load_category_values(session)
 
-    matched = sorted(filter_products(products, filter_map), key=lambda p: (p.bank_name, p.product_name))
+    # Ranked by interest rate ascending (the lowest/best-rate match first),
+    # bank/product name as a tiebreaker only so equal-rate results still
+    # render in a stable, deterministic order.
+    matched = sorted(
+        filter_products(products, filter_map),
+        key=lambda p: (get_bank_interest_rate_pct(p)[0], p.bank_name, p.product_name),
+    )
     facets = facet_counts(products, filter_map, category_values)
 
     return ExploreResponseOut(
