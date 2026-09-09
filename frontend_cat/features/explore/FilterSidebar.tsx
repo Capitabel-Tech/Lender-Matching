@@ -75,18 +75,18 @@ export function FilterSidebar({
     // comes from the --sidebar-pct CSS variable ExplorePage sets, which
     // the drag divider updates — defaults to 60%, user-adjustable from
     // there (sm: and up only; the divider itself is hidden below sm:).
-    <aside className="flex w-full shrink-0 flex-col border-b border-brand-100 bg-cream-100 dark:border-brand-600 dark:bg-brand-950 sm:h-full sm:w-[var(--sidebar-pct)] sm:overflow-y-auto sm:border-b-0 sm:border-r">
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b-2 border-brand-800 bg-cream-100/95 px-5 py-4 backdrop-blur dark:border-brand-50 dark:bg-brand-950/95">
-        <h2 className="flex items-center gap-2.5 text-2xl font-black tracking-tight text-brand-800 dark:text-cream-100">
+    <aside className="flex w-full shrink-0 flex-col border-b border-[#E2E8F0] bg-[#F8FAFC] sm:h-full sm:w-[var(--sidebar-pct)] sm:overflow-y-auto sm:border-b-0 sm:border-r">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E2E8F0] bg-[#F8FAFC]/95 px-5 py-4 backdrop-blur">
+        <h2 className="flex items-center gap-2.5 text-2xl font-black tracking-tight text-[#16264D]">
           Filters
           {activeCount > 0 && (
-            <span className="rounded-full bg-brand-700 px-2.5 py-0.5 text-sm font-bold text-white">{activeCount}</span>
+            <span className="rounded-full bg-[#F58220] px-2.5 py-0.5 text-sm font-extrabold text-white shadow-sm">{activeCount}</span>
           )}
         </h2>
         {showClear && (
           <button
             onClick={onClear}
-            className="flex items-center gap-1 rounded-full border border-brand-700 px-3 py-1 text-sm font-bold text-brand-800 hover:bg-brand-50 dark:border-brand-500 dark:text-brand-400 dark:hover:bg-brand-950/40"
+            className="flex items-center gap-1 rounded-full border border-[#D1DFEF] bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#16264D] shadow-sm hover:bg-[#F1F5F9] transition-all"
           >
             Clear filters
           </button>

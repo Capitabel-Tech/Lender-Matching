@@ -23,23 +23,23 @@ export default function Explore() {
   return (
     <RequireAuth>
       <div className="flex min-h-screen flex-col overflow-visible sm:h-screen sm:overflow-hidden">
-        <header className="flex shrink-0 items-center justify-between border-b border-brand-900 bg-brand-800 px-6 py-4">
+        <header className="flex shrink-0 items-center justify-between border-b border-[#E2E8F0] bg-white px-6 py-4 z-10 relative shadow-sm">
           <div>
             <Link
               href="/"
-              className="mb-1.5 inline-flex items-center gap-1 text-xs font-semibold text-brand-300 hover:text-brand-300"
+              className="mb-1.5 inline-flex items-center gap-1 text-xs font-bold text-[#5F75A0] hover:text-[#16264D] transition-colors"
             >
               ← Back to Home
             </Link>
-            <div className="flex flex-wrap items-center gap-2">
-              <Link href="/" className="text-xl font-bold tracking-tight text-white hover:text-brand-300">
-                Explore <span className="text-brand-400">Lenders</span>
+            <div className="flex flex-wrap items-center gap-3 mt-0.5">
+              <Link href="/" className="text-2xl font-extrabold tracking-tight text-[#16264D]">
+                Lender<span className="text-[#F58220]">Match</span> Engine
               </Link>
-              <span className="rounded-full border border-brand-800 bg-brand-950/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-400">
-                Lender Match Engine v1.0
+              <span className="rounded-full border border-[#F58220]/20 bg-[#F58220]/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#F58220]">
+                Live Mode
               </span>
             </div>
-            <p className="text-xs text-brand-300">
+            <p className="text-xs font-medium text-[#5F75A0] mt-1.5">
               Browse the loaded bank data by employment type and property filters.
             </p>
           </div>

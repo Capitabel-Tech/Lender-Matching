@@ -30,9 +30,9 @@ const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", 
 // there; having both said the same thing twice. These three are same-page
 // anchors, a genuinely different kind of link.
 const NAV_LINKS = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Lenders", href: "#lenders" },
-  { label: "About", href: "#" },
+  { label: "The Engine", href: "#how-it-works" },
+  { label: "Bank Network", href: "#lenders" },
+  { label: "Live Ranking", href: "#live-ranking" },
 ] as const;
 
 // Fetched client-side, after RequireAuth (see app/page.tsx) confirms a real
@@ -113,15 +113,15 @@ export function LandingContent() {
     <div className={`${spaceGrotesk.className} flex flex-1 flex-col pb-14 text-[#16264D]`}>
       {/* Header — minimal, floating, transparent + blur */}
       <header className="sticky top-0 z-50 flex shrink-0 items-center justify-between border-b border-brand-100 bg-white/80 px-6 py-4 backdrop-blur-md sm:px-10">
-        <span className="text-base font-bold tracking-tight">
-          Lender<span className="text-[#F58220]">Match</span>
+        <span className="text-2xl font-extrabold tracking-tight">
+          Lender<span className="text-[#F58220]">Match</span> Engine
         </span>
-        <nav className="hidden items-center gap-2 text-sm md:flex">
+        <nav className="hidden items-center gap-4 text-sm md:flex">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.label}
               href={l.href}
-              className="rounded-full bg-brand-50 px-4 py-2 font-bold text-[#16264D] transition-colors hover:bg-brand-100"
+              className="rounded-full bg-[#16264D] px-6 py-2.5 font-extrabold text-white shadow-md transition-all hover:bg-[#223760] hover:scale-105 hover:shadow-lg"
             >
               {l.label}
             </Link>
@@ -138,15 +138,15 @@ export function LandingContent() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden px-6 pb-24 pt-20 sm:px-10 sm:pt-28">
-        <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-7 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#F58220]">
+      <section className="relative overflow-hidden px-6 pb-24 pt-20 sm:px-10 sm:pt-28 lg:pl-48">
+        <div className="relative flex w-full max-w-7xl flex-col items-start gap-7 text-left">
+          <p className="inline-block text-base sm:text-lg font-bold uppercase tracking-[0.15em] text-[#F58220] bg-[#F58220]/10 border border-[#F58220]/20 px-5 py-2 rounded-full">
             Rule-Based Lender Matching Engine
           </p>
-          <h1 className="text-[36px] font-bold leading-[1.1] tracking-tight sm:text-[52px] lg:text-[60px]">
+          <h1 className="text-[44px] font-bold leading-[1.1] tracking-tight sm:text-[60px] lg:text-[72px]">
             One Profile. Every Lender.
             <br />
-            <span className="text-[#F58220]">Your Best Match.</span>
+            <span className="font-serif italic text-[#F58220]">Your Best Match.</span>
           </h1>
           <p className="max-w-lg text-lg text-brand-500">
             The engine that calculates <strong className="font-semibold text-[#16264D]">real eligibility</strong> and{" "}
@@ -156,7 +156,7 @@ export function LandingContent() {
           {/* Just this one hero CTA now, plus the nav's own "Check eligibility" —
               both went to /explore, and a 3rd/4th button here ("Explore Live
               Rates", a "Product" nav link) said the same thing again. */}
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-start gap-4">
             <Link
               href="/explore"
               className="group inline-flex items-center gap-2 rounded-full bg-[#F58220] px-7 py-3.5 text-base font-semibold text-[#0F1A33] shadow-[0_0_30px_rgba(245,130,32,0.35)] transition-transform hover:scale-[1.03]"
@@ -171,20 +171,20 @@ export function LandingContent() {
       </section>
 
       {/* How the engine thinks — 3 feature cards */}
-      <section id="how-it-works" className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-7xl flex-col gap-12">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">How the Engine Thinks</h2>
+      <section id="how-it-works" className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10 lg:pl-48 lg:pr-48">
+        <Reveal className="flex w-full flex-col gap-12">
+          <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-[#16264D]">How the Engine Thinks</h2>
           <FeatureCards />
         </Reveal>
       </section>
 
       {/* Explore Mode preview */}
-      <section className="px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-7xl flex-col gap-10">
+      <section className="px-6 py-24 sm:px-10 lg:pl-48 lg:pr-48">
+        <Reveal className="flex w-full flex-col gap-10">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">Explore Mode</h2>
-            <p className="mt-3 max-w-xl text-brand-500">
-              Browse lenders by employment type and property filters before committing to a full profile.
+            <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-[#16264D]">Interactive Lender Match</h2>
+            <p className="mt-3 max-w-2xl text-lg text-brand-500">
+              Play with the rules yourself. Toggle employment types, loan amounts, and property filters in real-time, and watch our engine calculate exactly which of our {bankCount || "24"}+ lenders will accept your application. No guesswork, just hard data.
             </p>
           </div>
           <ExploreModePreview bankCount={bankCount} sampleBankName={topMatchName} sampleRatePct={topMatchRate} />
@@ -192,28 +192,32 @@ export function LandingContent() {
       </section>
 
       {/* One engine, every lender's rules */}
-      <section id="lenders" className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-7xl flex-col items-center gap-14 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-            One engine.
-            <br />
-            Every lender&rsquo;s rules.
-          </h2>
+      <section id="lenders" className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10 lg:pl-48 lg:pr-48">
+        <Reveal className="flex w-full flex-col items-start gap-14 text-left">
+          <div className="flex flex-col gap-6 max-w-4xl">
+            <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-[#16264D]">
+              One Unified Engine.<br />
+              Every Lender's Exact Rules.
+            </h2>
+            <p className="text-lg leading-relaxed text-[#5F75A0] font-medium">
+              We&rsquo;ve codified the strict underwriting policies of India&rsquo;s top financial institutions into a single, high-speed matching algorithm. By cross-referencing your unique profile against hundreds of hidden banking parameters, we instantly identify the lenders most likely to approve and fund your loan.
+            </p>
+          </div>
           <LendersFlow names={networkNodeNames} />
           <LendersFlowMobile names={networkNodeNames} />
         </Reveal>
       </section>
 
       {/* Match score */}
-      <section className="px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-3xl flex-col gap-10">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
+      <section id="live-ranking" className="px-6 py-24 sm:px-10 lg:pl-48 lg:pr-48">
+        <Reveal className="flex w-full flex-col gap-10">
+          <div className="text-left max-w-3xl">
+            <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-[#16264D]">
               Not just eligible.
               <br />
               Ranked.
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-brand-500">
+            <p className="mt-4 max-w-lg text-brand-500">
               We evaluate lender-specific rules and rank the lenders that best fit the borrower.
             </p>
           </div>
@@ -222,43 +226,49 @@ export function LandingContent() {
       </section>
 
       {/* Before / after */}
-      <section className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto flex max-w-4xl flex-col gap-12">
-          <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl">Guessing vs. matching.</h2>
+      <section className="border-t border-brand-100 bg-cream-50 px-6 py-24 sm:px-10 lg:pl-48 lg:pr-48">
+        <Reveal className="flex w-full flex-col gap-12">
+          <h2 className="text-left text-4xl font-extrabold tracking-tight sm:text-5xl text-[#16264D]">Guessing vs. matching.</h2>
           <BeforeAfter />
         </Reveal>
       </section>
 
       {/* Metrics */}
-      <section className="px-6 py-24 sm:px-10">
-        <Reveal className="mx-auto max-w-5xl">
+      <section className="px-6 py-24 sm:px-10 lg:pl-48 lg:pr-48">
+        <Reveal className="flex w-full">
           <Metrics metrics={metrics} />
         </Reveal>
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden border-t border-brand-100 bg-cream-50 px-6 py-28 text-center sm:px-10">
+      <section className="relative overflow-hidden bg-[#16264D] px-6 py-32 text-center sm:px-10 lg:pl-48 lg:pr-48 mt-24">
+        {/* Glow Effects */}
+        <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-color-dodge" style={{ backgroundImage: "url('/noise.png')", backgroundSize: "150px 150px" }}></div>
         <div
-          className="pointer-events-none absolute inset-0 opacity-40"
-          style={{ background: "radial-gradient(circle at 50% 40%, rgba(245,130,32,0.12) 0%, transparent 60%)" }}
+          className="pointer-events-none absolute inset-0 opacity-60"
+          style={{ background: "radial-gradient(circle at 50% 100%, rgba(245,130,32,0.15) 0%, transparent 60%)" }}
         />
-        <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6">
-          <h2 className="text-4xl font-bold leading-tight tracking-tight sm:text-6xl">
-            Stop guessing.
-            <br />
-            Start matching.
-          </h2>
-          <p className="text-lg text-brand-500">Find lenders whose rules actually fit your profile.</p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="relative flex w-full flex-col items-center gap-8 z-10">
+          <div className="flex flex-col gap-4 max-w-3xl">
+            <h2 className="text-5xl font-black leading-tight tracking-tighter sm:text-7xl text-white">
+              Stop guessing.<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#8B9DBB]">Start matching.</span>
+            </h2>
+            <p className="text-xl font-medium text-[#8B9DBB] max-w-xl mx-auto mt-2">
+              Bypass the manual paperwork and let our engine instantly identify the exact lenders whose underwriting rules fit your profile.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
             <Link
               href="/explore"
-              className="group inline-flex items-center gap-2 rounded-full bg-[#F58220] px-8 py-4 text-lg font-semibold text-[#0F1A33] shadow-[0_0_30px_rgba(245,130,32,0.35)] transition-transform hover:scale-[1.03]"
+              className="group inline-flex items-center gap-2 rounded-full bg-[#F58220] px-10 py-5 text-lg font-extrabold text-white shadow-[0_0_40px_rgba(245,130,32,0.4)] transition-all hover:scale-[1.03] hover:shadow-[0_0_60px_rgba(245,130,32,0.6)]"
             >
-              Check your eligibility <span className="transition-transform group-hover:translate-x-0.5">→</span>
+              Check your eligibility <span className="transition-transform group-hover:translate-x-1">→</span>
             </Link>
             <a
               href="#how-it-works"
-              className="inline-flex items-center gap-2 rounded-full border border-brand-300 px-8 py-4 text-lg font-semibold text-[#16264D] hover:border-brand-500"
+              className="inline-flex items-center gap-2 rounded-full border border-[#334971] bg-[#223760]/50 px-10 py-5 text-lg font-bold text-white transition-colors hover:bg-[#334971]/50 hover:border-[#8B9DBB]"
             >
               Explore the engine
             </a>

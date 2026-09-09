@@ -37,34 +37,34 @@ function OptionRow({
   const disabled = option.count === 0 && !checked;
   return (
     <label
-      className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2.5 text-base transition-colors ${
+      className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl px-3 py-3 text-sm transition-all ${
         checked
-          ? "bg-brand-50 dark:bg-brand-950/40"
+          ? "bg-[#FFF4EC] border border-[#FFE4CD]"
           : disabled
-            ? "cursor-not-allowed opacity-40"
-            : "hover:bg-brand-50 dark:hover:bg-brand-600"
+            ? "cursor-not-allowed opacity-40 border border-transparent"
+            : "hover:bg-[#F8FAFC] border border-transparent"
       }`}
     >
-      <span className="flex items-center gap-2.5">
+      <span className="flex items-center gap-3">
         <input
           type={mode}
           name={mode === "radio" ? groupName : undefined}
           checked={checked}
           disabled={disabled}
           onChange={() => onToggle(option.value)}
-          className={`h-5 w-5 border-brand-300 text-brand-700 focus:ring-2 focus:ring-brand-500 dark:border-brand-500 ${mode === "checkbox" ? "rounded" : "rounded-full"}`}
+          className={`h-5 w-5 border-[#CBD5E1] text-[#F58220] focus:ring-2 focus:ring-[#F58220]/30 ${mode === "checkbox" ? "rounded bg-white" : "rounded-full bg-white"}`}
         />
-        <span className={`font-semibold ${checked ? "text-brand-900 dark:text-brand-200" : "text-brand-600 dark:text-brand-100"}`}>
+        <span className={`font-extrabold tracking-tight ${checked ? "text-[#C2590A]" : "text-[#16264D]"}`}>
           {option.label}
         </span>
       </span>
       <span
-        className={`min-w-[1.75rem] rounded-full px-1.5 py-0.5 text-center text-xs font-bold ${
+        className={`min-w-[1.75rem] rounded-full px-2 py-0.5 text-center text-[10px] uppercase font-bold tracking-wider ${
           checked
-            ? "bg-brand-700 text-white"
+            ? "bg-[#F58220] text-white shadow-sm"
             : option.count === 0
-              ? "text-brand-200 dark:text-brand-500"
-              : "bg-brand-50 text-brand-500 dark:bg-brand-600 dark:text-brand-300"
+              ? "text-[#94A3B8]"
+              : "bg-[#F1F5F9] text-[#5F75A0]"
         }`}
       >
         {option.count}
@@ -77,8 +77,8 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups, mod
   const byValue = new Map(options.map((o) => [o.value, o]));
 
   return (
-    <div className="rounded-xl border border-brand-100 bg-white p-4 shadow-sm dark:border-brand-600 dark:bg-brand-800">
-      <h3 className="mb-3 border-l-4 border-brand-700 pl-2.5 text-base font-black uppercase tracking-wide text-brand-800 dark:text-cream-100">
+    <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm transition-all hover:border-[#D1DFEF]">
+      <h3 className="mb-4 border-l-4 border-[#F58220] pl-3 text-sm font-black uppercase tracking-widest text-[#16264D]">
         {title}
       </h3>
       {subgroups ? (
@@ -91,7 +91,7 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups, mod
             if (availableValues.length === 0) return null;
             return (
               <div key={group.heading}>
-                <p className="mb-1 px-2 text-xs font-bold uppercase tracking-wide text-brand-500 dark:text-brand-300">
+                <p className="mb-1.5 mt-2 px-2 text-[10px] font-bold uppercase tracking-widest text-[#5F75A0]">
                   {group.heading}
                 </p>
                 <div className="flex flex-col">
