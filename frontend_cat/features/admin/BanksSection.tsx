@@ -23,7 +23,7 @@ type View =
   | { name: "add-new-bank" };
 
 export function BanksSection({ getToken }: { getToken: () => Promise<string | null> }) {
-  const [categories] = useCategories();
+  const [categories, retryCategories, categoriesError] = useCategories(getToken);
   const [view, setView] = useState<View>({ name: "list" });
   const [banks, setBanks] = useState<AdminBankSummary[] | null>(null);
   const [bankProducts, setBankProducts] = useState<AdminProductOut[] | null>(null);
@@ -42,12 +42,23 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   // don't exist yet (mid-creation), so fetching products for them here
   // would 404 and crash for the "doesn't exist yet" case, which is a
   // completely normal state, not an error.
+  const [retryKey, setRetryKey] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
-    async function load() {
-      const token = await getToken();
-      if (!token || cancelled) return;
+    let retryTimer: number | undefined;
+    async function load(attempt = 0) {
       try {
+        // getToken can return null in the moment right after login before
+        // Firebase's own state has settled, or throw (e.g. a transient
+        // "Database is closing" from Firebase's IndexedDB layer if the tab
+        // was backgrounded) — either way, retry shortly instead of
+        // silently leaving the view stuck on the spinner forever.
+        const token = await getToken();
+        if (!token) {
+          if (!cancelled) retryTimer = window.setTimeout(() => load(attempt), 300);
+          return;
+        }
         if (view.name === "list") {
           const data = await adminApi.listBanks(token);
           if (!cancelled) setBanks(data);
@@ -70,15 +81,23 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
         }
         if (!cancelled) setError(null);
       } catch (err) {
+        // A transient Firebase hiccup (e.g. "Database is closing" if the
+        // tab was backgrounded) is common enough to deserve one silent
+        // retry before bothering the user with an error banner.
+        if (attempt === 0) {
+          if (!cancelled) retryTimer = window.setTimeout(() => load(1), 500);
+          return;
+        }
         if (!cancelled) setError(errorMessage(err));
       }
     }
     load();
     return () => {
       cancelled = true;
+      window.clearTimeout(retryTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- getToken is stable across renders
-  }, [view]);
+  }, [view, retryKey]);
 
   async function handleCreate(bankName: string, loanType: string, detail: AdminProductDetail) {
     const token = await getToken();
@@ -146,16 +165,39 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   const loanLabelFor = (value: string) => categories?.loan_type.find((t) => t.value === value)?.label ?? value;
   const employmentLabelFor = (value: string) => categories?.employment_type.find((t) => t.value === value)?.label ?? value;
 
-  if (!categories) {
+  if (!categories && categoriesError) {
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+        <span>{categoriesError}</span>
+        <button onClick={retryCategories} className="font-semibold hover:underline">
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!categories || (view.name === "list" && banks === null && !error)) {
     return <AdminLoading />;
   }
 
   const errorBanner = error && (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
       <span>{error}</span>
-      <button onClick={() => setError(null)} className="font-semibold hover:underline">
-        Dismiss
-      </button>
+      <div className="flex shrink-0 items-center gap-3">
+        <button
+          onClick={() => {
+            setError(null);
+            setBanks(null);
+            setRetryKey((k) => k + 1);
+          }}
+          className="font-semibold hover:underline"
+        >
+          Retry
+        </button>
+        <button onClick={() => setError(null)} className="font-semibold hover:underline">
+          Dismiss
+        </button>
+      </div>
     </div>
   );
 
@@ -167,14 +209,14 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
       <div className="flex flex-col gap-4">
         {errorBanner}
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">Banks</h2>
+          <h2 className="text-2xl font-black tracking-tight text-brand-800 dark:text-cream-100">Banks</h2>
           <button
             onClick={() => {
               setNewBankName("");
               setError(null);
               setView({ name: "add-new-bank" });
             }}
-            className="rounded-lg bg-teal-600 px-5 py-2.5 text-base font-bold text-white hover:bg-teal-700"
+            className="rounded-lg bg-brand-700 px-5 py-2.5 text-base font-bold text-white hover:bg-brand-800"
           >
             + Add new bank
           </button>
@@ -184,12 +226,12 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search banks by name…"
-          className="w-full rounded-lg border border-zinc-300 px-3.5 py-2.5 text-base outline-none focus:border-teal-500 dark:border-zinc-700 dark:bg-zinc-950"
+          className="w-full rounded-lg border border-brand-200 px-3.5 py-2.5 text-base outline-none focus:border-brand-500 dark:border-brand-600 dark:bg-brand-950"
         />
 
-        <div className="overflow-x-auto rounded-2xl border border-zinc-200 shadow-sm dark:border-zinc-800">
+        <div className="overflow-x-auto rounded-2xl border border-brand-100 shadow-sm dark:border-brand-600">
           <table className="w-full text-base">
-            <thead className="border-b-2 border-teal-600 bg-teal-50 text-left text-sm font-black uppercase tracking-wide text-teal-900 dark:bg-teal-950/40 dark:text-teal-200">
+            <thead className="border-b-2 border-brand-700 bg-brand-50 text-left text-sm font-black uppercase tracking-wide text-brand-900 dark:bg-brand-950/40 dark:text-brand-200">
               <tr>
                 <th className="px-5 py-3.5">Bank name</th>
                 <th className="px-5 py-3.5">Source</th>
@@ -199,10 +241,10 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
             </thead>
             <tbody>
               {filteredBanks?.map((bank) => (
-                <tr key={bank.bank_name} className="border-t border-zinc-100 dark:border-zinc-800">
-                  <td className="px-5 py-3.5 font-bold text-zinc-900 dark:text-zinc-50">{bank.bank_name}</td>
-                  <td className="px-5 py-3.5 font-bold text-zinc-700 dark:text-zinc-300">{bank.source}</td>
-                  <td className="px-5 py-3.5 font-bold text-zinc-700 dark:text-zinc-300">
+                <tr key={bank.bank_name} className="border-t border-brand-50 dark:border-brand-600">
+                  <td className="px-5 py-3.5 font-bold text-brand-800 dark:text-cream-100">{bank.bank_name}</td>
+                  <td className="px-5 py-3.5 font-bold text-brand-600 dark:text-brand-200">{bank.source}</td>
+                  <td className="px-5 py-3.5 font-bold text-brand-600 dark:text-brand-200">
                     {bank.employment_types.map(employmentLabelFor).join(", ") || "—"}
                   </td>
                   <td className="px-5 py-3.5 text-right">
@@ -211,7 +253,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
                         setError(null);
                         setView({ name: "bank", bankName: bank.bank_name });
                       }}
-                      className="text-base font-bold text-teal-700 hover:underline dark:text-teal-400"
+                      className="text-base font-bold text-brand-800 hover:underline dark:text-brand-400"
                     >
                       Manage
                     </button>
@@ -220,7 +262,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
               ))}
               {filteredBanks?.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-6 text-center text-zinc-400">
+                  <td colSpan={4} className="px-5 py-6 text-center text-brand-300">
                     No banks match &ldquo;{search}&rdquo;.
                   </td>
                 </tr>
@@ -235,16 +277,16 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   if (view.name === "add-new-bank") {
     return (
       <div className="flex flex-col gap-4">
-        <button onClick={() => setView({ name: "list" })} className="w-fit text-sm text-zinc-500 hover:underline">
+        <button onClick={() => setView({ name: "list" })} className="w-fit text-sm text-brand-500 hover:underline">
           ← Back to banks
         </button>
-        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Bank name</label>
+        <div className="flex flex-col gap-3 rounded-2xl border border-brand-100 bg-white p-6 dark:border-brand-600 dark:bg-brand-800">
+          <label className="text-sm font-medium text-brand-600 dark:text-brand-200">Bank name</label>
           <BankNameCombobox value={newBankName} onChange={setNewBankName} getToken={getToken} />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             onClick={handleAddNewBankSubmit}
-            className="w-fit rounded-lg bg-teal-600 px-5 py-2 text-sm font-bold text-white hover:bg-teal-700"
+            className="w-fit rounded-lg bg-brand-700 px-5 py-2 text-sm font-bold text-white hover:bg-brand-800"
           >
             Continue
           </button>
@@ -256,12 +298,12 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
   if (view.name === "bank") {
     return (
       <div className="flex flex-col gap-4">
-        <button onClick={() => setView({ name: "list" })} className="w-fit text-sm text-zinc-500 hover:underline">
+        <button onClick={() => setView({ name: "list" })} className="w-fit text-sm text-brand-500 hover:underline">
           ← Back to banks
         </button>
         {errorBanner}
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">{view.bankName}</h3>
+          <h3 className="text-base font-bold text-brand-800 dark:text-cream-100">{view.bankName}</h3>
           <button
             onClick={() => handleDeleteBank(view.bankName)}
             className="text-sm font-bold text-red-600 hover:underline"
@@ -269,24 +311,24 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
             Delete this bank
           </button>
         </div>
-        <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">Select the loan type to view or update its details.</p>
+        <p className="text-sm font-bold text-brand-500 dark:text-brand-300">Select the loan type to view or update its details.</p>
         <div className="flex flex-col gap-3">
           {categories.loan_type.map(({ value: loanType }) => {
             const count = bankProducts?.filter((p) => p.loan_type === loanType).length ?? 0;
             return (
               <div
                 key={loanType}
-                className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                className="flex items-center justify-between rounded-xl border border-brand-100 bg-white p-4 dark:border-brand-600 dark:bg-brand-800"
               >
                 <div>
-                  <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">{loanLabelFor(loanType)}</p>
-                  <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm font-bold text-brand-800 dark:text-cream-100">{loanLabelFor(loanType)}</p>
+                  <p className="text-xs font-bold text-brand-500 dark:text-brand-300">
                     {count === 0 ? "No employment types yet" : `${count} employment type${count === 1 ? "" : "s"}`}
                   </p>
                 </div>
                 <button
                   onClick={() => setView({ name: "loan-type", bankName: view.bankName, loanType })}
-                  className="text-sm font-bold text-teal-700 hover:underline dark:text-teal-400"
+                  className="text-sm font-bold text-brand-800 hover:underline dark:text-brand-400"
                 >
                   Manage
                 </button>
@@ -310,24 +352,24 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
     const goBack = () => setView(onlyOneLoanType ? { name: "list" } : { name: "bank", bankName: view.bankName });
     return (
       <div className="flex flex-col gap-4">
-        <button onClick={goBack} className="w-fit text-sm text-zinc-500 hover:underline">
+        <button onClick={goBack} className="w-fit text-sm text-brand-500 hover:underline">
           ← Back to {onlyOneLoanType ? "banks" : view.bankName}
         </button>
         {errorBanner}
-        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+        <h3 className="text-base font-bold text-brand-800 dark:text-cream-100">
           {view.bankName} — {loanLabelFor(view.loanType)}
         </h3>
         <div className="flex flex-col gap-3">
           {productsInLoanType.map((product) => (
             <div
               key={product.employment_type}
-              className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+              className="flex items-center justify-between rounded-xl border border-brand-100 bg-white p-4 dark:border-brand-600 dark:bg-brand-800"
             >
               <div>
-                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
+                <p className="text-sm font-bold text-brand-800 dark:text-cream-100">
                   {employmentLabelFor(product.employment_type)}
                 </p>
-                <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs font-bold text-brand-500 dark:text-brand-300">
                   Rate {product.interest_rate_pct}%
                   {product.interest_rate_upper_pct ? `–${product.interest_rate_upper_pct}%` : ""} · FOIR{" "}
                   {product.foir_pct ?? "—"}% · Tenure {product.max_tenure_years ?? "—"} yrs
@@ -336,7 +378,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
               <div className="flex gap-3">
                 <button
                   onClick={() => setView({ name: "edit", bankName: view.bankName, product })}
-                  className="text-sm font-bold text-teal-700 hover:underline dark:text-teal-400"
+                  className="text-sm font-bold text-brand-800 hover:underline dark:text-brand-400"
                 >
                   View / Edit
                 </button>
@@ -350,7 +392,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
             </div>
           ))}
           {productsInLoanType.length === 0 && (
-            <p className="rounded-xl border border-dashed border-zinc-300 p-4 text-center text-sm text-zinc-400 dark:border-zinc-700">
+            <p className="rounded-xl border border-dashed border-brand-200 p-4 text-center text-sm text-brand-300 dark:border-brand-600">
               No employment types under {loanLabelFor(view.loanType)} yet.
             </p>
           )}
@@ -358,7 +400,7 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
         {missingEmploymentTypes.length > 0 && (
           <button
             onClick={() => setView({ name: "add-product", bankName: view.bankName, loanType: view.loanType })}
-            className="w-fit rounded-lg border border-teal-600 px-4 py-2 text-sm font-bold text-teal-700 hover:bg-teal-50 dark:text-teal-400 dark:hover:bg-teal-950/40"
+            className="w-fit rounded-lg border border-brand-700 px-4 py-2 text-sm font-bold text-brand-800 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-950/40"
           >
             + Add another employment type
           </button>
@@ -375,11 +417,11 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
     const goBack = () => setView(view.isNewBank ? { name: "list" } : { name: "bank", bankName: view.bankName });
     return (
       <div className="flex flex-col gap-4">
-        <button onClick={goBack} className="w-fit text-sm text-zinc-500 hover:underline">
+        <button onClick={goBack} className="w-fit text-sm text-brand-500 hover:underline">
           ← Back
         </button>
         {errorBanner}
-        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">Add a loan type for {view.bankName}</h3>
+        <h3 className="text-base font-bold text-brand-800 dark:text-cream-100">Add a loan type for {view.bankName}</h3>
         <ProductDetailForm
           categories={categories}
           submitLabel="Add product"
@@ -398,11 +440,11 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
     );
     return (
       <div className="flex flex-col gap-4">
-        <button onClick={goBack} className="w-fit text-sm text-zinc-500 hover:underline">
+        <button onClick={goBack} className="w-fit text-sm text-brand-500 hover:underline">
           ← Back
         </button>
         {errorBanner}
-        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+        <h3 className="text-base font-bold text-brand-800 dark:text-cream-100">
           Add an employment type under {loanLabelFor(view.loanType)} for {view.bankName}
         </h3>
         <ProductDetailForm
@@ -422,11 +464,11 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
     const goBack = () => setView({ name: "loan-type", bankName: view.bankName, loanType: view.product.loan_type });
     return (
       <div className="flex flex-col gap-4">
-        <button onClick={goBack} className="w-fit text-sm text-zinc-500 hover:underline">
+        <button onClick={goBack} className="w-fit text-sm text-brand-500 hover:underline">
           ← Back to {loanLabelFor(view.product.loan_type)}
         </button>
         {errorBanner}
-        <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+        <h3 className="text-base font-bold text-brand-800 dark:text-cream-100">
           {view.bankName} — {loanLabelFor(view.product.loan_type)} — {employmentLabelFor(view.product.employment_type)}
         </h3>
         <ProductDetailForm

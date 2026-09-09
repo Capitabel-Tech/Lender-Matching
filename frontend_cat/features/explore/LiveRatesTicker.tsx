@@ -18,7 +18,7 @@ function RateChip({ rate }: { rate: LiveRate }) {
     <span className="mx-3 inline-flex shrink-0 items-center gap-2 rounded-full bg-white/10 py-1.5 pl-1.5 pr-4 text-sm font-semibold text-white">
       <BankLogo bankName={rate.bank_name} size={22} />
       {rate.bank_name}
-      <span className="font-black text-teal-300">{rate.rate_pct.toFixed(2)}%</span>
+      <span className="font-black text-brand-300">{rate.rate_pct.toFixed(2)}%</span>
     </span>
   );
 }
@@ -56,7 +56,7 @@ export function LiveRatesTicker() {
   if (!rates || rates.length === 0 || error) return null;
 
   return (
-    <div className="flex shrink-0 items-center gap-3 overflow-hidden border-t-2 border-zinc-900 bg-zinc-900 py-2.5 dark:border-teal-500">
+    <div className="flex shrink-0 items-center gap-3 overflow-hidden border-t-2 border-brand-800 bg-brand-800 py-2.5 dark:border-brand-500">
       <div className="flex shrink-0 items-center gap-1.5 pl-4 pr-3">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />

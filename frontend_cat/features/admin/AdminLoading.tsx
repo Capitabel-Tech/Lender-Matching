@@ -5,8 +5,8 @@
 export function AdminLoading() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-20">
-      <span className="h-10 w-10 animate-spin rounded-full border-4 border-teal-100 border-t-teal-600 dark:border-teal-950 dark:border-t-teal-400" />
-      <p className="text-sm font-bold uppercase tracking-wide text-teal-700 dark:text-teal-400">Loading…</p>
+      <span className="h-10 w-10 animate-spin rounded-full border-4 border-brand-100 border-t-brand-700 dark:border-brand-950 dark:border-t-brand-400" />
+      <p className="text-sm font-bold uppercase tracking-wide text-brand-800 dark:text-brand-400">Loading…</p>
     </div>
   );
 }

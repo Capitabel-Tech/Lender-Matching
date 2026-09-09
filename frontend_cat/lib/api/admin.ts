@@ -58,28 +58,20 @@ export interface AmbakBankOption {
   name: string;
 }
 
-export interface AccessRequestOut {
-  uid: string;
-  email: string;
-  name: string | null;
-  phone: string | null;
-  requested_at: string | null;
-}
-
-export interface AdminStatusOut {
-  email: string;
-  role: "admin" | "super_admin" | null;
-  has_profile: boolean;
-}
-
 export interface AdminAccountOut {
   uid: string;
   email: string;
-  role: "admin" | "super_admin";
+  role: "business" | "admin"; // a revoked account lands back at "business" — see `revoked` below
+  display_name: string | null;
+  org_role: string | null;
+  admin_requested: boolean;
+  revoked: boolean;
+  protected: boolean;
 }
 
 export interface ActivityLogEntryOut {
   actor_email: string;
+  actor_name: string | null;
   action: string;
   ip_address: string | null;
   created_at: string;
@@ -162,18 +154,6 @@ export const adminApi = {
       { method: "DELETE" },
     ),
 
-  listAccessRequests: (token: string) => adminRequest<AccessRequestOut[]>("/api/v1/admin/access-requests", token),
-
-  approveAccessRequest: (token: string, uid: string) =>
-    adminRequest<{ status: string }>(`/api/v1/admin/access-requests/${encodeURIComponent(uid)}/approve`, token, {
-      method: "POST",
-    }),
-
-  denyAccessRequest: (token: string, uid: string) =>
-    adminRequest<{ status: string }>(`/api/v1/admin/access-requests/${encodeURIComponent(uid)}/deny`, token, {
-      method: "POST",
-    }),
-
   listAdmins: (token: string) => adminRequest<AdminAccountOut[]>("/api/v1/admin/admins", token),
 
   revokeAdminAccess: (token: string, uid: string) =>
@@ -181,10 +161,28 @@ export const adminApi = {
       method: "POST",
     }),
 
+  // Permanently deletes a revoked account's Firebase login — only allowed
+  // on an already-revoked account, for cleaning those up once there are
+  // too many sitting around. Distinct from revokeAdminAccess, which keeps
+  // the account around so it can be granted access again.
+  deleteAccount: (token: string, uid: string) =>
+    adminRequest<{ status: string }>(`/api/v1/admin/admins/${encodeURIComponent(uid)}`, token, {
+      method: "DELETE",
+    }),
+
+  dismissAdminRequest: (token: string, uid: string) =>
+    adminRequest<{ status: string }>(`/api/v1/admin/admins/${encodeURIComponent(uid)}/dismiss-request`, token, {
+      method: "POST",
+    }),
+
+  // Promotes/demotes an already-assigned account between business and
+  // admin.
+  setAccountRole: (token: string, uid: string, newRole: "business" | "admin") =>
+    adminRequest<{ status: string; role: string }>(
+      `/api/v1/admin/admins/${encodeURIComponent(uid)}/set-role?new_role=${encodeURIComponent(newRole)}`,
+      token,
+      { method: "POST" },
+    ),
+
   getActivityLog: (token: string) => adminRequest<ActivityLogEntryOut[]>("/api/v1/admin/activity-log", token),
-
-  getStatus: (token: string) => adminRequest<AdminStatusOut>("/api/v1/admin/status", token),
-
-  submitProfile: (token: string, name: string, phone: string) =>
-    adminRequest<{ status: string }>("/api/v1/admin/profile", token, { method: "POST", body: { name, phone } }),
 };

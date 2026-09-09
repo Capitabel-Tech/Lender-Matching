@@ -39,10 +39,10 @@ function OptionRow({
     <label
       className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2.5 text-base transition-colors ${
         checked
-          ? "bg-teal-50 dark:bg-teal-950/40"
+          ? "bg-brand-50 dark:bg-brand-950/40"
           : disabled
             ? "cursor-not-allowed opacity-40"
-            : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            : "hover:bg-brand-50 dark:hover:bg-brand-600"
       }`}
     >
       <span className="flex items-center gap-2.5">
@@ -52,19 +52,19 @@ function OptionRow({
           checked={checked}
           disabled={disabled}
           onChange={() => onToggle(option.value)}
-          className={`h-5 w-5 border-zinc-400 text-teal-600 focus:ring-2 focus:ring-teal-500 dark:border-zinc-600 ${mode === "checkbox" ? "rounded" : "rounded-full"}`}
+          className={`h-5 w-5 border-brand-300 text-brand-700 focus:ring-2 focus:ring-brand-500 dark:border-brand-500 ${mode === "checkbox" ? "rounded" : "rounded-full"}`}
         />
-        <span className={`font-semibold ${checked ? "text-teal-900 dark:text-teal-200" : "text-zinc-800 dark:text-zinc-200"}`}>
+        <span className={`font-semibold ${checked ? "text-brand-900 dark:text-brand-200" : "text-brand-600 dark:text-brand-100"}`}>
           {option.label}
         </span>
       </span>
       <span
         className={`min-w-[1.75rem] rounded-full px-1.5 py-0.5 text-center text-xs font-bold ${
           checked
-            ? "bg-teal-600 text-white"
+            ? "bg-brand-700 text-white"
             : option.count === 0
-              ? "text-zinc-300 dark:text-zinc-600"
-              : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+              ? "text-brand-200 dark:text-brand-500"
+              : "bg-brand-50 text-brand-500 dark:bg-brand-600 dark:text-brand-300"
         }`}
       >
         {option.count}
@@ -77,8 +77,8 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups, mod
   const byValue = new Map(options.map((o) => [o.value, o]));
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <h3 className="mb-3 border-l-4 border-teal-600 pl-2.5 text-base font-black uppercase tracking-wide text-zinc-900 dark:text-zinc-50">
+    <div className="rounded-xl border border-brand-100 bg-white p-4 shadow-sm dark:border-brand-600 dark:bg-brand-800">
+      <h3 className="mb-3 border-l-4 border-brand-700 pl-2.5 text-base font-black uppercase tracking-wide text-brand-800 dark:text-cream-100">
         {title}
       </h3>
       {subgroups ? (
@@ -91,7 +91,7 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups, mod
             if (availableValues.length === 0) return null;
             return (
               <div key={group.heading}>
-                <p className="mb-1 px-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <p className="mb-1 px-2 text-xs font-bold uppercase tracking-wide text-brand-500 dark:text-brand-300">
                   {group.heading}
                 </p>
                 <div className="flex flex-col">
@@ -119,7 +119,7 @@ export function FilterGroup({ title, options, selected, onToggle, subgroups, mod
             if (ungrouped.length === 0) return null;
             return (
               <div>
-                <p className="mb-1 px-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <p className="mb-1 px-2 text-xs font-bold uppercase tracking-wide text-brand-500 dark:text-brand-300">
                   Other
                 </p>
                 <div className="flex flex-col">

@@ -65,8 +65,8 @@ export interface ExploreResponse {
   facets: Record<FilterCategory, FacetOption[]>;
 }
 
-export function exploreBanks(filters: ExploreFilters): Promise<ExploreResponse> {
-  return apiPost<ExploreResponse, ExploreFilters>("/api/v1/explore/banks", filters);
+export function exploreBanks(filters: ExploreFilters, token?: string | null): Promise<ExploreResponse> {
+  return apiPost<ExploreResponse, ExploreFilters>("/api/v1/explore/banks", filters, token);
 }
 
 export interface LiveRate {
@@ -77,8 +77,8 @@ export interface LiveRate {
 // Powers the scrolling rate ticker — only banks whose rate was actually
 // confirmed against Ambak (see backend_cat/app/explore_api.py's
 // live_rates), sorted lowest rate first.
-export function fetchLiveRates(): Promise<LiveRate[]> {
-  return apiGet<LiveRate[]>("/api/v1/explore/live-rates");
+export function fetchLiveRates(token?: string | null): Promise<LiveRate[]> {
+  return apiGet<LiveRate[]>("/api/v1/explore/live-rates", token);
 }
 
 export interface CategoryOption {
@@ -104,6 +104,6 @@ export interface CategoriesResponse extends Record<FilterCategory, CategoryOptio
 // Both the borrower sidebar and the admin's product-editing form fetch this
 // instead of hardcoding their own copy of the option lists, so a value an
 // admin adds shows up in both places immediately, no redeploy needed.
-export function fetchCategories(): Promise<CategoriesResponse> {
-  return apiGet<CategoriesResponse>("/api/v1/explore/categories");
+export function fetchCategories(token?: string | null): Promise<CategoriesResponse> {
+  return apiGet<CategoriesResponse>("/api/v1/explore/categories", token);
 }

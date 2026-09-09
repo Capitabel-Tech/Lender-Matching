@@ -1,7 +1,15 @@
 """The filter-sidebar testing endpoint — browses whatever is currently
 loaded in the database via checkbox-style category filters, instead of
 requiring a full borrower profile like /api/v1/lenders/match does. See
-app/explore.py for the matching/faceting logic."""
+app/explore.py for the matching/faceting logic.
+
+Deliberately public, no login required — this is read-only bank/rate data,
+the same info any public rate-comparison page would show, and the landing
+page's preview sections (bank names, ticker, ranked cards) need it to
+render for a logged-out visitor. The /explore *page* itself still sits
+behind a login wall at the frontend (see features/auth/RequireAuth.tsx) —
+this is just the data those pages call, same as it's always been.
+"""
 
 from typing import Annotated
 
@@ -163,7 +171,13 @@ async def explore_banks(
     filter_map = {category: getattr(filters, category) for category in FILTERABLE_CATEGORIES}
     category_values = await load_category_values(session)
 
-    matched = sorted(filter_products(products, filter_map), key=lambda p: (p.bank_name, p.product_name))
+    # Ranked by interest rate ascending (the lowest/best-rate match first),
+    # bank/product name as a tiebreaker only so equal-rate results still
+    # render in a stable, deterministic order.
+    matched = sorted(
+        filter_products(products, filter_map),
+        key=lambda p: (get_bank_interest_rate_pct(p)[0], p.bank_name, p.product_name),
+    )
     facets = facet_counts(products, filter_map, category_values)
 
     return ExploreResponseOut(

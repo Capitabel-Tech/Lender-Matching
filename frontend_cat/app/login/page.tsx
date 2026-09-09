@@ -1,0 +1,281 @@
+"use client";
+
+import { Space_Grotesk } from "next/font/google";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { EngineCore } from "@/features/landing/EngineFlow";
+import { checkEmailExists } from "@/lib/api/business";
+import { errorMessage } from "@/lib/api/client";
+import { useAuth } from "@/lib/useAuth";
+
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+
+// How long the "signed up successfully" message stays up before we sign the
+// brand-new account back out and drop them at the login form — so signing
+// up always ends with typing your email/password once, same as anyone else.
+const SIGNUP_SUCCESS_DELAY_MS = 2000;
+
+export default function LoginPage() {
+  const { user, role, loading, error, signUp, login, logout, resetPassword } = useAuth();
+  const router = useRouter();
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [displayName, setDisplayName] = useState("");
+  const [orgRole, setOrgRole] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+
+  // Any real, assigned role (business or admin) means they're
+  // already in — send them straight to the tool instead of the form. Never
+  // fires right after a signup: signUp deliberately doesn't force a role
+  // refresh, so role stays null until this same account logs in for real.
+  useEffect(() => {
+    if (!loading && user && role) router.push("/explore");
+  }, [loading, user, role, router]);
+
+  function switchMode(next: "login" | "signup") {
+    setMode(next);
+    setResetSent(false);
+    setFormError(null);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setFormError(null);
+
+    if (mode === "signup") {
+      if (password !== confirmPassword) {
+        setFormError("Passwords don't match.");
+        return;
+      }
+      setSubmitting(true);
+      const ok = await signUp(email, password, displayName.trim(), orgRole.trim());
+      setSubmitting(false);
+      if (ok) {
+        setSignupSuccess(true);
+        setPassword("");
+        setConfirmPassword("");
+        window.setTimeout(async () => {
+          await logout();
+          setSignupSuccess(false);
+          switchMode("login");
+        }, SIGNUP_SUCCESS_DELAY_MS);
+      }
+      return;
+    }
+
+    setSubmitting(true);
+    const ok = await login(email, password);
+    setSubmitting(false);
+    if (ok) router.push("/explore");
+  }
+
+  async function handleForgotPassword() {
+    setResetSent(false);
+    if (!email) {
+      setFormError("Type your email above first, then click \"Forgot password?\".");
+      return;
+    }
+    setFormError(null);
+    setSubmitting(true);
+    try {
+      // Checked explicitly first — Firebase's own sendPasswordResetEmail
+      // refuses to say whether an email is registered (its "email
+      // enumeration protection"), so it can't tell a mistyped email apart
+      // from "check your inbox" on its own. See business_api.py's
+      // check-email-exists for the accepted tradeoff on an internal tool.
+      const { exists } = await checkEmailExists(email.trim());
+      if (!exists) {
+        setFormError("No account found with that email — check for typos, or sign up instead.");
+        setSubmitting(false);
+        return;
+      }
+      const ok = await resetPassword(email);
+      setSubmitting(false);
+      setResetSent(ok);
+    } catch (err) {
+      setSubmitting(false);
+      setFormError(errorMessage(err));
+    }
+  }
+
+  return (
+    <div className={`${spaceGrotesk.className} relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16 text-[#16264D] sm:px-10`}>
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: "radial-gradient(circle at 50% 0%, rgba(245,130,32,0.08) 0%, transparent 55%)" }}
+      />
+
+      <div className="relative flex w-full max-w-lg flex-col items-center">
+        <Link
+          href="/"
+          className="mb-8 self-start text-sm font-semibold text-brand-500 transition-colors hover:text-[#16264D]"
+        >
+          ← Back to home
+        </Link>
+        <div className="mb-10 flex flex-col items-center gap-3 text-center">
+          <span className="text-base font-bold tracking-tight">
+            Lender<span className="text-[#F58220]">Match</span>
+          </span>
+          <h1 className="text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[40px]">
+            {mode === "signup" ? "Create your account" : "Sign in to explore"}
+          </h1>
+        </div>
+
+        <div className="flex w-full flex-col items-center gap-6 rounded-2xl border border-brand-100 bg-white px-8 pb-9 pt-10 shadow-xl sm:px-12">
+          <div className="relative h-[90px] w-[90px] shrink-0">
+            <EngineCore />
+          </div>
+
+          <div className="flex w-full rounded-full border border-brand-100 bg-brand-50 p-1">
+            <button
+              type="button"
+              onClick={() => switchMode("login")}
+              disabled={signupSuccess}
+              className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors disabled:opacity-40 ${
+                mode === "login" ? "bg-[#F58220] text-[#0F1A33]" : "text-brand-500 hover:text-[#16264D]"
+              }`}
+            >
+              Log in
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode("signup")}
+              disabled={signupSuccess}
+              className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition-colors disabled:opacity-40 ${
+                mode === "signup" ? "bg-[#F58220] text-[#0F1A33]" : "text-brand-500 hover:text-[#16264D]"
+              }`}
+            >
+              Sign up
+            </button>
+          </div>
+
+          {signupSuccess ? (
+            <p className="w-full rounded-lg border border-success-500/30 bg-success-50 px-3 py-2 text-center text-sm text-success-700">
+              Signed up successfully! Taking you to log in…
+            </p>
+          ) : (
+            <>
+              {(formError || error) && (
+                <p className="w-full rounded-lg border border-error-500/30 bg-error-50 px-3 py-2 text-center text-sm text-error-700">
+                  {formError || error}
+                </p>
+              )}
+              {resetSent && !error && (
+                <p className="w-full rounded-lg border border-success-500/30 bg-success-50 px-3 py-2 text-center text-sm text-success-700">
+                  Reset link sent — check your email.
+                </p>
+              )}
+            </>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
+            {mode === "signup" && (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="displayName" className="text-sm font-medium text-brand-500">
+                    Full name
+                  </label>
+                  <input
+                    id="displayName"
+                    type="text"
+                    required
+                    disabled={signupSuccess}
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none focus:border-[#F58220] focus:bg-white disabled:opacity-50"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="orgRole" className="text-sm font-medium text-brand-500">
+                    Your role in the organization <span className="font-normal text-brand-400">(optional)</span>
+                  </label>
+                  <input
+                    id="orgRole"
+                    type="text"
+                    disabled={signupSuccess}
+                    placeholder="e.g. Loan Ops Manager"
+                    value={orgRole}
+                    onChange={(e) => setOrgRole(e.target.value)}
+                    className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none placeholder:text-brand-400/70 focus:border-[#F58220] focus:bg-white disabled:opacity-50"
+                  />
+                </div>
+              </>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-brand-500">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                disabled={signupSuccess}
+                placeholder="you@capitabel.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none placeholder:text-brand-400/70 focus:border-[#F58220] focus:bg-white disabled:opacity-50"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium text-brand-500">
+                  Password
+                </label>
+                {mode === "login" && (
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-xs font-medium text-[#F58220] hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <input
+                id="password"
+                type="password"
+                required
+                minLength={6}
+                disabled={signupSuccess}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none focus:border-[#F58220] focus:bg-white disabled:opacity-50"
+              />
+            </div>
+            {mode === "signup" && (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="confirmPassword" className="text-sm font-medium text-brand-500">
+                  Confirm password
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  minLength={6}
+                  disabled={signupSuccess}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full rounded-lg border border-brand-200 bg-cream-50 px-3.5 py-3 text-sm text-[#16264D] outline-none focus:border-[#F58220] focus:bg-white disabled:opacity-50"
+                />
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={submitting || signupSuccess}
+              className="mt-2 w-full rounded-lg bg-[#F58220] px-5 py-3.5 text-sm font-semibold text-[#0F1A33] shadow-[0_0_28px_rgba(245,130,32,0.25)] transition-transform hover:scale-[1.02] disabled:opacity-50"
+            >
+              {submitting ? "One moment…" : mode === "signup" ? "Create account" : "Log in"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}

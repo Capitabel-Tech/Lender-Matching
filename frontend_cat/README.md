@@ -4,11 +4,14 @@ Next.js frontend for the Lender Match Engine, a rule-based home loan
 lender-matching platform. Talks to the FastAPI backend in `../backend_cat`.
 
 Two areas:
-- **Public site** (`/`, `/explore`) — the landing page and the Explore
-  Lenders tool. No login required.
+- **Public site** (`/`) — the landing page. No login required.
+- **Explore Lenders** (`/explore`) — the borrower-facing tool. Requires
+  logging in (plain email + password via Firebase) with a "business" or
+  "admin" account.
 - **Admin console** (`/admin`) — manages bank/product data, categories, and
-  admin access. Requires signing in with a company email (passwordless
-  email-link sign-in via Firebase) and approval from a super admin.
+  admin access. Requires an "admin" account — anyone can sign up and
+  request admin access from `/explore`'s header; an existing admin
+  approves it from Manage Admins. There's no tier above admin.
 
 ## Getting started
 

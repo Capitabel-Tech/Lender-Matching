@@ -25,8 +25,16 @@ export function errorMessage(err: unknown): string {
   return "Something went wrong. Check the backend is running and try again.";
 }
 
-export async function apiGet<TResponse>(path: string): Promise<TResponse> {
-  const response = await fetch(`${API_BASE_URL}${path}`);
+// Explore Lenders now requires a logged-in account (business or admin) —
+// see backend_cat/app/auth.py's require_any_role — so every
+// caller of these two needs to pass the current Firebase ID token. Optional
+// only because a couple of call sites (e.g. a server component with no
+// browser session to read) may have no token to give; the backend will
+// simply reject those with 401, same as any other missing-token request.
+export async function apiGet<TResponse>(path: string, token?: string | null): Promise<TResponse> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
 
   if (!response.ok) {
     const detail = await response.text();
@@ -36,10 +44,13 @@ export async function apiGet<TResponse>(path: string): Promise<TResponse> {
   return response.json() as Promise<TResponse>;
 }
 
-export async function apiPost<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
+export async function apiPost<TResponse, TBody>(path: string, body: TBody, token?: string | null): Promise<TResponse> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify(body),
   });
 

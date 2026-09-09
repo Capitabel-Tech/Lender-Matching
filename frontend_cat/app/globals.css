@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
+/* The app is light-only by design (matches capitabel.com/loans) — gate
+   `dark:` behind an explicit `.dark` class we never apply, instead of the
+   default `prefers-color-scheme` media query, so a viewer's OS dark-mode
+   setting can no longer flip pages to the old navy theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #16264d;
 }
 
+/* Capitabel brand system — extracted from capitabel.com/loans' computed
+   styles (see the "brand" color-picking session for the exact source
+   values). Two custom scales: `brand` (navy — primary actions, headings,
+   dark-hero sections) and `accent` (orange — spent on exactly one
+   highlight per screen, never reused for warnings, so it always reads as
+   "the one thing to notice" rather than losing meaning through overuse). */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand-50: #eef1f6;
+  --color-brand-100: #dde3ed;
+  --color-brand-200: #b8c4d9;
+  --color-brand-300: #8fa0c0;
+  --color-brand-400: #5f75a0;
+  --color-brand-500: #334971;
+  --color-brand-600: #223760;
+  --color-brand-700: #16264d;
+  --color-brand-800: #101d3d;
+  --color-brand-900: #0b1530;
+  --color-brand-950: #0f1a33;
+
+  --color-accent-50: #fef3e8;
+  --color-accent-100: #fce0c2;
+  --color-accent-200: #fac68c;
+  --color-accent-300: #f7a755;
+  --color-accent-400: #f58220;
+  --color-accent-500: #e06f10;
+  --color-accent-600: #c2590a;
+  --color-accent-700: #9c4708;
+  --color-accent-800: #78370a;
+  --color-accent-900: #5c2c0c;
+
+  --color-cream-50: #fbf9f4;
+  --color-cream-100: #f7f3e9;
+  --color-cream-200: #f0e9d6;
+
+  /* Semantic colors — supporting, not dominant. Warning is deliberately a
+     different hue from Accent orange so an alert never reads as an
+     inviting call-to-action. */
+  --color-success-50: #e8f5ee;
+  --color-success-500: #1f8a5b;
+  --color-success-700: #166944;
+  --color-warning-50: #fdf0e3;
+  --color-warning-500: #b45309;
+  --color-warning-700: #8a3f07;
+  --color-error-50: #fbeae8;
+  --color-error-500: #c0392b;
+  --color-error-700: #952b20;
+  --color-info-50: #e9f0f9;
+  --color-info-500: #2c5aa0;
+  --color-info-700: #204580;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  /* Thin graph-paper grid — always visible behind every page. Top-level page
+     wrappers must not paint an opaque background over this (use
+     bg-transparent, or a translucent/semi-transparent surface) or it gets
+     hidden; cards and other elevated surfaces sit on top with a solid
+     white/cream fill, which is what gives them their separation from the
+     page underneath. */
+  background-image:
+    linear-gradient(rgba(16, 29, 61, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 29, 61, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }

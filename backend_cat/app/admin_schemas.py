@@ -72,33 +72,23 @@ class AmbakBankOption(BaseModel):
     name: str
 
 
-class AdminStatusOut(BaseModel):
-    email: str
-    role: str | None  # None = logged in but not yet approved
-    has_profile: bool  # has this account already submitted its name + phone?
-
-
-class ProfileIn(BaseModel):
-    name: str = Field(min_length=1, max_length=120)
-    phone: str = Field(min_length=6, max_length=30)
-
-
-class AccessRequestOut(BaseModel):
-    uid: str
-    email: str
-    name: str | None
-    phone: str | None
-    requested_at: str | None  # ISO timestamp; None if Firebase didn't have one
-
-
 class AdminAccountOut(BaseModel):
     uid: str
     email: str
-    role: str  # "admin" or "super_admin"
+    role: str  # "business" or "admin" — a revoked account lands back at "business"
+    display_name: str | None = None
+    org_role: str | None = None  # their role/title within the org, set at signup
+    admin_requested: bool = False  # a business account that's asked to be promoted to admin
+    revoked: bool = False  # was previously an admin whose access was removed
+    protected: bool = False  # cannot be revoked by anyone — see app/auth.py's PROTECTED_EMAILS
 
 
 class ActivityLogEntryOut(BaseModel):
     actor_email: str
+    # The actor's current display_name, looked up live from Firebase at
+    # request time — the log itself only ever stored the email, so this is
+    # None if that account has since been deleted or never had a name set.
+    actor_name: str | None = None
     action: str
     ip_address: str | None
     created_at: str

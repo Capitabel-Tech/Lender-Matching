@@ -4,7 +4,7 @@
 // allowing anything (see backend/app/auth.py).
 
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { browserLocalPersistence, getAuth, initializeAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,4 +23,25 @@ const isConfigured = Boolean(firebaseConfig.apiKey);
 // existing app instead of re-initializing, which Firebase otherwise rejects.
 const app = isConfigured ? (getApps().length ? getApp() : initializeApp(firebaseConfig)) : null;
 
-export const auth = app ? getAuth(app) : null;
+// Explicitly browserLocalPersistence (localStorage) instead of Firebase's
+// default indexedDBLocalPersistence. The default's IndexedDB connection
+// doesn't survive Next.js dev-mode hot reloads cleanly — every Fast Refresh
+// tears down and rebuilds the auth listener, and the old IndexedDB
+// connection closing mid-flight is exactly the recurring "Uncaught Error:
+// Database is closing/hidden" seen in dev. localStorage has no connection
+// to close, so there's nothing to race — same persistence behavior (stays
+// logged in across reloads/restarts until sign-out), just a different,
+// simpler storage mechanism under the hood.
+//
+// initializeAuth (unlike getAuth) throws if called twice for the same app,
+// which Fast Refresh re-running this module would do — fall back to
+// getAuth, which returns the already-initialized instance instead.
+export const auth = app
+  ? (() => {
+      try {
+        return initializeAuth(app, { persistence: browserLocalPersistence });
+      } catch {
+        return getAuth(app);
+      }
+    })()
+  : null;

@@ -1,55 +1,110 @@
 "use client";
 
-// Tracks whether an admin is logged in (via a passwordless email link,
-// through Firebase) and, separately, whether they've actually been approved
-// (a "role" custom claim on the Firebase account itself — see
-// backend_cat/app/auth.py). Every admin page uses this to decide "show the
-// page" vs "send to login" vs "send to the waiting-for-approval screen."
+// Tracks who's logged in and, separately, what role their account has (a
+// custom claim on the Firebase account itself — see backend_cat/app/auth.py).
+// Every gated page uses this to decide "show the page" vs "send to /login."
 //
-// Email-link sign-in is the only login method on purpose — there's no
-// password of ours for anyone to hand off to a coworker, and unlike Google
-// Sign-In it works for any email inbox regardless of who hosts it (Google
-// Workspace, Microsoft 365, anything) — company email doesn't require a
-// Google account behind it. Firebase sends the link itself; clicking it is
-// the proof that someone controls that inbox.
+// One login method for everyone: plain email + password. Signing up (see
+// signUp below) creates the Firebase account and immediately grants the
+// "business" role server-side (backend_cat/app/business_api.py) — no
+// approval step. An existing admin can promote a business account to
+// admin, or demote it back down, from Manage Admins whenever they choose
+// — deliberately flat, not a hierarchy: every admin can do this, there's
+// no separate higher tier for it. A business account can also ask for
+// that promotion itself via requestAdminAccess — still an admin's call
+// whether to grant it.
 
 import {
-  isSignInWithEmailLink,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
-  sendSignInLinkToEmail,
-  signInWithEmailLink,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
   signOut,
-  type ActionCodeSettings,
+  type IdTokenResult,
   type User,
 } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 
+import {
+  acknowledgeAdminGrant as acknowledgeAdminGrantApi,
+  completeSignup,
+  requestAdminAccess as requestAdminAccessApi,
+} from "./api/business";
+import { errorMessage } from "./api/client";
 import { auth } from "./firebase";
 
-export type AdminRole = "admin" | "super_admin";
+export type Role = "business" | "admin";
 
-// Firebase remembers which email a link was requested for so a click on the
-// same device/browser can complete sign-in without asking again — but a
-// link opened on a different device (e.g. requested on a laptop, clicked
-// from a phone's mail app) has nothing to read here, so useAuth falls back
-// to asking for the email again (see needsEmailConfirmation below).
-const PENDING_EMAIL_KEY = "adminLoginEmail";
+// How often a logged-in session quietly re-checks its own role — catches
+// another admin promoting/demoting this account while they're already
+// using the site, without needing a live push connection (see
+// ManageAdminsSection and the bell icon in the header for the other half
+// of this).
+const ROLE_POLL_INTERVAL_MS = 30_000;
+
+interface Profile {
+  displayName: string | null;
+  orgRole: string | null;
+  adminRequested: boolean;
+  // Was previously an admin and got revoked (dropped back to business) —
+  // distinct from a plain business account that's never had admin access,
+  // so the Admin button can say "your access was removed" instead of the
+  // generic "you need admin access" message.
+  revoked: boolean;
+  // Just got promoted to admin and hasn't seen the one-time "you've been
+  // granted access" screen on /admin yet — see acknowledgeAdminGrant.
+  adminGrantUnseen: boolean;
+}
+
+const EMPTY_PROFILE: Profile = {
+  displayName: null,
+  orgRole: null,
+  adminRequested: false,
+  revoked: false,
+  adminGrantUnseen: false,
+};
+
+function readProfile(result: IdTokenResult): Profile {
+  return {
+    displayName: (result.claims.display_name as string | undefined) ?? null,
+    orgRole: (result.claims.org_role as string | undefined) ?? null,
+    adminRequested: (result.claims.admin_requested as boolean | undefined) ?? false,
+    revoked: (result.claims.revoked as boolean | undefined) ?? false,
+    adminGrantUnseen: (result.claims.admin_grant_unseen as boolean | undefined) ?? false,
+  };
+}
 
 export function useAuth() {
   const [user, setUser] = useState<User | null | undefined>(undefined); // undefined = still checking
-  // undefined = still checking, null = logged in but not approved yet
-  const [role, setRole] = useState<AdminRole | null | undefined>(undefined);
+  // undefined = still checking, null = logged in but no role assigned (shouldn't normally happen post-signup)
+  const [role, setRole] = useState<Role | null | undefined>(undefined);
+  const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [error, setError] = useState<string | null>(null);
-  // True while a clicked sign-in link is being exchanged for a real login —
-  // the login page shows a "Signing you in…" state instead of the form.
-  const [completingLink, setCompletingLink] = useState(false);
-  // True when a sign-in link was opened on a device/browser that doesn't
-  // have the requesting email stored — the login page asks for it again.
-  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
+  // Set the moment the 30s poll notices this account's role changed since
+  // the last check — the bell icon reads this and clears it via
+  // dismissRoleChangeNotice.
+  const [roleChangeNotice, setRoleChangeNotice] = useState<{ from: Role | null; to: Role | null } | null>(null);
 
-  const readRole = useCallback(async (u: User, forceRefresh = false) => {
-    const result = await u.getIdTokenResult(forceRefresh);
-    setRole((result.claims.role as AdminRole | undefined) ?? null);
+  const readRole = useCallback(async (u: User, forceRefresh = false, attempt = 0) => {
+    try {
+      const result = await u.getIdTokenResult(forceRefresh);
+      setRole((result.claims.role as Role | undefined) ?? null);
+      setProfile(readProfile(result));
+    } catch {
+      // Transient Firebase hiccup (e.g. "Database is closing" from its
+      // IndexedDB layer if the tab was backgrounded) — this runs on every
+      // login/page-load via a fire-and-forget call below, so left
+      // unguarded it's an unhandled rejection on essentially every page.
+      // One retry handles the common transient case; if it's still
+      // failing, this session's token genuinely isn't good anymore, so
+      // sign out rather than leaving role stuck at undefined ("still
+      // checking...") forever.
+      if (attempt === 0) {
+        window.setTimeout(() => void readRole(u, forceRefresh, 1), 500);
+        return;
+      }
+      if (auth) void signOut(auth);
+    }
   }, []);
 
   useEffect(() => {
@@ -64,89 +119,120 @@ export function useAuth() {
         void readRole(u);
       } else {
         setRole(undefined);
+        setProfile(EMPTY_PROFILE);
       }
     });
   }, [readRole]);
 
-  // Runs once on mount — if the current URL is a sign-in link Firebase just
-  // sent (the person clicked it from their email), finish logging them in.
+  // Quietly re-checks this account's role every 30s while logged in — see
+  // ROLE_POLL_INTERVAL_MS above for why polling instead of a live push.
+  // Keyed on uid (not `role`) so promoting/demoting doesn't restart the
+  // timer; the functional setRole below compares against the previous
+  // value atomically without needing `role` in this effect's closure.
+  const uid = user?.uid;
   useEffect(() => {
-    if (!auth) return;
-    if (!isSignInWithEmailLink(auth, window.location.href)) return;
+    if (!auth || !uid) return;
+    const authInstance = auth;
+    const interval = window.setInterval(async () => {
+      const current = authInstance.currentUser;
+      if (!current) return;
+      try {
+        const result = await current.getIdTokenResult(true);
+        const nextRole = (result.claims.role as Role | undefined) ?? null;
+        setProfile(readProfile(result));
+        setRole((prevRole) => {
+          if (prevRole !== undefined && nextRole !== prevRole) {
+            setRoleChangeNotice({ from: prevRole, to: nextRole });
+          }
+          return nextRole;
+        });
+      } catch {
+        // The session itself is no longer valid (token expired, account
+        // deleted/revoked, etc.) — not a "role changed" case, just a dead
+        // session. Sign out so onAuthStateChanged resets user/role to null
+        // and RequireAuth sends them back to /login, instead of leaving
+        // this an unhandled rejection every 30s forever.
+        if (auth) void signOut(auth);
+      }
+    }, ROLE_POLL_INTERVAL_MS);
+    return () => window.clearInterval(interval);
+  }, [uid]);
 
-    const storedEmail = window.localStorage.getItem(PENDING_EMAIL_KEY);
-    if (!storedEmail) {
-      setNeedsEmailConfirmation(true);
-      return;
-    }
-
-    setCompletingLink(true);
-    signInWithEmailLink(auth, storedEmail, window.location.href)
-      .catch(() => {
-        setError("That sign-in link is invalid or has expired — request a new one.");
-      })
-      .finally(() => {
-        window.localStorage.removeItem(PENDING_EMAIL_KEY);
-        // Drop the link's one-time-use query params from the URL so a
-        // refresh doesn't try (and fail) to redeem it a second time.
-        window.history.replaceState(null, "", window.location.pathname);
-        setCompletingLink(false);
-      });
-  }, []);
-
-  function buildActionCodeSettings(): ActionCodeSettings {
-    // Points back at this same login page — that's what makes the
-    // "clicked the link" check above fire once they land back here.
-    return { url: `${window.location.origin}/admin/login`, handleCodeInApp: true };
+  function dismissRoleChangeNotice() {
+    setRoleChangeNotice(null);
   }
 
-  async function sendLoginLink(email: string) {
+  // Plain email + password signup — self-service, immediate access (no
+  // approval step). Firebase creates the account first; the role only
+  // exists once completeSignup grants it server-side. displayName/orgRole
+  // are collected on the signup form and stored as claims alongside role.
+  async function signUp(email: string, password: string, displayName: string, orgRole: string) {
     setError(null);
     if (!auth) {
-      setError("Admin login isn't set up for this deployment yet.");
-      return false;
-    }
-    const trimmed = email.trim();
-    if (!trimmed) {
-      setError("Enter your email address.");
+      setError("Login isn't set up for this deployment yet.");
       return false;
     }
     try {
-      await sendSignInLinkToEmail(auth, trimmed, buildActionCodeSettings());
-      window.localStorage.setItem(PENDING_EMAIL_KEY, trimmed);
+      const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      const token = await credential.user.getIdToken();
+      await completeSignup(token, displayName, orgRole);
       return true;
-    } catch {
-      setError("Couldn't send a sign-in link. Check the email address and try again.");
+    } catch (err) {
+      setError(authErrorMessage(err));
       return false;
     }
   }
 
-  // The "different device" fallback — completes the same link the mount
-  // effect above found, using an email the person re-typed instead of one
-  // read from localStorage.
-  async function confirmEmailAndCompleteLink(email: string) {
+  async function login(email: string, password: string) {
     setError(null);
-    if (!auth) return;
-    const trimmed = email.trim();
-    if (!trimmed) {
-      setError("Enter your email address.");
-      return;
+    if (!auth) {
+      setError("Login isn't set up for this deployment yet.");
+      return false;
     }
-    setCompletingLink(true);
     try {
-      await signInWithEmailLink(auth, trimmed, window.location.href);
-      setNeedsEmailConfirmation(false);
-      window.history.replaceState(null, "", window.location.pathname);
-    } catch {
-      setError("That email doesn't match this sign-in link — check it and try again.");
-    } finally {
-      setCompletingLink(false);
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      return true;
+    } catch (err) {
+      setError(authErrorMessage(err));
+      return false;
     }
   }
 
+  // Never throws — every caller just wants "get me out" and to move on
+  // (e.g. to /login) regardless of whether the underlying signOut call
+  // succeeds. It can fail transiently (Firebase's IndexedDB persistence
+  // layer throwing "Database is closing" if the tab was backgrounded at
+  // the wrong moment); onAuthStateChanged still resets user/role to null
+  // either way once the tab is active again, so swallowing this here
+  // beats leaving every call site to catch the same unhandled rejection.
   async function logout() {
     if (!auth) return;
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch {
+      // intentionally ignored — see comment above
+    }
+  }
+
+  async function resetPassword(email: string) {
+    setError(null);
+    if (!auth) {
+      setError("Login isn't set up for this deployment yet.");
+      return false;
+    }
+    try {
+      // Points the emailed link at our own /reset-password page (with a
+      // "confirm password" field) instead of Firebase's default hosted
+      // page, which only asks for the new password once.
+      await sendPasswordResetEmail(auth, email.trim(), {
+        url: `${window.location.origin}/reset-password`,
+        handleCodeInApp: true,
+      });
+      return true;
+    } catch (err) {
+      setError(authErrorMessage(err));
+      return false;
+    }
   }
 
   async function getToken(): Promise<string | null> {
@@ -154,25 +240,90 @@ export function useAuth() {
     return auth.currentUser.getIdToken();
   }
 
-  // Forces a fresh token so a just-approved account picks up its new role
-  // without needing to log out and back in — used by the "Check again"
-  // button on the waiting-for-approval screen.
+  // Forces a fresh token so a just-promoted account picks up its new role
+  // without needing to log out and back in.
   async function refreshStatus() {
     if (!auth?.currentUser) return;
     await readRole(auth.currentUser, true);
   }
 
+  // Flags this business account as wanting admin access — any existing
+  // admin sees it on Manage Admins and can approve (promote) or dismiss it.
+  async function requestAdminAccess() {
+    setError(null);
+    if (!auth?.currentUser) return false;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      await requestAdminAccessApi(token);
+      await refreshStatus();
+      return true;
+    } catch (err) {
+      setError(errorMessage(err));
+      return false;
+    }
+  }
+
+  // Clears the one-time "you've been granted admin access" flag once the
+  // user has seen and dismissed that screen on /admin.
+  async function acknowledgeAdminGrant() {
+    if (!auth?.currentUser) return false;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      await acknowledgeAdminGrantApi(token);
+      await refreshStatus();
+      return true;
+    } catch (err) {
+      setError(errorMessage(err));
+      return false;
+    }
+  }
+
   return {
     user,
     role,
+    displayName: profile.displayName,
+    orgRole: profile.orgRole,
+    adminRequested: profile.adminRequested,
+    revoked: profile.revoked,
+    adminGrantUnseen: profile.adminGrantUnseen,
     loading: user === undefined,
     error,
-    completingLink,
-    needsEmailConfirmation,
-    sendLoginLink,
-    confirmEmailAndCompleteLink,
+    roleChangeNotice,
+    dismissRoleChangeNotice,
+    signUp,
+    login,
     logout,
     getToken,
     refreshStatus,
+    resetPassword,
+    requestAdminAccess,
+    acknowledgeAdminGrant,
   };
+}
+
+export function authErrorMessage(err: unknown): string {
+  const code = (err as { code?: string } | null)?.code;
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "An account with that email already exists — try logging in instead.";
+    case "auth/invalid-email":
+      return "That doesn't look like a valid email address.";
+    case "auth/weak-password":
+      return "Password must be at least 6 characters.";
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+      return "Incorrect email or password.";
+    case "auth/user-not-found":
+      return "No account found with that email — sign up instead.";
+    case "auth/too-many-requests":
+      return "Too many attempts — wait a bit and try again.";
+    case "auth/expired-action-code":
+      return "This reset link has expired — request a new one from the login page.";
+    case "auth/invalid-action-code":
+      return "This reset link is invalid or has already been used — request a new one from the login page.";
+    default:
+      return errorMessage(err) === "Something went wrong. Check the backend is running and try again."
+        ? "Something went wrong. Please try again."
+        : errorMessage(err);
+  }
 }
