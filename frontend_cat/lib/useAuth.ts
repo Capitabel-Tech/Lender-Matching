@@ -221,7 +221,13 @@ export function useAuth() {
       return false;
     }
     try {
-      await sendPasswordResetEmail(auth, email.trim());
+      // Points the emailed link at our own /reset-password page (with a
+      // "confirm password" field) instead of Firebase's default hosted
+      // page, which only asks for the new password once.
+      await sendPasswordResetEmail(auth, email.trim(), {
+        url: `${window.location.origin}/reset-password`,
+        handleCodeInApp: true,
+      });
       return true;
     } catch (err) {
       setError(authErrorMessage(err));
@@ -295,7 +301,7 @@ export function useAuth() {
   };
 }
 
-function authErrorMessage(err: unknown): string {
+export function authErrorMessage(err: unknown): string {
   const code = (err as { code?: string } | null)?.code;
   switch (code) {
     case "auth/email-already-in-use":
@@ -311,6 +317,10 @@ function authErrorMessage(err: unknown): string {
       return "No account found with that email — sign up instead.";
     case "auth/too-many-requests":
       return "Too many attempts — wait a bit and try again.";
+    case "auth/expired-action-code":
+      return "This reset link has expired — request a new one from the login page.";
+    case "auth/invalid-action-code":
+      return "This reset link is invalid or has already been used — request a new one from the login page.";
     default:
       return errorMessage(err) === "Something went wrong. Check the backend is running and try again."
         ? "Something went wrong. Please try again."
