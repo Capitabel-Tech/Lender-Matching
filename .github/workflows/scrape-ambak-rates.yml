@@ -1,0 +1,67 @@
+name: Scrape Ambak rates
+
+# Daily job — pulls current home loan interest rates from ambak.com and
+# updates any of our banks it can match (see app/scrape_ambak_rates.py's own
+# docstring for the matching logic, and the legal note about ambak.com's
+# terms — this was a deliberate, informed call, not an oversight).
+#
+# Was originally meant to run as a Windows Scheduled Task, then considered
+# for Render (whose free plan has no cron jobs), and finally landed here —
+# free and unlimited since this repo is public.
+#
+# Runs against both databases (two separate jobs, not one job looping twice)
+# so a failure updating one doesn't stop the other, and each gets its own
+# clearly-labeled log in the Actions tab. Staging gets real rates too rather
+# than staying frozen at whatever it was mirrored from, so testing there
+# reflects real-world data.
+on:
+  schedule:
+    - cron: "30 2 * * *" # 2:30 AM UTC daily (8:00 AM IST)
+  workflow_dispatch: {}
+
+jobs:
+  scrape-production:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend_cat
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Install Playwright's Chromium browser
+        run: playwright install chromium --with-deps
+
+      - name: Run the scraper against production
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python -m app.scrape_ambak_rates
+
+  scrape-staging:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend_cat
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Install Playwright's Chromium browser
+        run: playwright install chromium --with-deps
+
+      - name: Run the scraper against staging
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: python -m app.scrape_ambak_rates

@@ -10,6 +10,20 @@ import { AdminLoading } from "./AdminLoading";
 import { BankNameCombobox } from "./BankNameCombobox";
 import { ProductDetailForm } from "./ProductDetailForm";
 
+// Mirrors backend_cat/app/scrape_ambak_rates.py's _normalize/_SUFFIXES —
+// same reasoning: a bank's name can carry a "Ltd"/"Limited"/etc. suffix in
+// one source and not another, so comparing raw text misses matches that are
+// really the same bank.
+const _SUFFIXES = [" ltd", " limited", " pvt ltd", " private limited", " co", " company", " finance ltd"];
+
+function normalizeBankName(name: string): string {
+  let n = name.trim().toLowerCase();
+  for (const suffix of _SUFFIXES) {
+    if (n.endsWith(suffix)) n = n.slice(0, -suffix.length).trim();
+  }
+  return n.replace(/\s+/g, " ");
+}
+
 type View =
   | { name: "list" }
   | { name: "bank"; bankName: string } // shows loan-type cards (Home Loan, Education Loan, ...)
@@ -141,24 +155,45 @@ export function BanksSection({ getToken }: { getToken: () => Promise<string | nu
 
   async function handleAddNewBankSubmit() {
     setError(null);
-    if (!newBankName.trim()) {
+    const typed = newBankName.trim();
+    if (!typed) {
       setError("Enter a bank name.");
       return;
     }
     const token = await getToken();
     if (!token) return;
+
+    // The suggestion dropdown's names come from Ambak's own catalog (see
+    // BankNameCombobox), which doesn't always spell a bank the same way we
+    // do (e.g. their "HDFC Bank" vs our "HDFC Bank Ltd"). An exact-match
+    // lookup against our own table would miss that and let a duplicate get
+    // created under the slightly different spelling — so compare normalized
+    // (case/whitespace/legal-suffix insensitive) against our *actual*
+    // existing bank names first, and if one matches, use its real stored
+    // name (not whatever was typed) for everything from here on. This still
+    // won't catch the handful of banks Ambak names completely differently
+    // (e.g. "Kotak Bank" for our "Kotak Mahindra Bank Ltd") — those are
+    // listed in scrape_ambak_rates.py's NAME_ALIASES, Python-only for now.
+    const typedNormalized = normalizeBankName(typed);
+    const existing = (banks ?? []).find((b) => normalizeBankName(b.bank_name) === typedNormalized);
+    const bankName = existing?.bank_name ?? typed;
+
+    if (existing) {
+      setError(`"${existing.bank_name}" already exists — showing its current data instead of creating a duplicate.`);
+    }
+
     try {
-      const products = await adminApi.getBankProducts(token, newBankName.trim());
+      const products = await adminApi.getBankProducts(token, bankName);
       // Bank already exists — go manage it instead of creating a duplicate.
       setBankProducts(products);
-      setView({ name: "bank", bankName: newBankName.trim() });
+      setView({ name: "bank", bankName });
     } catch {
       // Doesn't exist yet — go straight to the "add a loan type" form. This
       // is the expected, normal path for a genuinely new bank name, not a
       // failure. Reset bankProducts so the dropdowns don't accidentally
       // inherit a stale, unrelated bank's product list.
       setBankProducts([]);
-      setView({ name: "add-loan-type", bankName: newBankName.trim(), isNewBank: true });
+      setView({ name: "add-loan-type", bankName, isNewBank: true });
     }
   }
 
